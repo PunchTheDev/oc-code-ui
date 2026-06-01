@@ -421,6 +421,41 @@
       color: var(--red);
       font-size: 13px;
     }
+
+    /* ── Queue ──────────────────────────────────────────────── */
+
+    .queue-empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 16px 0;
+      font-style: italic;
+    }
+
+    .queue-error {
+      color: var(--yellow);
+      font-size: 12px;
+      padding: 12px 0;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.open { background: var(--yellow); }
+    .status-dot.merged { background: var(--green); }
+
+    .queue-handle {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .queue-meta { color: var(--muted); font-size: 12px; }
   </style>
 </head>
 <body>
@@ -452,6 +487,11 @@
       </thead>
       <tbody id="leaderboard-body"></tbody>
     </table>
+  </section>
+
+  <section id="queue-section">
+    <h2>Submission queue</h2>
+    <div id="queue-body"><span class="queue-meta">Loading open submissions…</span></div>
   </section>
 
   <section>
@@ -698,6 +738,90 @@ async function load() {
 
   // Footer date
   document.getElementById('footer-date').textContent = `Data updated ${d.generated_at}`;
+
+  // Submission queue (live from GitHub API)
+  loadQueue();
+}
+
+// ── Submission queue ─────────────────────────────────────────────────────────
+
+async function loadQueue() {
+  const container = document.getElementById('queue-body');
+  const BENCHMARK = 'PunchTheDev/gittensor-base-miner';
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${BENCHMARK}/pulls?state=open&per_page=30`,
+      { headers: { Accept: 'application/vnd.github+json' } }
+    );
+
+    if (!res.ok) {
+      container.innerHTML = `<div class="queue-error">Could not load queue (GitHub API ${res.status}). <a class="link" href="https://github.com/${BENCHMARK}/pulls" target="_blank">View on GitHub ↗</a></div>`;
+      return;
+    }
+
+    const prs = await res.json();
+
+    // Filter to agent submission PRs
+    const agentPRs = prs.filter(pr => {
+      // Check title pattern or look for agent/submissions in labels
+      return pr.title.toLowerCase().includes('agent') ||
+             pr.title.toLowerCase().includes('submission') ||
+             pr.title.toLowerCase().includes('[submission]') ||
+             (pr.labels || []).some(l => l.name === 'agent-submission');
+    });
+
+    // If filter too aggressive, fall back to all open PRs
+    const displayed = agentPRs.length > 0 ? agentPRs : prs;
+
+    if (displayed.length === 0) {
+      container.innerHTML = `<div class="queue-empty">No open submissions. <a class="link" href="https://github.com/${BENCHMARK}/blob/main/CONTRIBUTING.md" target="_blank">Submit your agent ↗</a></div>`;
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Agent / PR</th>
+          <th>Opened</th>
+          <th>Link</th>
+        </tr>
+      </thead>
+      <tbody id="queue-rows"></tbody>
+    `;
+    container.innerHTML = '';
+    container.appendChild(table);
+
+    const tbody = table.querySelector('tbody');
+    displayed.forEach(pr => {
+      // Extract handle from branch name (punch/handle-...) or PR title
+      const branchMatch = pr.head.ref.match(/^(?:[^/]+\/)?(.+?)(?:-agent|-submit)?$/i);
+      const handle = pr.user.login;
+      const openedDate = pr.created_at ? pr.created_at.slice(0, 10) : '—';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="white-space:nowrap">
+          <span class="status-dot open"></span>
+          <span class="queue-meta" style="margin-left:6px">Evaluating</span>
+        </td>
+        <td>
+          <div class="queue-handle">${esc(handle)}</div>
+          <div class="queue-meta">${esc(pr.title.slice(0, 80))}</div>
+        </td>
+        <td class="queue-meta" style="white-space:nowrap">${openedDate}</td>
+        <td>
+          <a class="link" href="${esc(pr.html_url)}" target="_blank" style="font-size:12px">PR #${pr.number} ↗</a>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    container.innerHTML = `<div class="queue-error">Failed to load queue: ${esc(err.message)}</div>`;
+  }
 }
 
 // ── Drawer ──────────────────────────────────────────────────────────────────

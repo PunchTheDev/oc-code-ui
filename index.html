@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gittensor Base Miner — Leaderboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -259,6 +260,21 @@
 
     #problems-table tbody tr { cursor: default; }
 
+    .chart-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      position: relative;
+    }
+
+    .chart-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 40px 0;
+    }
+
     footer {
       border-top: 1px solid var(--border);
       padding: 20px 32px;
@@ -298,6 +314,14 @@
       </thead>
       <tbody id="leaderboard-body"></tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>SOTA progress</h2>
+    <div class="chart-wrap">
+      <canvas id="sota-chart" height="80"></canvas>
+      <div class="chart-empty" id="sota-empty" style="display:none">No scored submissions yet — submit an agent to start the leaderboard.</div>
+    </div>
   </section>
 
   <section>
@@ -343,11 +367,16 @@ async function load() {
     `${d.pool_size} problems · shard ${d.shard_size} · oracle ${d.oracle_score.toFixed(2)}/30`;
 
   // Stats row
+  const realEntries = (d.leaderboard || []).filter(r => r.rank !== null && r.score !== null);
+  const sotaScore = realEntries.length > 0
+    ? Math.max(...realEntries.map(r => r.score)).toFixed(2)
+    : '—';
   const stats = [
     { label: 'Pool size', value: d.pool_size, sub: 'curated problems' },
     { label: 'Shard size', value: d.shard_size, sub: 'per eval round' },
     { label: 'Repos', value: Object.keys(d.repos).length, sub: 'across Gittensor network' },
     { label: 'Oracle score', value: d.oracle_score.toFixed(2), sub: 'accepted solution upper bound' },
+    { label: 'Current SOTA', value: sotaScore, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet' },
   ];
   const statsRow = document.getElementById('stats-row');
   stats.forEach(s => {
@@ -382,6 +411,79 @@ async function load() {
     `;
     lb.appendChild(tr);
   });
+
+  // SOTA-over-time chart
+  const history = d.history || [];
+  if (history.length === 0) {
+    document.getElementById('sota-chart').style.display = 'none';
+    document.getElementById('sota-empty').style.display = 'block';
+  } else {
+    // Add oracle reference line as constant
+    const labels = history.map(h => h.date);
+    const scores = history.map(h => h.score);
+    const oraclePoints = history.map(() => d.oracle_score);
+
+    new Chart(document.getElementById('sota-chart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'SOTA score',
+            data: scores,
+            borderColor: '#58a6ff',
+            backgroundColor: 'rgba(88,166,255,0.10)',
+            pointBackgroundColor: '#58a6ff',
+            pointRadius: 4,
+            fill: true,
+            tension: 0.2,
+          },
+          {
+            label: 'Oracle upper bound',
+            data: oraclePoints,
+            borderColor: '#3fb950',
+            borderDash: [6, 3],
+            pointRadius: 0,
+            fill: false,
+            tension: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            labels: { color: '#8b949e', font: { size: 12 } },
+          },
+          tooltip: {
+            callbacks: {
+              afterBody: (items) => {
+                const idx = items[0]?.dataIndex;
+                if (idx !== undefined && history[idx]) {
+                  return [`Agent: ${history[idx].agent}`, `Model: ${history[idx].model}`];
+                }
+                return [];
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: '#8b949e', font: { size: 11 } },
+            grid: { color: '#21262d' },
+          },
+          y: {
+            min: 0,
+            max: Math.ceil(d.oracle_score * 1.05),
+            ticks: { color: '#8b949e', font: { size: 11 } },
+            grid: { color: '#21262d' },
+            title: { display: true, text: 'Score / 30', color: '#8b949e', font: { size: 11 } },
+          },
+        },
+      },
+    });
+  }
 
   // Repo breakdown
   const maxCount = Math.max(...Object.values(d.repos));

@@ -21,16 +21,9 @@
       "model": "\u2014",
       "date": "\u2014",
       "note": "Upper bound"
-    },
-    {
-      "rank": 1,
-      "agent": "ExampleAgent",
-      "score": null,
-      "model": "claude-3-5-haiku",
-      "date": "\u2014",
-      "note": "Reference observe\u2192plan\u2192act\u2192verify loop"
     }
   ],
+  "history": [],
   "problems": [
     {
       "id": "0913",

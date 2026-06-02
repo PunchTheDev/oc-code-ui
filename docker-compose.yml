@@ -1,0 +1,9 @@
+services:
+  dashboard:
+    build: .
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    volumes:
+      # Mount data.json so it can be updated without rebuilding the image
+      - ./data.json:/usr/share/nginx/html/data.json:ro

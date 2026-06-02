@@ -1,0 +1,14 @@
+[Unit]
+Description=Gittensor Base Miner Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=punch
+WorkingDirectory=/home/punch/punch/workspace/gittensor-miner-dashboard
+ExecStart=/usr/bin/python3 -m http.server 8082
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -11,6 +11,7 @@
     :root {
       --bg: #0d1117;
       --surface: #161b22;
+      --surface2: #1c2128;
       --border: #30363d;
       --text: #e6edf3;
       --muted: #8b949e;
@@ -27,111 +28,235 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
+      min-height: 100vh;
     }
 
-    header {
-      border-bottom: 1px solid var(--border);
-      padding: 20px 32px;
+    /* ── Loading overlay ─────────────────────────────────── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 999;
       display: flex;
       align-items: center;
+      justify-content: center;
+      flex-direction: column;
       gap: 16px;
+      transition: opacity 0.3s;
+    }
+    #loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--muted); font-size: 13px; }
+
+    /* ── Header ──────────────────────────────────────────── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
-    header .subtitle { color: var(--muted); font-size: 13px; }
+    .header-logo {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #1f6feb, #58a6ff);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: #fff;
+      flex-shrink: 0;
+    }
 
-    header .badge {
+    header h1 { font-size: 15px; font-weight: 600; color: var(--text); }
+    header .subtitle { color: var(--muted); font-size: 12px; margin-left: 4px; }
+
+    .header-right {
       margin-left: auto;
-      background: #21262d;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-badge {
+      background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 4px 12px;
       font-size: 12px;
       color: var(--muted);
+      font-family: var(--mono);
+      white-space: nowrap;
     }
 
+    .btn-submit {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid #388bfd;
+      background: #1f6feb;
+      color: #fff;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: #388bfd; }
+
+    /* ── Layout ──────────────────────────────────────────── */
     .container {
-      max-width: 1100px;
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 32px 24px;
+      padding: 32px 24px 64px;
     }
 
+    section { margin-bottom: 48px; }
+
+    section h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    section h2 .section-count {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: auto;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* ── Stat cards ──────────────────────────────────────── */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 12px;
-      margin-bottom: 32px;
+      margin-bottom: 40px;
     }
 
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 16px 20px;
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      cursor: default;
     }
 
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(88,166,255,0.1);
+    }
+
+    .stat-card.green::before { background: var(--green); }
+    .stat-card.yellow::before { background: var(--yellow); }
+    .stat-card.purple::before { background: var(--purple); }
+
     .stat-card .label {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .stat-card .value {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--text);
       font-family: var(--mono);
+      line-height: 1;
+      margin-bottom: 4px;
     }
 
-    .stat-card .sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .stat-card .sub {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
 
-    section { margin-bottom: 40px; }
-
-    section h2 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
+    /* ── Tables ──────────────────────────────────────────── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
     thead th {
       text-align: left;
-      padding: 10px 14px;
+      padding: 10px 16px;
       font-size: 11px;
       font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
       border-bottom: 1px solid var(--border);
+      background: var(--surface2);
     }
 
     tbody tr {
-      border-bottom: 1px solid #21262d;
+      border-bottom: 1px solid var(--border);
       transition: background 0.1s;
     }
 
-    tbody tr:hover { background: #1c2128; }
     tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
 
-    tbody td { padding: 10px 14px; vertical-align: top; }
+    tbody td { padding: 12px 16px; vertical-align: middle; }
 
-    .rank { font-family: var(--mono); font-weight: 700; color: var(--accent); }
-    .rank-oracle { color: var(--muted); font-style: italic; }
+    .rank { font-family: var(--mono); font-weight: 700; font-size: 15px; }
+    .rank-1 { color: #ffd700; }
+    .rank-2 { color: #c0c0c0; }
+    .rank-3 { color: #cd7f32; }
+    .rank-n { color: var(--accent); }
+    .rank-oracle { color: var(--muted); font-style: italic; font-size: 12px; }
 
     .score { font-family: var(--mono); font-weight: 600; }
 
-    .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
-    .score-bar { flex: 1; height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; }
-    .score-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+    .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .score-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; max-width: 120px; }
+    .score-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s; }
 
     .badge-model {
-      background: #21262d;
+      background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 4px;
       padding: 2px 8px;
@@ -142,7 +267,7 @@
 
     .repo-tag {
       display: inline-block;
-      background: #21262d;
+      background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 4px;
       padding: 1px 7px;
@@ -154,52 +279,86 @@
 
     .link { color: var(--accent); text-decoration: none; }
     .link:hover { text-decoration: underline; }
-
     .muted { color: var(--muted); }
 
     .problem-title {
       color: var(--text);
-      max-width: 420px;
+      max-width: 400px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .repo-breakdown { display: flex; flex-direction: column; gap: 6px; }
+    .problem-score { font-family: var(--mono); font-size: 12px; }
 
-    .repo-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-    .repo-name { color: var(--accent); font-family: var(--mono); min-width: 220px; }
-    .repo-bar-wrap { flex: 1; height: 6px; background: #21262d; border-radius: 3px; overflow: hidden; }
-    .repo-bar-fill { height: 100%; background: #388bfd; border-radius: 3px; }
-    .repo-count { color: var(--muted); font-size: 12px; min-width: 40px; text-align: right; }
+    .pending { color: var(--yellow); font-style: italic; font-size: 12px; }
 
-    #problem-search {
+    #problems-table { cursor: default; }
+    #problems-table tbody tr { cursor: pointer; }
+    #problems-table tbody tr.active { background: rgba(88,166,255,0.06); outline: 1px solid rgba(88,166,255,0.4); }
+
+    /* ── Sortable headers ────────────────────────────────── */
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: var(--accent); }
+    th.sortable.sort-asc::after { content: ' ▲'; color: var(--accent); }
+    th.sortable.sort-desc::after { content: ' ▼'; color: var(--accent); }
+    th.sortable:not(.sort-asc):not(.sort-desc)::after { content: ' ↕'; color: var(--border); }
+
+    /* ── Language badges ─────────────────────────────────── */
+    .lang-badge {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 600;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+    .lang-python { background: rgba(55,118,171,0.2); color: #79c0ff; }
+    .lang-js { background: rgba(210,153,34,0.2); color: #e3b341; }
+    .lang-rust { background: rgba(206,84,58,0.2); color: #ffa198; }
+    .lang-java { background: rgba(188,140,255,0.2); color: #d2a8ff; }
+
+    /* ── Difficulty badges ───────────────────────────────── */
+    .diff-badge {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    /* ── Filter row ──────────────────────────────────────── */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 8px 14px;
+      padding: 7px 14px;
       color: var(--text);
       font-size: 13px;
-      width: 300px;
-      margin-bottom: 14px;
+      width: 260px;
       outline: none;
+      transition: border-color 0.15s;
     }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
 
-    #problem-search:focus { border-color: var(--accent); }
-
-    .problem-score { font-family: var(--mono); font-size: 12px; }
-
-    .pending { color: var(--yellow); font-style: italic; }
-
-    #problems-table tbody tr { cursor: pointer; }
-    #problems-table tbody tr.active { background: #1c2128; outline: 1px solid var(--accent); }
-
-    .filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .lang-chip {
-      background: #21262d;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 3px 12px;
+      padding: 4px 12px;
       font-size: 12px;
       color: var(--muted);
       cursor: pointer;
@@ -209,34 +368,12 @@
     .lang-chip:hover { border-color: var(--accent); color: var(--text); }
     .lang-chip.active { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
 
-    .lang-badge {
-      display: inline-block;
-      border-radius: 3px;
-      padding: 1px 6px;
-      font-size: 10px;
-      font-family: var(--mono);
-      font-weight: 600;
-      margin-left: 4px;
-    }
-    .lang-python { background: rgba(55,118,171,0.25); color: #79c0ff; }
-    .lang-js { background: rgba(210,153,34,0.25); color: #e3b341; }
-    .lang-rust { background: rgba(206,84,58,0.25); color: #ffa198; }
-    .lang-java { background: rgba(188,140,255,0.25); color: #d2a8ff; }
-
-    .diff-badge {
-      display: inline-block;
-      border-radius: 3px;
-      padding: 1px 7px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-left: 6px;
-    }
-
+    /* ── Chart ───────────────────────────────────────────── */
     .chart-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 20px 24px;
+      padding: 24px;
       position: relative;
     }
 
@@ -244,33 +381,105 @@
       text-align: center;
       color: var(--muted);
       font-size: 13px;
-      padding: 40px 0;
+      padding: 48px 0;
     }
 
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 20px 32px;
-      font-size: 12px;
-      color: var(--muted);
+    /* ── Repo breakdown ──────────────────────────────────── */
+    .repo-breakdown { display: flex; flex-direction: column; gap: 8px; }
+
+    .repo-row {
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      padding: 6px 0;
+    }
+    .repo-name { min-width: 210px; }
+    .repo-name a { color: var(--accent); font-family: var(--mono); font-size: 12px; text-decoration: none; }
+    .repo-name a:hover { text-decoration: underline; }
+    .repo-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .repo-bar-fill { height: 100%; background: linear-gradient(90deg, #1f6feb, #58a6ff); border-radius: 3px; transition: width 0.6s; }
+    .repo-count { color: var(--muted); font-size: 12px; min-width: 30px; text-align: right; font-family: var(--mono); }
+    .repo-pct { color: var(--muted); font-size: 11px; min-width: 36px; text-align: right; }
+
+    /* ── Allowed models ──────────────────────────────────── */
+    .models-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    /* ── Drawer ─────────────────────────────────────────── */
+    .model-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text);
+      transition: border-color 0.15s;
+    }
+    .model-pill:first-child { border-color: var(--accent); color: var(--accent); }
+    .model-pill:hover { border-color: var(--muted); }
 
+    /* ── Submission queue ────────────────────────────────── */
+    .queue-empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 20px 0;
+      font-style: italic;
+    }
+
+    .queue-error {
+      color: var(--yellow);
+      font-size: 12px;
+      padding: 12px 0;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.open { background: var(--yellow); box-shadow: 0 0 4px var(--yellow); }
+
+    .queue-handle { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); }
+    .queue-meta { color: var(--muted); font-size: 12px; }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .btn:hover { background: #30363d; border-color: #8b949e; }
+
+    .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+
+    /* ── Drawer ──────────────────────────────────────────── */
     .drawer-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.6);
       z-index: 200;
       display: none;
       justify-content: flex-end;
     }
-
     .drawer-overlay.open { display: flex; }
 
     .drawer {
-      width: 700px;
+      width: 720px;
       max-width: 92vw;
       height: 100vh;
       background: var(--surface);
@@ -292,6 +501,7 @@
       align-items: flex-start;
       gap: 12px;
       flex-shrink: 0;
+      background: var(--surface2);
     }
 
     .drawer-header-text { flex: 1; min-width: 0; }
@@ -315,17 +525,18 @@
       background: none;
       border: none;
       color: var(--muted);
-      font-size: 20px;
+      font-size: 18px;
       cursor: pointer;
-      padding: 2px 6px;
+      padding: 4px 8px;
       line-height: 1;
+      border-radius: 4px;
       flex-shrink: 0;
+      transition: background 0.1s, color 0.1s;
     }
-
-    .drawer-close:hover { color: var(--text); }
+    .drawer-close:hover { background: var(--border); color: var(--text); }
 
     .drawer-body {
-      padding: 20px 24px;
+      padding: 24px;
       flex: 1;
       overflow-y: auto;
     }
@@ -348,15 +559,15 @@
     }
 
     .score-chip {
-      background: #0d1117;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 10px 14px;
     }
-
     .score-chip .chip-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
-    .score-chip .chip-value { font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--accent); }
+    .score-chip .chip-value { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); }
 
+    /* ── Issue body markdown ─────────────────────────────── */
     .issue-body {
       font-size: 13px;
       color: var(--text);
@@ -364,12 +575,11 @@
       word-break: break-word;
       max-height: 340px;
       overflow-y: auto;
-      background: #0d1117;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 14px 16px;
     }
-
     .issue-body h1, .issue-body h2, .issue-body h3 {
       font-size: 13px; font-weight: 600; color: var(--text);
       margin: 14px 0 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
@@ -377,16 +587,13 @@
     .issue-body p { margin: 0 0 8px; }
     .issue-body code {
       font-family: var(--mono); font-size: 11px;
-      background: rgba(110,118,129,0.12); border-radius: 3px; padding: 1px 5px;
-      color: #e3b341;
+      background: rgba(110,118,129,0.12); border-radius: 3px; padding: 1px 5px; color: #e3b341;
     }
     .issue-body pre {
       background: #161b22; border: 1px solid var(--border); border-radius: 6px;
       padding: 12px 14px; overflow-x: auto; margin: 8px 0;
     }
-    .issue-body pre code {
-      background: none; padding: 0; color: #c9d1d9; font-size: 11px;
-    }
+    .issue-body pre code { background: none; padding: 0; color: #c9d1d9; font-size: 11px; }
     .issue-body ul, .issue-body ol { padding-left: 20px; margin: 4px 0 8px; }
     .issue-body li { margin-bottom: 3px; }
     .issue-body a { color: var(--accent); text-decoration: none; }
@@ -396,49 +603,20 @@
     }
     .issue-body strong { font-weight: 600; color: var(--text); }
 
+    /* ── Test command ────────────────────────────────────── */
     .test-cmd {
       font-family: var(--mono);
       font-size: 12px;
-      background: #0d1117;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       color: var(--green);
       white-space: pre-wrap;
       word-break: break-all;
     }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: #21262d;
-      color: var(--text);
-      text-decoration: none;
-      transition: background 0.1s, border-color 0.1s;
-    }
-
-    .btn:hover { background: #30363d; border-color: #8b949e; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .btn-primary {
-      background: #1f6feb;
-      border-color: #388bfd;
-      color: #fff;
-    }
-
-    .btn-primary:hover { background: #388bfd; }
-
-    .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-
     /* ── Diff viewer ─────────────────────────────────────── */
-
     .diff-container {
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -451,93 +629,83 @@
     }
 
     .diff-file-header {
-      background: #21262d;
+      background: var(--surface2);
       border-bottom: 1px solid var(--border);
       padding: 6px 12px;
       color: var(--muted);
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.03em;
+      position: sticky;
+      top: 0;
     }
 
-    .diff-line {
-      display: block;
-      padding: 0 12px;
-      white-space: pre;
-      overflow-x: auto;
-    }
-
+    .diff-line { display: block; padding: 0 12px; white-space: pre; overflow-x: auto; }
     .diff-line.add { background: rgba(63,185,80,0.10); color: #3fb950; }
     .diff-line.remove { background: rgba(248,81,73,0.10); color: #f85149; }
     .diff-line.hunk { background: rgba(88,166,255,0.06); color: var(--purple); }
     .diff-line.meta { color: #636e7b; }
 
-    .diff-loading {
-      padding: 20px;
-      color: var(--muted);
-      font-size: 13px;
-      text-align: center;
-    }
+    .diff-loading { padding: 20px; color: var(--muted); font-size: 13px; text-align: center; }
+    .diff-error { padding: 16px; color: var(--red); font-size: 13px; }
 
-    .diff-error {
-      padding: 16px;
-      color: var(--red);
-      font-size: 13px;
-    }
-
-    /* ── Queue ──────────────────────────────────────────────── */
-
-    th.sortable {
-      cursor: pointer;
-      user-select: none;
-    }
-    th.sortable:hover { color: var(--accent); }
-    th.sortable.sort-asc::after { content: ' ▲'; color: var(--accent); }
-    th.sortable.sort-desc::after { content: ' ▼'; color: var(--accent); }
-    th.sortable:not(.sort-asc):not(.sort-desc)::after { content: ' ↕'; color: var(--border); }
-
-    .queue-empty {
-      color: var(--muted);
-      font-size: 13px;
-      padding: 16px 0;
-      font-style: italic;
-    }
-
-    .queue-error {
-      color: var(--yellow);
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 18px 32px;
       font-size: 12px;
-      padding: 12px 0;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
     }
 
-    .status-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
+    /* ── Misc ────────────────────────────────────────────── */
+    .notice {
+      background: rgba(88,166,255,0.06);
+      border: 1px solid rgba(88,166,255,0.2);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 16px;
     }
 
-    .status-dot.open { background: var(--yellow); }
-    .status-dot.merged { background: var(--green); }
-
-    .queue-handle {
-      font-family: var(--mono);
+    .empty-state {
+      padding: 32px 0;
+      text-align: center;
+      color: var(--muted);
       font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
     }
 
-    .queue-meta { color: var(--muted); font-size: 12px; }
+    @media (max-width: 680px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      header { padding: 0 16px; }
+      .container { padding: 24px 16px 48px; }
+      footer { flex-direction: column; align-items: flex-start; }
+      .header-right .subtitle { display: none; }
+    }
   </style>
 </head>
 <body>
 
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading benchmark data…</div>
+</div>
+
 <header>
+  <div class="header-logo">G</div>
   <div>
     <h1>Gittensor Base Miner</h1>
-    <div class="subtitle">Benchmark leaderboard — compete to build the best Gittensor contributor agent</div>
   </div>
-  <div class="badge" id="header-badge">Loading…</div>
+  <span class="subtitle" style="display:none" id="header-subtitle">Leaderboard</span>
+  <div class="header-right">
+    <div class="header-badge" id="header-badge">Loading…</div>
+    <a class="btn-submit" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Submit Agent ↗</a>
+  </div>
 </header>
 
 <div class="container">
@@ -546,70 +714,82 @@
 
   <section>
     <h2>Leaderboard</h2>
-    <table id="leaderboard-table">
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Agent</th>
-          <th>Score / 30</th>
-          <th>Model</th>
-          <th>Date</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboard-body"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table id="leaderboard-table">
+        <thead>
+          <tr>
+            <th style="width:50px">Rank</th>
+            <th>Agent</th>
+            <th>Score / 30</th>
+            <th>Model</th>
+            <th>Date</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="queue-section">
-    <h2>Submission queue</h2>
-    <div id="queue-body"><span class="queue-meta">Loading open submissions…</span></div>
+    <h2>Open Submissions</h2>
+    <div id="queue-body"><span class="queue-meta">Loading…</span></div>
   </section>
 
   <section>
-    <h2>SOTA progress</h2>
+    <h2>SOTA Progress</h2>
     <div class="chart-wrap">
       <canvas id="sota-chart" height="80"></canvas>
-      <div class="chart-empty" id="sota-empty" style="display:none">No scored submissions yet — submit an agent to start the leaderboard.</div>
+      <div class="chart-empty" id="sota-empty" style="display:none">No scored submissions yet — the chart will populate once agents start scoring.</div>
     </div>
   </section>
 
   <section>
-    <h2>Pool composition</h2>
+    <h2>Allowed Models <span class="section-count" id="models-count"></span></h2>
+    <div class="notice">These are the whitelisted models for this benchmark. Using any other model is not allowed — CI will reject the submission. The first model listed is the recommended default.</div>
+    <div class="models-grid" id="models-grid"></div>
+  </section>
+
+  <section>
+    <h2>Pool Composition <span class="section-count" id="repos-count"></span></h2>
     <div class="repo-breakdown" id="repo-breakdown"></div>
   </section>
 
   <section>
-    <h2>Problem pool</h2>
+    <h2>Problem Pool <span class="section-count" id="pool-count"></span></h2>
     <div class="filter-row">
-      <input type="text" id="problem-search" placeholder="Search by title or repo…" style="margin-bottom:0" />
+      <input type="text" class="search-input" id="problem-search" placeholder="Search by title or repo…" />
       <button class="lang-chip active" data-lang="">All</button>
       <button class="lang-chip" data-lang="python">Python</button>
       <button class="lang-chip" data-lang="js">JavaScript</button>
       <button class="lang-chip" data-lang="rust">Rust</button>
       <button class="lang-chip" data-lang="java">Java</button>
     </div>
-    <table id="problems-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Repo</th>
-          <th>Issue / PR</th>
-          <th>Title</th>
-          <th class="sortable" data-col="baseline" title="Sort by difficulty">Baseline</th>
-          <th class="sortable" data-col="merged" title="Sort by merge date">Merged</th>
-        </tr>
-      </thead>
-      <tbody id="problems-body"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table id="problems-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Repo</th>
+            <th>Issue / PR</th>
+            <th>Title</th>
+            <th class="sortable" data-col="baseline" title="Sort by difficulty">Baseline</th>
+            <th class="sortable" data-col="merged" title="Sort by merge date">Merged</th>
+          </tr>
+        </thead>
+        <tbody id="problems-body"></tbody>
+      </table>
+    </div>
   </section>
 
 </div>
 
 <footer>
   <span>
-    Benchmark repo:
+    Benchmark:
     <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">PunchTheDev/gittensor-base-miner</a>
+    &nbsp;·&nbsp;
+    <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">How to submit</a>
   </span>
   <span id="footer-date"></span>
 </footer>
@@ -632,14 +812,15 @@
 let allProblems = [];
 let activeRow = null;
 let activeLang = '';
-let sortCol = null;   // 'baseline' | 'merged'
-let sortDir = 'asc';  // 'asc' | 'desc'
+let sortCol = null;
+let sortDir = 'asc';
 
 function probLang(p) {
   const cmd = (p.test_cmd || [])[0] || '';
-  if (cmd === 'npm') return 'js';
+  if (cmd === 'pytest' || cmd.endsWith('.py')) return 'python';
+  if (cmd === 'npm' || cmd === 'npx' || cmd.endsWith('.js') || cmd.endsWith('.ts')) return 'js';
   if (cmd === 'cargo') return 'rust';
-  if (cmd === './gradlew') return 'java';
+  if (cmd === './gradlew' || cmd === 'mvn') return 'java';
   return 'python';
 }
 
@@ -651,15 +832,25 @@ function langBadgeHTML(lang) {
 function difficultyBadge(p) {
   const s = p.baseline_score;
   if (s === null || s === undefined) return '';
-  if (s >= 25) return `<span class="diff-badge" style="background:rgba(63,185,80,0.2);color:var(--green)">easy</span>`;
-  if (s >= 18) return `<span class="diff-badge" style="background:rgba(210,153,34,0.2);color:var(--yellow)">medium</span>`;
-  return `<span class="diff-badge" style="background:rgba(248,81,73,0.2);color:var(--red)">hard</span>`;
+  if (s >= 25) return `<span class="diff-badge" style="background:rgba(63,185,80,0.15);color:var(--green)">easy</span>`;
+  if (s >= 18) return `<span class="diff-badge" style="background:rgba(210,153,34,0.15);color:var(--yellow)">medium</span>`;
+  return `<span class="diff-badge" style="background:rgba(248,81,73,0.15);color:var(--red)">hard</span>`;
+}
+
+function rankCell(row) {
+  if (row.rank === null) return `<td><span class="rank-oracle">oracle</span></td>`;
+  const cls = row.rank === 1 ? 'rank-1' : row.rank === 2 ? 'rank-2' : row.rank === 3 ? 'rank-3' : 'rank-n';
+  const medal = row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : '';
+  return `<td><span class="rank ${cls}">${medal || '#' + row.rank}</span></td>`;
 }
 
 async function load() {
   const res = await fetch('data.json');
   const d = await res.json();
   allProblems = d.problems;
+
+  // Hide loading overlay
+  document.getElementById('loading-overlay').classList.add('hidden');
 
   // Header badge
   document.getElementById('header-badge').textContent =
@@ -671,20 +862,31 @@ async function load() {
     ? Math.max(...realEntries.map(r => r.score)).toFixed(2)
     : '—';
   const models = d.allowed_models || [];
-  const primaryModel = models[0] || 'any';
+
+  // Count by language
+  const langCounts = {};
+  (d.problems || []).forEach(p => {
+    const l = probLang(p);
+    langCounts[l] = (langCounts[l] || 0) + 1;
+  });
+  const langSummary = Object.entries(langCounts)
+    .sort((a,b) => b[1]-a[1])
+    .map(([l,c]) => `${c} ${l}`)
+    .join(', ');
+
   const stats = [
-    { label: 'Pool size', value: d.pool_size, sub: 'curated problems' },
-    { label: 'Shard size', value: d.shard_size, sub: 'per eval round' },
-    { label: 'Repos', value: Object.keys(d.repos).length, sub: 'across Gittensor network' },
-    { label: 'Oracle score', value: d.oracle_score.toFixed(2), sub: 'accepted solution upper bound' },
-    { label: 'Current SOTA', value: sotaScore, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet' },
-    { label: 'Allowed models', value: models.length, sub: primaryModel + (models.length > 1 ? ` + ${models.length - 1} more` : ''), title: models.join('\n') },
+    { label: 'Pool size', value: d.pool_size, sub: 'curated problems', color: '' },
+    { label: 'Shard size', value: d.shard_size, sub: 'problems per eval', color: '' },
+    { label: 'Repos', value: Object.keys(d.repos || {}).length, sub: 'across Gittensor network', color: '' },
+    { label: 'Oracle score', value: d.oracle_score.toFixed(2), sub: 'accepted-solution upper bound', color: 'green' },
+    { label: 'Current SOTA', value: sotaScore, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
+    { label: 'Allowed models', value: models.length, sub: models[0] ? models[0].split('/')[1] || models[0] : 'see below', color: 'purple' },
   ];
+
   const statsRow = document.getElementById('stats-row');
   stats.forEach(s => {
     const el = document.createElement('div');
-    el.className = 'stat-card';
-    if (s.title) el.title = s.title;
+    el.className = 'stat-card' + (s.color ? ' ' + s.color : '');
     el.innerHTML = `<div class="label">${s.label}</div><div class="value">${s.value}</div><div class="sub">${s.sub}</div>`;
     statsRow.appendChild(el);
   });
@@ -697,8 +899,8 @@ async function load() {
     const pct = scoreVal !== null ? (scoreVal / 30 * 100).toFixed(1) : null;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="${isOracle ? 'rank-oracle' : 'rank'}">${isOracle ? '—' : '#' + row.rank}</td>
-      <td>${row.agent}</td>
+      ${rankCell(row)}
+      <td style="font-weight:${isOracle ? 400 : 500}">${esc(row.agent)}</td>
       <td>
         ${scoreVal !== null
           ? `<div class="score-bar-wrap">
@@ -708,9 +910,9 @@ async function load() {
           : `<span class="pending">pending CI eval</span>`
         }
       </td>
-      <td><span class="badge-model">${row.model}</span></td>
-      <td class="muted">${row.date}</td>
-      <td class="muted">${row.note}</td>
+      <td><span class="badge-model">${esc(row.model)}</span></td>
+      <td class="muted" style="font-size:12px;white-space:nowrap">${esc(row.date)}</td>
+      <td class="muted" style="font-size:12px">${esc(row.note)}</td>
     `;
     lb.appendChild(tr);
   });
@@ -721,18 +923,14 @@ async function load() {
     document.getElementById('sota-chart').style.display = 'none';
     document.getElementById('sota-empty').style.display = 'block';
   } else {
-    const labels = history.map(h => h.date);
-    const scores = history.map(h => h.score);
-    const oraclePoints = history.map(() => d.oracle_score);
-
     new Chart(document.getElementById('sota-chart'), {
       type: 'line',
       data: {
-        labels,
+        labels: history.map(h => h.date),
         datasets: [
           {
             label: 'SOTA score',
-            data: scores,
+            data: history.map(h => h.score),
             borderColor: '#58a6ff',
             backgroundColor: 'rgba(88,166,255,0.10)',
             pointBackgroundColor: '#58a6ff',
@@ -742,7 +940,7 @@ async function load() {
           },
           {
             label: 'Oracle upper bound',
-            data: oraclePoints,
+            data: history.map(() => d.oracle_score),
             borderColor: '#3fb950',
             borderDash: [6, 3],
             pointRadius: 0,
@@ -785,19 +983,39 @@ async function load() {
     });
   }
 
+  // Allowed models
+  const modelsGrid = document.getElementById('models-grid');
+  document.getElementById('models-count').textContent = `${models.length} whitelisted`;
+  if (models.length === 0) {
+    modelsGrid.innerHTML = '<span class="muted">No models listed.</span>';
+  } else {
+    models.forEach(m => {
+      const pill = document.createElement('div');
+      pill.className = 'model-pill';
+      pill.textContent = m;
+      pill.title = m;
+      modelsGrid.appendChild(pill);
+    });
+  }
+
   // Repo breakdown
-  const maxCount = Math.max(...Object.values(d.repos));
+  const repos = d.repos || {};
+  const totalProblems = d.pool_size;
+  const maxCount = Math.max(...Object.values(repos));
   const rb = document.getElementById('repo-breakdown');
-  Object.entries(d.repos).sort((a, b) => b[1] - a[1]).forEach(([repo, count]) => {
+  document.getElementById('repos-count').textContent = `${Object.keys(repos).length} repos`;
+  Object.entries(repos).sort((a, b) => b[1] - a[1]).forEach(([repo, count]) => {
     const pct = (count / maxCount * 100).toFixed(0);
+    const poolPct = totalProblems > 0 ? ((count / totalProblems) * 100).toFixed(0) : 0;
     const div = document.createElement('div');
     div.className = 'repo-row';
     div.innerHTML = `
       <span class="repo-name">
-        <a class="link" href="https://github.com/${repo}" target="_blank">${repo}</a>
+        <a href="https://github.com/${repo}" target="_blank">${repo}</a>
       </span>
       <div class="repo-bar-wrap"><div class="repo-bar-fill" style="width:${pct}%"></div></div>
       <span class="repo-count">${count}</span>
+      <span class="repo-pct">${poolPct}%</span>
     `;
     rb.appendChild(div);
   });
@@ -809,14 +1027,12 @@ async function load() {
     activeRow = null;
     const q = document.getElementById('problem-search').value.toLowerCase();
 
-    // Filter
-    let visible = d.problems.filter(p => {
-      if (q && !p.title.toLowerCase().includes(q) && !p.repo.toLowerCase().includes(q)) return false;
+    let visible = (d.problems || []).filter(p => {
+      if (q && !((p.title || '').toLowerCase().includes(q)) && !(p.repo.toLowerCase().includes(q))) return false;
       if (activeLang && probLang(p) !== activeLang) return false;
       return true;
     });
 
-    // Sort
     if (sortCol === 'baseline') {
       visible.sort((a, b) => {
         const av = a.baseline_score ?? -1;
@@ -831,34 +1047,43 @@ async function load() {
       });
     }
 
-    // Update sort header styles
     document.querySelectorAll('th.sortable').forEach(th => {
       th.classList.remove('sort-asc', 'sort-desc');
       if (th.dataset.col === sortCol) th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
     });
 
-    let shown = 0;
-    visible.forEach((p) => {
-      shown++;
+    document.getElementById('pool-count').textContent =
+      visible.length === d.problems.length
+        ? `${d.problems.length} problems`
+        : `${visible.length} of ${d.problems.length} shown`;
+
+    if (visible.length === 0) {
+      pb.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">No problems match the current filter.</td></tr>`;
+      return;
+    }
+
+    visible.forEach((p, i) => {
       const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
       const baselineScore = p.baseline_score !== null && p.baseline_score !== undefined
         ? p.baseline_score.toFixed(1) : '—';
+      const pl = probLang(p);
       const tr = document.createElement('tr');
       tr.title = 'Click to view problem details';
       tr.innerHTML = `
-        <td class="muted" style="font-family:var(--mono);font-size:11px">${shown}</td>
-        <td><span class="repo-tag">${p.repo}</span></td>
+        <td class="muted" style="font-family:var(--mono);font-size:11px">${i + 1}</td>
+        <td><span class="repo-tag">${esc(p.repo)}</span></td>
         <td style="white-space:nowrap;font-size:12px">
-          ${p.issue_url ? `<a class="link" href="${p.issue_url}" target="_blank">#${p.issue}</a>` : `—`}
-          /
-          <a class="link" href="${p.pr_url}" target="_blank">PR#${p.pr}</a>
+          ${p.issue_url ? `<a class="link" href="${esc(p.issue_url)}" target="_blank">#${p.issue}</a>` : '—'}
+          / <a class="link" href="${esc(p.pr_url)}" target="_blank">PR#${p.pr}</a>
         </td>
-        <td class="problem-title" title="${p.title}">${p.title || '—'}${langBadgeHTML(pl)}</td>
-        <td class="problem-score muted">${baselineScore !== '—' ? `${baselineScore}<span class="muted" style="font-size:10px">/30</span>` : '—'}${difficultyBadge(p)}</td>
+        <td class="problem-title" title="${esc(p.title || '')}">${esc(p.title || '—')}${langBadgeHTML(pl)}</td>
+        <td class="problem-score muted">${baselineScore !== '—'
+          ? `${baselineScore}<span class="muted" style="font-size:10px">/30</span>${difficultyBadge(p)}`
+          : '—'
+        }</td>
         <td class="muted" style="font-size:12px;white-space:nowrap">${mergedDate}</td>
       `;
       tr.addEventListener('click', (e) => {
-        // Don't open drawer when clicking a link
         if (e.target.tagName === 'A') return;
         if (activeRow) activeRow.classList.remove('active');
         tr.classList.add('active');
@@ -867,17 +1092,11 @@ async function load() {
       });
       pb.appendChild(tr);
     });
-    // Update count in section heading
-    const h2 = document.querySelector('section h2');
-    if (h2 && h2.textContent.startsWith('Problem pool')) {
-      h2.textContent = `Problem pool (${shown} shown)`;
-    }
   }
 
   renderProblems();
   document.getElementById('problem-search').addEventListener('input', renderProblems);
 
-  // Language filter chips
   document.querySelectorAll('.lang-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('active'));
@@ -887,7 +1106,6 @@ async function load() {
     });
   });
 
-  // Column sort headers
   document.querySelectorAll('th.sortable').forEach(th => {
     th.addEventListener('click', () => {
       const col = th.dataset.col;
@@ -895,20 +1113,21 @@ async function load() {
         sortDir = sortDir === 'asc' ? 'desc' : 'asc';
       } else {
         sortCol = col;
-        sortDir = col === 'baseline' ? 'asc' : 'desc'; // baseline: easiest first; merged: newest first
+        sortDir = col === 'baseline' ? 'asc' : 'desc';
       }
       renderProblems();
     });
   });
 
   // Footer date
-  document.getElementById('footer-date').textContent = `Data updated ${d.generated_at}`;
+  const gen = d.generated_at ? `Data updated ${d.generated_at}` : '';
+  document.getElementById('footer-date').textContent = gen;
 
-  // Submission queue (live from GitHub API)
+  // Submission queue
   loadQueue();
 }
 
-// ── Submission queue ─────────────────────────────────────────────────────────
+// ── Submission queue ──────────────────────────────────────────────────────────
 
 async function loadQueue() {
   const container = document.getElementById('queue-body');
@@ -921,29 +1140,19 @@ async function loadQueue() {
     );
 
     if (!res.ok) {
-      container.innerHTML = `<div class="queue-error">Could not load queue (GitHub API ${res.status}). <a class="link" href="https://github.com/${BENCHMARK}/pulls" target="_blank">View on GitHub ↗</a></div>`;
+      container.innerHTML = `<div class="queue-error">Could not load open PRs (GitHub API ${res.status}). <a class="link" href="https://github.com/${BENCHMARK}/pulls" target="_blank">View on GitHub ↗</a></div>`;
       return;
     }
 
     const prs = await res.json();
 
-    // Filter to agent submission PRs
-    const agentPRs = prs.filter(pr => {
-      // Check title pattern or look for agent/submissions in labels
-      return pr.title.toLowerCase().includes('agent') ||
-             pr.title.toLowerCase().includes('submission') ||
-             pr.title.toLowerCase().includes('[submission]') ||
-             (pr.labels || []).some(l => l.name === 'agent-submission');
-    });
-
-    // If filter too aggressive, fall back to all open PRs
-    const displayed = agentPRs.length > 0 ? agentPRs : prs;
-
-    if (displayed.length === 0) {
-      container.innerHTML = `<div class="queue-empty">No open submissions. <a class="link" href="https://github.com/${BENCHMARK}/blob/main/CONTRIBUTING.md" target="_blank">Submit your agent ↗</a></div>`;
+    if (prs.length === 0) {
+      container.innerHTML = `<div class="queue-empty">No open submissions. <a class="link" href="https://github.com/${BENCHMARK}/blob/main/CONTRIBUTING.md" target="_blank">Submit your agent →</a></div>`;
       return;
     }
 
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
     const table = document.createElement('table');
     table.innerHTML = `
       <thead>
@@ -956,21 +1165,19 @@ async function loadQueue() {
       </thead>
       <tbody id="queue-rows"></tbody>
     `;
+    wrap.appendChild(table);
     container.innerHTML = '';
-    container.appendChild(table);
+    container.appendChild(wrap);
 
     const tbody = table.querySelector('tbody');
-    displayed.forEach(pr => {
-      // Extract handle from branch name (punch/handle-...) or PR title
-      const branchMatch = pr.head.ref.match(/^(?:[^/]+\/)?(.+?)(?:-agent|-submit)?$/i);
+    prs.forEach(pr => {
       const handle = pr.user.login;
       const openedDate = pr.created_at ? pr.created_at.slice(0, 10) : '—';
-
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td style="white-space:nowrap">
           <span class="status-dot open"></span>
-          <span class="queue-meta" style="margin-left:6px">Evaluating</span>
+          <span class="queue-meta" style="margin-left:6px">Open</span>
         </td>
         <td>
           <div class="queue-handle">${esc(handle)}</div>
@@ -989,7 +1196,7 @@ async function loadQueue() {
   }
 }
 
-// ── Drawer ──────────────────────────────────────────────────────────────────
+// ── Drawer ────────────────────────────────────────────────────────────────────
 
 function esc(s) {
   return String(s)
@@ -999,17 +1206,12 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
-// Minimal safe markdown → HTML renderer (no external deps, no XSS).
-// Handles: fenced code blocks, inline code, headings, bold, italic, links, lists, blockquotes.
 function renderMarkdown(src) {
   const lines = src.split('\n');
   let html = '';
   let i = 0;
-
   while (i < lines.length) {
     const line = lines[i];
-
-    // Fenced code block
     const fenceMatch = line.match(/^```(\w*)/);
     if (fenceMatch) {
       const lang = fenceMatch[1];
@@ -1020,25 +1222,18 @@ function renderMarkdown(src) {
         i++;
       }
       html += `<pre><code${lang ? ` class="language-${esc(lang)}"` : ''}>${code}</code></pre>\n`;
-      i++;
-      continue;
+      i++; continue;
     }
-
-    // Heading
     const hMatch = line.match(/^(#{1,3})\s+(.*)/);
     if (hMatch) {
       const level = Math.min(hMatch[1].length, 3);
       html += `<h${level}>${inlineMd(hMatch[2])}</h${level}>\n`;
       i++; continue;
     }
-
-    // Blockquote
     if (line.startsWith('> ')) {
       html += `<blockquote>${inlineMd(line.slice(2))}</blockquote>\n`;
       i++; continue;
     }
-
-    // Unordered list item
     const ulMatch = line.match(/^[-*+]\s+(.*)/);
     if (ulMatch) {
       html += `<ul>`;
@@ -1046,11 +1241,8 @@ function renderMarkdown(src) {
         html += `<li>${inlineMd(lines[i].match(/^[-*+]\s+(.*)/)[1])}</li>`;
         i++;
       }
-      html += `</ul>\n`;
-      continue;
+      html += `</ul>\n`; continue;
     }
-
-    // Ordered list item
     const olMatch = line.match(/^\d+\.\s+(.*)/);
     if (olMatch) {
       html += `<ol>`;
@@ -1058,16 +1250,9 @@ function renderMarkdown(src) {
         html += `<li>${inlineMd(lines[i].match(/^\d+\.\s+(.*)/)[1])}</li>`;
         i++;
       }
-      html += `</ol>\n`;
-      continue;
+      html += `</ol>\n`; continue;
     }
-
-    // Blank line
-    if (line.trim() === '') {
-      i++; continue;
-    }
-
-    // Paragraph
+    if (line.trim() === '') { i++; continue; }
     html += `<p>${inlineMd(line)}</p>\n`;
     i++;
   }
@@ -1075,37 +1260,21 @@ function renderMarkdown(src) {
 }
 
 function inlineMd(s) {
-  // Escape first, then selectively un-escape for our patterns.
-  // Process in order: inline code, bold, italic, links.
-  // We work on the raw string and escape as we go.
   let out = '';
   let j = 0;
   while (j < s.length) {
-    // Inline code
     if (s[j] === '`') {
       const end = s.indexOf('`', j + 1);
-      if (end !== -1) {
-        out += `<code>${esc(s.slice(j + 1, end))}</code>`;
-        j = end + 1; continue;
-      }
+      if (end !== -1) { out += `<code>${esc(s.slice(j + 1, end))}</code>`; j = end + 1; continue; }
     }
-    // Bold **...**
     if (s.slice(j, j+2) === '**') {
       const end = s.indexOf('**', j + 2);
-      if (end !== -1) {
-        out += `<strong>${esc(s.slice(j + 2, end))}</strong>`;
-        j = end + 2; continue;
-      }
+      if (end !== -1) { out += `<strong>${esc(s.slice(j + 2, end))}</strong>`; j = end + 2; continue; }
     }
-    // Italic *...*
     if (s[j] === '*') {
       const end = s.indexOf('*', j + 1);
-      if (end !== -1) {
-        out += `<em>${esc(s.slice(j + 1, end))}</em>`;
-        j = end + 1; continue;
-      }
+      if (end !== -1) { out += `<em>${esc(s.slice(j + 1, end))}</em>`; j = end + 1; continue; }
     }
-    // Link [text](url)
     if (s[j] === '[') {
       const textEnd = s.indexOf(']', j);
       if (textEnd !== -1 && s[textEnd + 1] === '(') {
@@ -1113,7 +1282,6 @@ function inlineMd(s) {
         if (urlEnd !== -1) {
           const text = s.slice(j + 1, textEnd);
           const url = s.slice(textEnd + 2, urlEnd);
-          // Only allow http/https links
           if (/^https?:\/\//.test(url)) {
             out += `<a href="${esc(url)}" target="_blank">${esc(text)}</a>`;
           } else {
@@ -1132,21 +1300,20 @@ function inlineMd(s) {
 function openDrawer(p) {
   const pl = probLang(p);
   document.getElementById('drawer-title').innerHTML =
-    (p.title || `Problem ${p.id}`) + langBadgeHTML(pl);
+    esc(p.title || `Problem ${p.id}`) + langBadgeHTML(pl);
 
-  // Meta tags
   const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
   document.getElementById('drawer-meta').innerHTML = `
     <span class="repo-tag">${esc(p.repo)}</span>
     ${p.issue_url ? `<a class="link" href="${esc(p.issue_url)}" target="_blank" style="font-size:12px">Issue #${p.issue}</a>` : ''}
     <a class="link" href="${esc(p.pr_url)}" target="_blank" style="font-size:12px">PR #${p.pr}</a>
     <span class="muted" style="font-size:12px">merged ${mergedDate}</span>
+    ${difficultyBadge(p)}
   `;
 
   const body = document.getElementById('drawer-body');
   body.innerHTML = '';
 
-  // Action buttons
   const actionRow = document.createElement('div');
   actionRow.className = 'action-row';
   actionRow.innerHTML = `
@@ -1155,7 +1322,6 @@ function openDrawer(p) {
   `;
   body.appendChild(actionRow);
 
-  // Score breakdown
   const hasBaseline = p.baseline_score !== null && p.baseline_score !== undefined;
   const hasDas = p.das_score !== null && p.das_score !== undefined;
   if (hasBaseline || hasDas) {
@@ -1165,24 +1331,20 @@ function openDrawer(p) {
       ? `<div class="score-chip"><div class="chip-label">Baseline (0–30)</div><div class="chip-value">${p.baseline_score.toFixed(2)}</div></div>`
       : '';
     const dasChips = hasDas ? `
-        <div class="score-chip"><div class="chip-label">DAS match (0–1)</div><div class="chip-value">${(p.das_score || 0).toFixed(3)}</div></div>
-        <div class="score-chip"><div class="chip-label">DAS base</div><div class="chip-value">${(p.das_base_score || 0).toFixed(2)}</div></div>
-        <div class="score-chip"><div class="chip-label">DAS token</div><div class="chip-value">${(p.das_token_score || 0).toFixed(2)}</div></div>
-        <div class="score-chip"><div class="chip-label">DAS structural</div><div class="chip-value">${(p.das_structural_score || 0).toFixed(2)}</div></div>
-        ${p.das_total_nodes ? `<div class="score-chip"><div class="chip-label">Nodes scored</div><div class="chip-value">${p.das_total_nodes}</div></div>` : ''}
+      <div class="score-chip"><div class="chip-label">DAS match</div><div class="chip-value">${(p.das_score || 0).toFixed(3)}</div></div>
+      <div class="score-chip"><div class="chip-label">DAS base</div><div class="chip-value">${(p.das_base_score || 0).toFixed(2)}</div></div>
+      <div class="score-chip"><div class="chip-label">DAS token</div><div class="chip-value">${(p.das_token_score || 0).toFixed(2)}</div></div>
+      <div class="score-chip"><div class="chip-label">DAS structural</div><div class="chip-value">${(p.das_structural_score || 0).toFixed(2)}</div></div>
+      ${p.das_total_nodes ? `<div class="score-chip"><div class="chip-label">Nodes</div><div class="chip-value">${p.das_total_nodes}</div></div>` : ''}
     ` : '';
     scoreSection.innerHTML = `
-      <div class="drawer-section-title">Reference Scores (accepted solution) ${difficultyBadge(p)}</div>
-      <div class="score-grid">
-        ${baselineChip}
-        ${dasChips}
-      </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--muted);">Baseline: local heuristic scorer on the accepted diff (0–30 scale). Difficulty: easy ≥25, medium ≥18, hard &lt;18. DAS: Gittensor DAS API raw components. Both are estimates — authoritative scores come from CI tree-sitter pipeline.</div>
+      <div class="drawer-section-title">Reference scores (accepted solution)</div>
+      <div class="score-grid">${baselineChip}${dasChips}</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted)">Baseline: local heuristic on the accepted diff, 0–30 scale. DAS: Gittensor validator raw components. CI authoritative scores may differ.</div>
     `;
     body.appendChild(scoreSection);
   }
 
-  // Issue body
   if (p.issue_body) {
     const issueSection = document.createElement('div');
     issueSection.className = 'drawer-section';
@@ -1193,7 +1355,6 @@ function openDrawer(p) {
     body.appendChild(issueSection);
   }
 
-  // Test command
   if (p.test_cmd && p.test_cmd.length > 0) {
     const testSection = document.createElement('div');
     testSection.className = 'drawer-section';
@@ -1204,22 +1365,17 @@ function openDrawer(p) {
     body.appendChild(testSection);
   }
 
-  // Diff section (lazy load)
   const diffSection = document.createElement('div');
   diffSection.className = 'drawer-section';
-  diffSection.id = 'diff-section';
   body.appendChild(diffSection);
-
   loadDiff(p, diffSection);
 
   document.getElementById('drawer-overlay').classList.add('open');
 }
 
 async function loadDiff(p, container) {
-  container.innerHTML = `<div class="drawer-section-title">Reference Diff</div><div class="diff-loading">Loading…</div>`;
-
+  container.innerHTML = `<div class="drawer-section-title">Reference Diff</div><div class="diff-loading">Loading diff…</div>`;
   const url = `https://raw.githubusercontent.com/PunchTheDev/gittensor-base-miner/main/benchmark/problems/${encodeURIComponent(p.id)}/reference.diff`;
-
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`${res.status}`);
@@ -1240,10 +1396,8 @@ function renderDiff(raw) {
   let html = '<div class="diff-container">';
   for (const line of lines) {
     if (line.startsWith('diff --git')) {
-      // Extract filename
       const m = line.match(/b\/(.+)$/);
-      const filename = m ? m[1] : line;
-      html += `<div class="diff-file-header">${esc(filename)}</div>`;
+      html += `<div class="diff-file-header">${esc(m ? m[1] : line)}</div>`;
     } else if (line.startsWith('@@')) {
       html += `<span class="diff-line hunk">${esc(line)}</span>`;
     } else if (line.startsWith('+') && !line.startsWith('+++')) {
@@ -1260,7 +1414,6 @@ function renderDiff(raw) {
   return html;
 }
 
-// Close drawer
 document.getElementById('drawer-close').addEventListener('click', closeDrawer);
 document.getElementById('drawer-overlay').addEventListener('click', (e) => {
   if (e.target === document.getElementById('drawer-overlay')) closeDrawer();
@@ -1273,7 +1426,8 @@ function closeDrawer() {
 }
 
 load().catch(err => {
-  document.body.innerHTML += `<div style="color:red;padding:20px">Failed to load data: ${err}</div>`;
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.body.innerHTML += `<div style="color:var(--red);padding:32px;font-size:14px">Failed to load data: ${esc(String(err))}<br><br><a class="link" href="javascript:location.reload()">Reload</a></div>`;
 });
 </script>
 </body>

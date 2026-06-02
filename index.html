@@ -305,7 +305,7 @@
     th.sortable.sort-desc::after { content: ' ▼'; color: var(--accent); }
     th.sortable:not(.sort-asc):not(.sort-desc)::after { content: ' ↕'; color: var(--border); }
 
-    /* ── Language badges ─────────────────────────────────── */
+    /* ── Language / category badges ─────────────────────── */
     .lang-badge {
       display: inline-block;
       border-radius: 3px;
@@ -316,10 +316,14 @@
       margin-left: 5px;
       vertical-align: middle;
     }
-    .lang-python { background: rgba(55,118,171,0.2); color: #79c0ff; }
-    .lang-js { background: rgba(210,153,34,0.2); color: #e3b341; }
-    .lang-rust { background: rgba(206,84,58,0.2); color: #ffa198; }
-    .lang-java { background: rgba(188,140,255,0.2); color: #d2a8ff; }
+    .lang-python    { background: rgba(55,118,171,0.2); color: #79c0ff; }
+    .lang-typescript{ background: rgba(210,153,34,0.2); color: #e3b341; }
+    .lang-js        { background: rgba(210,153,34,0.2); color: #e3b341; }
+    .lang-rust      { background: rgba(206,84,58,0.2); color: #ffa198; }
+    .lang-jvm       { background: rgba(188,140,255,0.2); color: #d2a8ff; }
+    .lang-java      { background: rgba(188,140,255,0.2); color: #d2a8ff; }
+    .lang-ruby      { background: rgba(248,81,73,0.15); color: #ff9492; }
+    .lang-other     { background: rgba(139,148,158,0.15); color: #8b949e; }
 
     /* ── Difficulty badges ───────────────────────────────── */
     .diff-badge {
@@ -331,6 +335,9 @@
       margin-left: 4px;
       vertical-align: middle;
     }
+    .diff-easy   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .diff-medium { background: rgba(210,153,34,0.15); color: var(--yellow); }
+    .diff-hard   { background: rgba(248,81,73,0.15);  color: var(--red); }
 
     /* ── Filter row ──────────────────────────────────────── */
     .filter-row {
@@ -944,7 +951,7 @@
 <div class="hero">
   <div class="hero-eyebrow">Gittensor · Subnet 74 · Mining Benchmark</div>
   <h2 class="hero-headline">Ship code. Earn TAO. Improve the network.</h2>
-  <p class="hero-sub">Build an AI agent that solves real GitHub issues better than anyone else. Score it against <strong id="hero-pool-size">342</strong> curated problems, beat the leaderboard, and earn mining emissions — all while making Gittensor's base miner smarter.</p>
+  <p class="hero-sub">Build an AI agent that solves real GitHub issues better than anyone else. Score it against <strong id="hero-pool-size">430</strong> curated problems across 5 language categories, beat the leaderboard, and earn mining emissions — all while making Gittensor's base miner smarter.</p>
   <div class="hero-ctas">
     <a class="btn-hero-primary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Start Mining →</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
@@ -952,9 +959,9 @@
   </div>
   <div class="hero-live-stats">
     <div class="hero-live-stat"><span class="hero-dot"></span> Live</div>
-    <div class="hero-live-stat"><strong id="hs-pool">342</strong> problems</div>
-    <div class="hero-live-stat"><strong>30</strong> scored per eval</div>
-    <div class="hero-live-stat">Oracle <strong id="hs-oracle">22.83</strong>/30</div>
+    <div class="hero-live-stat"><strong id="hs-pool">430</strong> problems</div>
+    <div class="hero-live-stat"><strong>30</strong> per eval · 5 categories</div>
+    <div class="hero-live-stat">Oracle <strong id="hs-oracle">11.83</strong>/30</div>
     <div class="hero-live-stat">SOTA <strong id="hs-sota">—</strong></div>
   </div>
 </div>
@@ -1101,6 +1108,16 @@
   </section>
 
   <section>
+    <h2>Categories &amp; Sampling</h2>
+    <div class="info-box" style="margin-bottom:16px">
+      Each eval round samples <strong>30 problems</strong> balanced across categories —
+      roughly <strong>12 Python · 8 TypeScript · 5 Rust · 3 JVM · 2 Ruby</strong>.
+      This prevents overfitting to any single language and rewards agents with genuine well-roundedness.
+    </div>
+    <div id="cat-breakdown" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+  </section>
+
+  <section>
     <h2>Pool Composition <span class="section-count" id="repos-count"></span></h2>
     <div class="repo-breakdown" id="repo-breakdown"></div>
   </section>
@@ -1109,11 +1126,12 @@
     <h2>Problem Pool <span class="section-count" id="pool-count"></span></h2>
     <div class="filter-row">
       <input type="text" class="search-input" id="problem-search" placeholder="Search by title or repo…" />
-      <button class="lang-chip active" data-lang="">All</button>
-      <button class="lang-chip" data-lang="python">Python</button>
-      <button class="lang-chip" data-lang="js">JavaScript</button>
-      <button class="lang-chip" data-lang="rust">Rust</button>
-      <button class="lang-chip" data-lang="java">Java</button>
+      <button class="lang-chip active" data-cat="">All</button>
+      <button class="lang-chip" data-cat="python">Python</button>
+      <button class="lang-chip" data-cat="typescript">TypeScript</button>
+      <button class="lang-chip" data-cat="rust">Rust</button>
+      <button class="lang-chip" data-cat="jvm">JVM</button>
+      <button class="lang-chip" data-cat="ruby">Ruby</button>
     </div>
     <div class="table-wrap">
       <table id="problems-table">
@@ -1123,7 +1141,8 @@
             <th>Repo</th>
             <th>Issue / PR</th>
             <th>Title</th>
-            <th class="sortable" data-col="baseline" title="Sort by difficulty">Baseline</th>
+            <th class="sortable" data-col="baseline" title="Oracle score for the reference solution (higher = richer diff)">Score</th>
+            <th>Tier</th>
             <th class="sortable" data-col="merged" title="Sort by merge date">Merged</th>
           </tr>
         </thead>
@@ -1144,6 +1163,20 @@
   <span id="footer-date"></span>
 </footer>
 
+<!-- Submission breakdown drawer -->
+<div class="drawer-overlay" id="sub-drawer-overlay">
+  <div class="drawer" id="sub-drawer" style="width:860px">
+    <div class="drawer-header">
+      <div class="drawer-header-text">
+        <div class="drawer-title" id="sub-drawer-title"></div>
+        <div class="drawer-meta" id="sub-drawer-meta"></div>
+      </div>
+      <button class="drawer-close" id="sub-drawer-close" title="Close">✕</button>
+    </div>
+    <div class="drawer-body" id="sub-drawer-body"></div>
+  </div>
+</div>
+
 <!-- Problem detail drawer -->
 <div class="drawer-overlay" id="drawer-overlay">
   <div class="drawer" id="drawer">
@@ -1161,30 +1194,23 @@
 <script>
 let allProblems = [];
 let activeRow = null;
-let activeLang = '';
+let activeCat = '';
 let sortCol = null;
 let sortDir = 'asc';
 
-function probLang(p) {
-  const cmd = (p.test_cmd || [])[0] || '';
-  if (cmd === 'pytest' || cmd.endsWith('.py')) return 'python';
-  if (cmd === 'npm' || cmd === 'npx' || cmd.endsWith('.js') || cmd.endsWith('.ts')) return 'js';
-  if (cmd === 'cargo') return 'rust';
-  if (cmd === './gradlew' || cmd === 'mvn') return 'java';
-  return 'python';
+function probCat(p) {
+  return p.category || 'other';
 }
 
-function langBadgeHTML(lang) {
-  const labels = { python: 'py', js: 'js', rust: 'rs', java: 'java' };
-  return `<span class="lang-badge lang-${lang}">${labels[lang] || lang}</span>`;
+function catBadgeHTML(cat) {
+  const labels = { python: 'py', typescript: 'ts', rust: 'rs', jvm: 'jvm', ruby: 'rb', other: '?' };
+  return `<span class="lang-badge lang-${cat}">${labels[cat] || cat}</span>`;
 }
 
 function difficultyBadge(p) {
-  const s = p.baseline_score;
-  if (s === null || s === undefined) return '';
-  if (s >= 25) return `<span class="diff-badge" style="background:rgba(63,185,80,0.15);color:var(--green)">easy</span>`;
-  if (s >= 18) return `<span class="diff-badge" style="background:rgba(210,153,34,0.15);color:var(--yellow)">medium</span>`;
-  return `<span class="diff-badge" style="background:rgba(248,81,73,0.15);color:var(--red)">hard</span>`;
+  const tier = p.difficulty;
+  if (!tier) return '';
+  return `<span class="diff-badge diff-${tier}">${tier}</span>`;
 }
 
 function rankCell(row) {
@@ -1225,26 +1251,23 @@ async function load() {
   const heroSota = document.getElementById('hs-sota');
   if (heroSota) heroSota.textContent = sotaScore === '—' ? 'no submissions yet' : `${sotaScore}/30`;
 
-  // Count by language
-  const langCounts = {};
-  (d.problems || []).forEach(p => {
-    const l = probLang(p);
-    langCounts[l] = (langCounts[l] || 0) + 1;
-  });
+  // Category counts from data (pre-computed by generator)
+  const catCounts = d.categories || {};
+  const catLabels = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', jvm: 'JVM', ruby: 'Ruby' };
 
-  // Inject counts into filter chips
-  const langLabels = { python: 'Python', js: 'JS', rust: 'Rust', java: 'Java' };
+  // Inject counts into category filter chips
   document.querySelectorAll('.lang-chip').forEach(chip => {
-    const lang = chip.dataset.lang;
-    if (!lang) {
+    const cat = chip.dataset.cat;
+    if (cat === undefined) return;
+    if (!cat) {
       chip.textContent = `All (${(d.problems || []).length})`;
     } else {
-      const count = langCounts[lang] || 0;
-      chip.textContent = `${langLabels[lang] || lang} (${count})`;
+      const count = catCounts[cat] || 0;
+      chip.textContent = `${catLabels[cat] || cat} (${count})`;
     }
   });
 
-  const langSummary = Object.entries(langCounts)
+  const langSummary = Object.entries(catCounts)
     .sort((a,b) => b[1]-a[1])
     .map(([l,c]) => `${c} ${l}`)
     .join(', ');
@@ -1264,6 +1287,37 @@ async function load() {
     el.className = 'stat-card' + (s.color ? ' ' + s.color : '');
     el.innerHTML = `<div class="label">${s.label}</div><div class="value">${s.value}</div><div class="sub">${s.sub}</div>`;
     statsRow.appendChild(el);
+  });
+
+  // Categories breakdown
+  const catGrid = document.getElementById('cat-breakdown');
+  const catBudget = d.shard_budget || {};
+  const catColors = { python: '#79c0ff', typescript: '#e3b341', rust: '#ffa198', jvm: '#d2a8ff', ruby: '#ff9492' };
+  const catFull = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', jvm: 'JVM (Kotlin/Java)', ruby: 'Ruby' };
+  const diffCounts = d.difficulty_counts || {};
+  Object.entries(catCounts).sort((a,b) => b[1]-a[1]).forEach(([cat, count]) => {
+    const budget = catBudget[cat] || '?';
+    const color = catColors[cat] || '#8b949e';
+    const label = catFull[cat] || cat;
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    card.style.cursor = 'pointer';
+    card.style.setProperty('--card-color', color);
+    card.innerHTML = `
+      <div class="label">${esc(label)}</div>
+      <div class="value" style="font-size:22px;color:${color}">${count}</div>
+      <div class="sub">${budget} sampled per eval</div>
+    `;
+    card.style.cssText += `border-top: 2px solid ${color};`;
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.lang-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.cat === cat);
+      });
+      activeCat = cat;
+      renderProblems();
+      document.getElementById('problems-table').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    catGrid.appendChild(card);
   });
 
   // Leaderboard count + first-submission CTA
@@ -1287,10 +1341,16 @@ async function load() {
     const gainVal = (!isOracle && row.marginal_gain != null)
       ? (row.marginal_gain > 0 ? `<span style="color:var(--green)">+${row.marginal_gain.toFixed(2)}</span>` : `<span class="muted">0</span>`)
       : '<span class="muted">—</span>';
+    const hasBreakdown = Array.isArray(row.breakdown) && row.breakdown.length > 0;
     const tr = document.createElement('tr');
+    if (hasBreakdown || isOracle) tr.style.cursor = 'pointer';
     tr.innerHTML = `
       ${rankCell(row)}
-      <td style="font-weight:${isOracle ? 400 : 500}">${esc(row.agent)}</td>
+      <td style="font-weight:${isOracle ? 400 : 500}">
+        ${esc(row.agent)}
+        ${hasBreakdown ? `<span style="font-size:10px;color:var(--accent);margin-left:6px">▸ breakdown</span>` : ''}
+        ${isOracle ? `<span style="font-size:10px;color:var(--muted);margin-left:6px">▸ per-problem</span>` : ''}
+      </td>
       <td>
         ${scoreVal !== null
           ? `<div class="score-bar-wrap">
@@ -1306,6 +1366,11 @@ async function load() {
       <td class="muted" style="font-size:12px;white-space:nowrap">${esc(row.date)}</td>
       <td class="muted" style="font-size:12px">${esc(row.note)}</td>
     `;
+    if (hasBreakdown) {
+      tr.addEventListener('click', () => openSubmissionDrawer(row, d.problems));
+    } else if (isOracle) {
+      tr.addEventListener('click', () => openOracleBreakdown(d.problems));
+    }
     lb.appendChild(tr);
   });
 
@@ -1489,7 +1554,7 @@ async function load() {
 
     let visible = (d.problems || []).filter(p => {
       if (q && !((p.title || '').toLowerCase().includes(q)) && !(p.repo.toLowerCase().includes(q))) return false;
-      if (activeLang && probLang(p) !== activeLang) return false;
+      if (activeCat && probCat(p) !== activeCat) return false;
       return true;
     });
 
@@ -1518,7 +1583,7 @@ async function load() {
         : `${visible.length} of ${d.problems.length} shown`;
 
     if (visible.length === 0) {
-      pb.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">No problems match the current filter.</td></tr>`;
+      pb.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:var(--muted)">No problems match the current filter.</td></tr>`;
       return;
     }
 
@@ -1526,7 +1591,7 @@ async function load() {
       const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
       const baselineScore = p.baseline_score !== null && p.baseline_score !== undefined
         ? p.baseline_score.toFixed(1) : '—';
-      const pl = probLang(p);
+      const cat = probCat(p);
       const tr = document.createElement('tr');
       tr.title = 'Click to view problem details';
       tr.innerHTML = `
@@ -1536,11 +1601,12 @@ async function load() {
           ${p.issue_url ? `<a class="link" href="${esc(p.issue_url)}" target="_blank">#${p.issue}</a>` : '—'}
           / <a class="link" href="${esc(p.pr_url)}" target="_blank">PR#${p.pr}</a>
         </td>
-        <td class="problem-title" title="${esc(p.title || '')}">${esc(p.title || '—')}${langBadgeHTML(pl)}</td>
-        <td class="problem-score muted">${baselineScore !== '—'
-          ? `${baselineScore}<span class="muted" style="font-size:10px">/30</span>${difficultyBadge(p)}`
+        <td class="problem-title" title="${esc(p.title || '')}">${esc(p.title || '—')}${catBadgeHTML(cat)}</td>
+        <td class="problem-score muted" style="white-space:nowrap">${baselineScore !== '—'
+          ? `${baselineScore}<span class="muted" style="font-size:10px">/30</span>`
           : '—'
         }</td>
+        <td>${difficultyBadge(p)}</td>
         <td class="muted" style="font-size:12px;white-space:nowrap">${mergedDate}</td>
       `;
       tr.addEventListener('click', (e) => {
@@ -1561,7 +1627,7 @@ async function load() {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-      activeLang = chip.dataset.lang;
+      activeCat = chip.dataset.cat || '';
       renderProblems();
     });
   });
@@ -1772,9 +1838,9 @@ function inlineMd(s) {
 }
 
 function openDrawer(p) {
-  const pl = probLang(p);
+  const cat = probCat(p);
   document.getElementById('drawer-title').innerHTML =
-    esc(p.title || `Problem ${p.id}`) + langBadgeHTML(pl);
+    esc(p.title || `Problem ${p.id}`) + catBadgeHTML(cat);
 
   const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
   const statsStr = p.diff_stats
@@ -1956,11 +2022,176 @@ document.getElementById('drawer-close').addEventListener('click', closeDrawer);
 document.getElementById('drawer-overlay').addEventListener('click', (e) => {
   if (e.target === document.getElementById('drawer-overlay')) closeDrawer();
 });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+document.getElementById('sub-drawer-close').addEventListener('click', closeSubDrawer);
+document.getElementById('sub-drawer-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('sub-drawer-overlay')) closeSubDrawer();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeDrawer(); closeSubDrawer(); } });
 
 function closeDrawer() {
   document.getElementById('drawer-overlay').classList.remove('open');
   if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
+}
+
+function closeSubDrawer() {
+  document.getElementById('sub-drawer-overlay').classList.remove('open');
+}
+
+// ── Submission breakdown (real miner result) ──────────────────────────────────
+
+function openSubmissionDrawer(row, allProblems) {
+  document.getElementById('sub-drawer-title').textContent = row.agent;
+  const scoreVal = row.score !== null ? `${row.score.toFixed(2)} / 30` : 'pending';
+  document.getElementById('sub-drawer-meta').innerHTML = `
+    <span class="badge-model">${esc(row.model)}</span>
+    <span class="muted" style="font-size:12px">${esc(row.date)}</span>
+    <strong style="color:var(--accent);font-family:var(--mono)">${esc(scoreVal)}</strong>
+  `;
+
+  const body = document.getElementById('sub-drawer-body');
+  body.innerHTML = '';
+
+  const breakdown = row.breakdown || [];
+  const probMap = Object.fromEntries((allProblems || []).map(p => [p.id, p]));
+
+  // Sort by score desc
+  const sorted = [...breakdown].sort((a,b) => (b.score || 0) - (a.score || 0));
+
+  const section = document.createElement('div');
+  section.className = 'drawer-section';
+  section.innerHTML = `<div class="drawer-section-title">Per-Problem Results (${sorted.length} problems in shard)</div>`;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <thead><tr>
+      <th>Problem</th>
+      <th>Repo</th>
+      <th>Tier</th>
+      <th>Score / 30</th>
+      <th>Tests</th>
+    </tr></thead>
+    <tbody id="sub-breakdown-body"></tbody>
+  `;
+  wrap.appendChild(table);
+  section.appendChild(wrap);
+  body.appendChild(section);
+
+  const tbody = table.querySelector('tbody');
+  sorted.forEach(item => {
+    const prob = probMap[item.problem_id] || {};
+    const passed = item.passed !== false;
+    const score = item.score != null ? item.score.toFixed(2) : '—';
+    const pct = item.score != null ? (item.score / 30 * 100).toFixed(0) : 0;
+    const tier = prob.difficulty || '—';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-family:var(--mono);font-size:12px;color:var(--accent);cursor:pointer"
+          title="Click to view problem">${esc(item.problem_id)}</td>
+      <td><span class="repo-tag" style="font-size:10px">${esc(prob.repo || '—')}</span></td>
+      <td>${tier !== '—' ? difficultyBadge({difficulty: tier}) : '—'}</td>
+      <td>
+        <div class="score-bar-wrap">
+          <span class="score" style="font-size:13px">${score}</span>
+          ${item.score != null ? `<div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>` : ''}
+        </div>
+      </td>
+      <td>${passed
+        ? `<span style="color:var(--green);font-size:12px">✓ pass</span>`
+        : `<span style="color:var(--red);font-size:12px">✗ fail</span>`
+      }</td>
+    `;
+    tr.querySelector('td').addEventListener('click', () => {
+      if (prob.id) { closeSubDrawer(); openDrawer(prob); }
+    });
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('sub-drawer-overlay').classList.add('open');
+}
+
+// ── Oracle per-problem breakdown (reference solutions) ────────────────────────
+
+function openOracleBreakdown(allProblems) {
+  document.getElementById('sub-drawer-title').textContent = 'Oracle — accepted solution scores';
+  document.getElementById('sub-drawer-meta').innerHTML = `
+    <span class="muted" style="font-size:12px">Per-problem baseline score for each accepted (merged) solution</span>
+  `;
+
+  const body = document.getElementById('sub-drawer-body');
+  body.innerHTML = '';
+
+  const sorted = [...allProblems]
+    .filter(p => p.baseline_score != null)
+    .sort((a,b) => (b.baseline_score || 0) - (a.baseline_score || 0));
+
+  const section = document.createElement('div');
+  section.className = 'drawer-section';
+
+  // Category breakdown mini-chart
+  const catTotals = {};
+  const catCnts = {};
+  sorted.forEach(p => {
+    catTotals[p.category] = (catTotals[p.category] || 0) + p.baseline_score;
+    catCnts[p.category] = (catCnts[p.category] || 0) + 1;
+  });
+  let catSummaryHtml = '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px">';
+  const catColors2 = { python: '#79c0ff', typescript: '#e3b341', rust: '#ffa198', jvm: '#d2a8ff', ruby: '#ff9492' };
+  Object.entries(catCnts).sort((a,b) => b[1]-a[1]).forEach(([cat, cnt]) => {
+    const mean = (catTotals[cat] / cnt).toFixed(1);
+    const color = catColors2[cat] || '#8b949e';
+    catSummaryHtml += `<div style="font-size:12px;color:var(--muted)">
+      <span style="color:${color};font-family:var(--mono);font-weight:600">${cat}</span>
+      mean <strong style="color:var(--text)">${mean}</strong> / 30 (${cnt} problems)
+    </div>`;
+  });
+  catSummaryHtml += '</div>';
+
+  section.innerHTML = `
+    <div class="drawer-section-title">All ${sorted.length} problems sorted by oracle score</div>
+    ${catSummaryHtml}
+  `;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <thead><tr>
+      <th>Problem</th>
+      <th>Repo</th>
+      <th>Category</th>
+      <th>Tier</th>
+      <th>Oracle / 30</th>
+    </tr></thead>
+    <tbody id="oracle-breakdown-body"></tbody>
+  `;
+  wrap.appendChild(table);
+  section.appendChild(wrap);
+  body.appendChild(section);
+
+  const tbody = table.querySelector('tbody');
+  sorted.forEach(p => {
+    const pct = (p.baseline_score / 30 * 100).toFixed(0);
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.innerHTML = `
+      <td style="font-family:var(--mono);font-size:12px;color:var(--accent)">${esc(p.id)}</td>
+      <td><span class="repo-tag" style="font-size:10px">${esc(p.repo)}</span></td>
+      <td>${catBadgeHTML(p.category || 'other')}</td>
+      <td>${difficultyBadge(p)}</td>
+      <td>
+        <div class="score-bar-wrap">
+          <span class="score" style="font-size:13px">${p.baseline_score.toFixed(2)}</span>
+          <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+      </td>
+    `;
+    tr.addEventListener('click', () => { closeSubDrawer(); openDrawer(p); });
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('sub-drawer-overlay').classList.add('open');
 }
 
 load().catch(err => {

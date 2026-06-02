@@ -1749,11 +1749,15 @@ function openDrawer(p) {
     esc(p.title || `Problem ${p.id}`) + langBadgeHTML(pl);
 
   const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
+  const statsStr = p.diff_stats
+    ? `<span class="muted" style="font-size:12px" title="${p.diff_stats.files} file${p.diff_stats.files !== 1 ? 's' : ''} changed">+${p.diff_stats.add} −${p.diff_stats.remove} · ${p.diff_stats.files} file${p.diff_stats.files !== 1 ? 's' : ''}</span>`
+    : '';
   document.getElementById('drawer-meta').innerHTML = `
     <span class="repo-tag">${esc(p.repo)}</span>
     ${p.issue_url ? `<a class="link" href="${esc(p.issue_url)}" target="_blank" style="font-size:12px">Issue #${p.issue}</a>` : ''}
     <a class="link" href="${esc(p.pr_url)}" target="_blank" style="font-size:12px">PR #${p.pr}</a>
     <span class="muted" style="font-size:12px">merged ${mergedDate}</span>
+    ${statsStr}
     ${difficultyBadge(p)}
   `;
 
@@ -1783,9 +1787,26 @@ function openDrawer(p) {
       <div class="score-chip"><div class="chip-label">DAS structural</div><div class="chip-value">${(p.das_structural_score || 0).toFixed(2)}</div></div>
       ${p.das_total_nodes ? `<div class="score-chip"><div class="chip-label">Nodes</div><div class="chip-value">${p.das_total_nodes}</div></div>` : ''}
     ` : '';
+    // Formula breakdown: show src_tokens and the scoring equation
+    let formulaHtml = '';
+    if (hasBaseline && p.src_token_score != null) {
+      const srcTok = p.src_token_score;
+      const base25 = (25 * (1 - Math.exp(-srcTok / 58.0))).toFixed(2);
+      const bonus = p.total_token_score != null
+        ? (Math.min(p.total_token_score / 1500, 1) * 5).toFixed(2)
+        : null;
+      const bonusPart = bonus !== null ? ` + ${bonus} bonus` : '';
+      formulaHtml = `
+        <div style="margin-top:10px;font-size:12px;color:var(--muted);font-family:var(--mono);background:var(--bg);border-radius:4px;padding:8px 12px;line-height:1.8">
+          src_tokens = ${srcTok.toFixed(0)}<br>
+          25 × (1 − e<sup>−${srcTok.toFixed(0)}/58</sup>) = ${base25}${bonusPart}<br>
+          <strong style="color:var(--green)">final = ${p.baseline_score.toFixed(2)} / 30</strong>
+        </div>`;
+    }
     scoreSection.innerHTML = `
       <div class="drawer-section-title">Reference scores (accepted solution)</div>
       <div class="score-grid">${baselineChip}${dasChips}</div>
+      ${formulaHtml}
       <div style="margin-top:8px;font-size:11px;color:var(--muted)">Baseline: local heuristic on the accepted diff, 0–30 scale. DAS: Gittensor validator raw components. CI authoritative scores may differ.</div>
     `;
     body.appendChild(scoreSection);
@@ -1832,6 +1853,27 @@ function openDrawer(p) {
     `;
     body.appendChild(treeSection);
   }
+
+  // CLI run snippet — lets miners copy one command to test this problem locally
+  const cliSection = document.createElement('div');
+  cliSection.className = 'drawer-section';
+  cliSection.innerHTML = `
+    <div class="drawer-section-title">Run this problem locally</div>
+    <div class="quickstart" style="margin-top:0">
+      <div class="qs-bar">
+        <div class="qs-dot qs-red"></div><div class="qs-dot qs-yellow"></div><div class="qs-dot qs-green"></div>
+        <span class="qs-title">terminal</span>
+      </div>
+      <div class="qs-body" style="font-size:12px">
+        <div><span class="qs-comment"># score the example agent on this exact problem</span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">${esc(p.id)}</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/example/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
+        <div>&nbsp;</div>
+        <div><span class="qs-comment"># compare your agent side-by-side with the reference diff</span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">${esc(p.id)}</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/yourhandle/agent.py</span> <span class="qs-flag">--show-ref --score --no-sandbox</span></span></div>
+      </div>
+    </div>
+  `;
+  body.appendChild(cliSection);
 
   const diffSection = document.createElement('div');
   diffSection.className = 'drawer-section';

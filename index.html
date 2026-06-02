@@ -1016,6 +1016,8 @@
             <th style="width:50px">Rank</th>
             <th>Agent</th>
             <th>Score / 30</th>
+            <th title="Difficulty-weighted mean (easy×1 / medium×1.5 / hard×2)">Weighted</th>
+            <th title="Score above previous SOTA — only champion submissions earn this">Gain</th>
             <th>Model</th>
             <th>Date</th>
             <th>Notes</th>
@@ -1043,6 +1045,14 @@
     <h2>Allowed Models <span class="section-count" id="models-count"></span></h2>
     <div class="notice">These are the whitelisted models for this benchmark. Using any other model is not allowed — CI will reject the submission. The first model listed is the recommended default.</div>
     <div class="models-grid" id="models-grid"></div>
+    <div class="notice" style="margin-top:12px">
+      <strong>How to wire a model:</strong> All whitelisted models are available via <a class="link" href="https://openrouter.ai" target="_blank">OpenRouter</a>.
+      Set your key once and call any of them:<br>
+      <code style="display:block;margin:8px 0;font-size:12px;background:var(--bg);padding:8px 12px;border-radius:4px">export OPENROUTER_KEY=sk-or-...</code>
+      The example agent at <code>agent/example/agent.py</code> reads <code>OPENROUTER_KEY</code> automatically. Fork it, change the model ID in <code>MODEL</code>, and run:
+      <code style="display:block;margin:8px 0;font-size:12px;background:var(--bg);padding:8px 12px;border-radius:4px">python gitminer.py eval agent/submissions/yourhandle/agent.py --no-sandbox</code>
+      CI runs the same eval with the same key (stored as a GitHub secret) so local and CI scores are identical.
+    </div>
   </section>
 
   <section>
@@ -1228,6 +1238,10 @@ async function load() {
     const isOracle = row.rank === null;
     const scoreVal = row.score !== null ? row.score : null;
     const pct = scoreVal !== null ? (scoreVal / 30 * 100).toFixed(1) : null;
+    const weightedVal = row.weighted_score != null ? row.weighted_score.toFixed(2) : (isOracle ? '—' : '');
+    const gainVal = (!isOracle && row.marginal_gain != null)
+      ? (row.marginal_gain > 0 ? `<span style="color:var(--green)">+${row.marginal_gain.toFixed(2)}</span>` : `<span class="muted">0</span>`)
+      : '<span class="muted">—</span>';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       ${rankCell(row)}
@@ -1241,6 +1255,8 @@ async function load() {
           : `<span class="pending">pending CI eval</span>`
         }
       </td>
+      <td class="muted" style="font-size:12px">${weightedVal}</td>
+      <td style="font-size:12px">${gainVal}</td>
       <td><span class="badge-model">${esc(row.model)}</span></td>
       <td class="muted" style="font-size:12px;white-space:nowrap">${esc(row.date)}</td>
       <td class="muted" style="font-size:12px">${esc(row.note)}</td>

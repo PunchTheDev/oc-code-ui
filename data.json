@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-06-02",
-  "pool_size": 343,
+  "pool_size": 342,
   "shard_size": 30,
-  "oracle_score": 22.76,
+  "oracle_score": 22.83,
   "repos": {
-    "entrius/gittensor": 94,
+    "entrius/gittensor": 93,
     "aglover1221/product-data-extractor": 1,
     "entrius/allways": 3,
     "entrius/gittensor-ui": 7,
@@ -22,10 +22,10 @@
     {
       "rank": null,
       "agent": "Oracle (accepted solution)",
-      "score": 22.76,
+      "score": 22.83,
       "model": "\u2014",
       "date": "\u2014",
-      "note": "Upper bound"
+      "note": "Upper bound (accepted solutions mean)"
     }
   ],
   "history": [],
@@ -2029,32 +2029,6 @@
       "base_commit": "c08bcb38fb347df8ada4e107e95990fad152b0d9",
       "pr_url": "https://github.com/entrius/gittensor/pull/1173",
       "issue_url": "https://github.com/entrius/gittensor/issues/1172"
-    },
-    {
-      "id": "1187",
-      "repo": "entrius/gittensor",
-      "pr": 1187,
-      "issue": 1186,
-      "title": "[Refactor] Drop unused get_github_id wrapper orphaned by #932",
-      "issue_body": "## Summary\n\n`get_github_id` in [gittensor/utils/github_api_tools.py:321-323](gittensor/utils/github_api_tools.py#L321-L323) is a 3-line public function with zero production callers. #932 introduced `get_github_identity` (which returns `GitHubIdentityResult(github_id, status)` so callers can distinguish transient failures from invalid auth) and migrated every production site. The wrapper has been dead code since #932 merged.\n\n```python\ndef get_github_id(token: str) -> Optional[str]:\n    \"\"\"Get GitHub numeric user id (as string) using a PAT.\"\"\"\n    return get_github_identity(token).github_id\n```\n\n`grep -rn \"get_github_id\\b\" gittensor/ neurons/` returns only the definition itself. The remaining references \u2014 the alias on [tests/utils/test_github_api_tools.py:31](tests/utils/test_github_api_tools.py#L31) and `test_get_github_id_retry_logic` at [lines 364-376](tests/utils/test_github_api_tools.py#L364-L376) \u2014 duplicate retry coverage already in the sibling `test_get_github_identity_marks_5xx_as_transient` / `_marks_rate_limit_as_transient` / `_marks_bad_json_as_transient` tests at [lines 384-440](tests/utils/test_github_api_tools.py#L384-L440).\n\n## Motivation\n\nRemoves one public symbol from `gittensor.utils.github_api_tools` with no behavior change and drops a duplicated test. The wrapper creates ambiguity in code review \u2014 both `get_github_id` and `get_github_identity` return the same `github_id` in the success case, but only `get_github_identity` exposes the transient/invalid-auth distinction that #932 was designed to enforce.\n",
-      "merged_at": "2026-05-14T02:29:15Z",
-      "das_score": null,
-      "das_base_score": 0.0,
-      "das_token_score": 0.0,
-      "das_structural_score": 0.0,
-      "das_total_nodes": null,
-      "baseline_score": 0.0,
-      "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q",
-        "tests/utils/test_github_api_tools.py"
-      ],
-      "base_commit": "4a0291f2455ee69d32b909fb8f252d9fb17aecca",
-      "pr_url": "https://github.com/entrius/gittensor/pull/1187",
-      "issue_url": "https://github.com/entrius/gittensor/issues/1186"
     },
     {
       "id": "1193",

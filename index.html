@@ -380,8 +380,8 @@
     .chart-empty {
       text-align: center;
       color: var(--muted);
-      font-size: 13px;
-      padding: 48px 0;
+      font-size: 12px;
+      padding: 8px 0 0;
     }
 
     /* ── Repo breakdown ──────────────────────────────────── */
@@ -737,10 +737,10 @@
   </section>
 
   <section>
-    <h2>SOTA Progress</h2>
+    <h2 id="sota-section-title">SOTA Progress</h2>
     <div class="chart-wrap">
       <canvas id="sota-chart" height="80"></canvas>
-      <div class="chart-empty" id="sota-empty" style="display:none">No scored submissions yet — the chart will populate once agents start scoring.</div>
+      <div class="chart-empty" id="sota-empty" style="display:none"></div>
     </div>
   </section>
 
@@ -869,6 +869,19 @@ async function load() {
     const l = probLang(p);
     langCounts[l] = (langCounts[l] || 0) + 1;
   });
+
+  // Inject counts into filter chips
+  const langLabels = { python: 'Python', js: 'JS', rust: 'Rust', java: 'Java' };
+  document.querySelectorAll('.lang-chip').forEach(chip => {
+    const lang = chip.dataset.lang;
+    if (!lang) {
+      chip.textContent = `All (${(d.problems || []).length})`;
+    } else {
+      const count = langCounts[lang] || 0;
+      chip.textContent = `${langLabels[lang] || lang} (${count})`;
+    }
+  });
+
   const langSummary = Object.entries(langCounts)
     .sort((a,b) => b[1]-a[1])
     .map(([l,c]) => `${c} ${l}`)
@@ -917,12 +930,76 @@ async function load() {
     lb.appendChild(tr);
   });
 
-  // SOTA-over-time chart
+  // Chart section: difficulty distribution when no submissions, SOTA line when scored
   const history = d.history || [];
+  const sotaTitleEl = document.getElementById('sota-section-title');
   if (history.length === 0) {
-    document.getElementById('sota-chart').style.display = 'none';
-    document.getElementById('sota-empty').style.display = 'block';
+    sotaTitleEl.textContent = 'Difficulty Distribution';
+
+    // Bin problems by baseline score
+    const bins = [
+      { label: '0–5',   min: 0,  max: 5  },
+      { label: '5–10',  min: 5,  max: 10 },
+      { label: '10–15', min: 10, max: 15 },
+      { label: '15–20', min: 15, max: 20 },
+      { label: '20–25', min: 20, max: 25 },
+      { label: '25–30', min: 25, max: 31 },
+    ];
+    const binColors = [
+      'rgba(248,81,73,0.85)', 'rgba(248,81,73,0.60)',
+      'rgba(210,153,34,0.85)','rgba(210,153,34,0.60)',
+      'rgba(63,185,80,0.60)', 'rgba(63,185,80,0.85)',
+    ];
+    const binCounts = bins.map(b =>
+      (d.problems || []).filter(p => {
+        const s = p.baseline_score;
+        return s !== null && s !== undefined && s >= b.min && s < b.max;
+      }).length
+    );
+
+    new Chart(document.getElementById('sota-chart'), {
+      type: 'bar',
+      data: {
+        labels: bins.map(b => b.label),
+        datasets: [{
+          label: 'Problems',
+          data: binCounts,
+          backgroundColor: binColors,
+          borderWidth: 0,
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => `Score range ${items[0].label}/30`,
+              label: (item) => ` ${item.raw} problem${item.raw !== 1 ? 's' : ''}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: '#8b949e', font: { size: 11 } },
+            grid: { color: '#21262d' },
+            title: { display: true, text: 'Baseline score range (0–30, higher = easier)', color: '#8b949e', font: { size: 11 } },
+          },
+          y: {
+            ticks: { color: '#8b949e', font: { size: 11 }, precision: 0 },
+            grid: { color: '#21262d' },
+            title: { display: true, text: 'Problems', color: '#8b949e', font: { size: 11 } },
+          },
+        },
+      },
+    });
+
+    const emptyEl = document.getElementById('sota-empty');
+    emptyEl.style.display = 'block';
+    emptyEl.textContent = 'SOTA progress chart will appear after the first scored submission. Showing baseline difficulty distribution.';
   } else {
+    sotaTitleEl.textContent = 'SOTA Progress';
     new Chart(document.getElementById('sota-chart'), {
       type: 'line',
       data: {

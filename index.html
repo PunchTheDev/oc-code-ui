@@ -194,6 +194,44 @@
     #problems-table tbody tr { cursor: pointer; }
     #problems-table tbody tr.active { background: #1c2128; outline: 1px solid var(--accent); }
 
+    .filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .lang-chip {
+      background: #21262d;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .lang-chip:hover { border-color: var(--accent); color: var(--text); }
+    .lang-chip.active { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+
+    .lang-badge {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 600;
+      margin-left: 4px;
+    }
+    .lang-python { background: rgba(55,118,171,0.25); color: #79c0ff; }
+    .lang-js { background: rgba(210,153,34,0.25); color: #e3b341; }
+    .lang-rust { background: rgba(206,84,58,0.25); color: #ffa198; }
+    .lang-java { background: rgba(188,140,255,0.25); color: #d2a8ff; }
+
+    .diff-badge {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
     .chart-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -509,7 +547,14 @@
 
   <section>
     <h2>Problem pool</h2>
-    <input type="text" id="problem-search" placeholder="Search by title or repo…" />
+    <div class="filter-row">
+      <input type="text" id="problem-search" placeholder="Search by title or repo…" style="margin-bottom:0" />
+      <button class="lang-chip active" data-lang="">All</button>
+      <button class="lang-chip" data-lang="python">Python</button>
+      <button class="lang-chip" data-lang="js">JavaScript</button>
+      <button class="lang-chip" data-lang="rust">Rust</button>
+      <button class="lang-chip" data-lang="java">Java</button>
+    </div>
     <table id="problems-table">
       <thead>
         <tr>
@@ -517,7 +562,7 @@
           <th>Repo</th>
           <th>Issue / PR</th>
           <th>Title</th>
-          <th>DAS score</th>
+          <th>Baseline</th>
           <th>Merged</th>
         </tr>
       </thead>
@@ -552,6 +597,28 @@
 <script>
 let allProblems = [];
 let activeRow = null;
+let activeLang = '';
+
+function probLang(p) {
+  const cmd = (p.test_cmd || [])[0] || '';
+  if (cmd === 'npm') return 'js';
+  if (cmd === 'cargo') return 'rust';
+  if (cmd === './gradlew') return 'java';
+  return 'python';
+}
+
+function langBadgeHTML(lang) {
+  const labels = { python: 'py', js: 'js', rust: 'rs', java: 'java' };
+  return `<span class="lang-badge lang-${lang}">${labels[lang] || lang}</span>`;
+}
+
+function difficultyBadge(p) {
+  const s = p.baseline_score;
+  if (s === null || s === undefined) return '';
+  if (s >= 25) return `<span class="diff-badge" style="background:rgba(63,185,80,0.2);color:var(--green)">easy</span>`;
+  if (s >= 18) return `<span class="diff-badge" style="background:rgba(210,153,34,0.2);color:var(--yellow)">medium</span>`;
+  return `<span class="diff-badge" style="background:rgba(248,81,73,0.2);color:var(--red)">hard</span>`;
+}
 
 async function load() {
   const res = await fetch('data.json');
@@ -696,17 +763,20 @@ async function load() {
   });
 
   // Problems table
-  function renderProblems(filter) {
+  function renderProblems() {
     const pb = document.getElementById('problems-body');
     pb.innerHTML = '';
     activeRow = null;
-    const q = filter.toLowerCase();
+    const q = document.getElementById('problem-search').value.toLowerCase();
     let shown = 0;
     d.problems.forEach((p) => {
       if (q && !p.title.toLowerCase().includes(q) && !p.repo.toLowerCase().includes(q)) return;
+      const pl = probLang(p);
+      if (activeLang && pl !== activeLang) return;
       shown++;
       const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
-      const dasScore = p.das_score !== null ? p.das_score.toFixed(2) : '—';
+      const baselineScore = p.baseline_score !== null && p.baseline_score !== undefined
+        ? p.baseline_score.toFixed(1) : '—';
       const tr = document.createElement('tr');
       tr.title = 'Click to view problem details';
       tr.innerHTML = `
@@ -717,8 +787,8 @@ async function load() {
           /
           <a class="link" href="${p.pr_url}" target="_blank">PR#${p.pr}</a>
         </td>
-        <td class="problem-title" title="${p.title}">${p.title || '—'}</td>
-        <td class="problem-score muted">${dasScore}</td>
+        <td class="problem-title" title="${p.title}">${p.title || '—'}${langBadgeHTML(pl)}</td>
+        <td class="problem-score muted">${baselineScore !== '—' ? `${baselineScore}<span class="muted" style="font-size:10px">/30</span>` : '—'}${difficultyBadge(p)}</td>
         <td class="muted" style="font-size:12px;white-space:nowrap">${mergedDate}</td>
       `;
       tr.addEventListener('click', (e) => {
@@ -731,10 +801,25 @@ async function load() {
       });
       pb.appendChild(tr);
     });
+    // Update count in section heading
+    const h2 = document.querySelector('section h2');
+    if (h2 && h2.textContent.startsWith('Problem pool')) {
+      h2.textContent = `Problem pool (${shown} shown)`;
+    }
   }
 
-  renderProblems('');
-  document.getElementById('problem-search').addEventListener('input', e => renderProblems(e.target.value));
+  renderProblems();
+  document.getElementById('problem-search').addEventListener('input', renderProblems);
+
+  // Language filter chips
+  document.querySelectorAll('.lang-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeLang = chip.dataset.lang;
+      renderProblems();
+    });
+  });
 
   // Footer date
   document.getElementById('footer-date').textContent = `Data updated ${d.generated_at}`;
@@ -835,7 +920,9 @@ function esc(s) {
 }
 
 function openDrawer(p) {
-  document.getElementById('drawer-title').textContent = p.title || `Problem ${p.id}`;
+  const pl = probLang(p);
+  document.getElementById('drawer-title').innerHTML =
+    (p.title || `Problem ${p.id}`) + langBadgeHTML(pl);
 
   // Meta tags
   const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
@@ -876,12 +963,12 @@ function openDrawer(p) {
         ${p.das_total_nodes ? `<div class="score-chip"><div class="chip-label">Nodes scored</div><div class="chip-value">${p.das_total_nodes}</div></div>` : ''}
     ` : '';
     scoreSection.innerHTML = `
-      <div class="drawer-section-title">Reference Scores (accepted solution)</div>
+      <div class="drawer-section-title">Reference Scores (accepted solution) ${difficultyBadge(p)}</div>
       <div class="score-grid">
         ${baselineChip}
         ${dasChips}
       </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--muted);">Baseline: local heuristic scorer on the accepted diff (0–30 scale). DAS: Gittensor DAS API raw components. Both are estimates — authoritative scores come from CI tree-sitter pipeline.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);">Baseline: local heuristic scorer on the accepted diff (0–30 scale). Difficulty: easy ≥25, medium ≥18, hard &lt;18. DAS: Gittensor DAS API raw components. Both are estimates — authoritative scores come from CI tree-sitter pipeline.</div>
     `;
     body.appendChild(scoreSection);
   }

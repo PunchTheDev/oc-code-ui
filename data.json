@@ -17021,11 +17021,11 @@
         "bytes": 11046
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/assistant_test.rb"
       ],
       "base_commit": "e70865e939dfcbbba9a790e4114aba09ec5bbab7",
       "pr_url": "https://github.com/we-promise/sure/pull/1020",
@@ -17063,11 +17063,13 @@
         "bytes": 32371
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/mercury_account_test.rb",
+        "test/models/plaid_account_test.rb",
+        "test/models/snaptrade_account_test.rb"
       ],
       "base_commit": "97195d9f13b09b6b7586fd3a3b15d3dcde489cd8",
       "pr_url": "https://github.com/we-promise/sure/pull/1032",
@@ -17114,10 +17116,11 @@
         "bytes": 7619
       },
       "test_cmd": [
-        "npm",
+        "bundle",
+        "exec",
+        "rails",
         "test",
-        "--",
-        "--passWithNoTests"
+        "test/controllers/transactions_controller_test.rb"
       ],
       "base_commit": "f0902aa8e40f86a0102a826b085fbc1f14610fa7",
       "pr_url": "https://github.com/we-promise/sure/pull/1123",
@@ -17157,10 +17160,11 @@
         "bytes": 31072
       },
       "test_cmd": [
-        "npm",
+        "bundle",
+        "exec",
+        "rails",
         "test",
-        "--",
-        "--passWithNoTests"
+        "test/models/vector_store/registry_test.rb"
       ],
       "base_commit": "a377ed75526238703d0137bb6869af64eb36fd32",
       "pr_url": "https://github.com/we-promise/sure/pull/1211",
@@ -17199,11 +17203,11 @@
         "bytes": 29420
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/reports_controller_test.rb"
       ],
       "base_commit": "79e8469102954b5da29cde9adad00a1f58f1a622",
       "pr_url": "https://github.com/we-promise/sure/pull/1222",
@@ -17244,11 +17248,11 @@
         "bytes": 3159
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/transactions_controller_test.rb"
       ],
       "base_commit": "0c58da1a3ef3184997ebfae962167f710f045091",
       "pr_url": "https://github.com/we-promise/sure/pull/1473",
@@ -17286,11 +17290,11 @@
         "bytes": 6060
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/transactions_controller_test.rb"
       ],
       "base_commit": "94582612496b134b830a7002a6d90b7563c89263",
       "pr_url": "https://github.com/we-promise/sure/pull/1552",
@@ -17327,10 +17331,13 @@
         "bytes": 270069
       },
       "test_cmd": [
-        "npm",
+        "bundle",
+        "exec",
+        "rails",
         "test",
-        "--",
-        "--passWithNoTests"
+        "test/controllers/api/v1/provider_connections_controller_test.rb",
+        "test/controllers/api/v1/usage_controller_test.rb",
+        "test/controllers/brex_items_controller_test.rb"
       ],
       "base_commit": "ce5d7dd736ad2613463e84def6699099f2ce4e61",
       "pr_url": "https://github.com/we-promise/sure/pull/1752",
@@ -17384,11 +17391,12 @@
         "bytes": 179317
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/account_statements_controller_test.rb",
+        "test/controllers/accounts_controller_test.rb"
       ],
       "base_commit": "42e7ae677ab27f6dcfeb4608ce52ac6238bac036",
       "pr_url": "https://github.com/we-promise/sure/pull/1753",
@@ -17442,11 +17450,11 @@
         "bytes": 20003
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/categories_controller_test.rb"
       ],
       "base_commit": "8f5454ad29141fd6eb7c522384105f092501cae0",
       "pr_url": "https://github.com/we-promise/sure/pull/1754",
@@ -17485,11 +17493,12 @@
         "bytes": 128755
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/api/v1/provider_connections_controller_test.rb",
+        "test/controllers/kraken_items_controller_test.rb"
       ],
       "base_commit": "9e6fbc1374142833ec220e57cacda9be7afc2111",
       "pr_url": "https://github.com/we-promise/sure/pull/1759",
@@ -17532,11 +17541,11 @@
         "bytes": 11859
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/provider/binance_public_test.rb"
       ],
       "base_commit": "fdffcd0dfdba7f8e53b0bc44064951fa3d267c25",
       "pr_url": "https://github.com/we-promise/sure/pull/1771",
@@ -17572,11 +17581,11 @@
         "bytes": 6854
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/simplefin_account/investments/holdings_processor_test.rb"
       ],
       "base_commit": "fdffcd0dfdba7f8e53b0bc44064951fa3d267c25",
       "pr_url": "https://github.com/we-promise/sure/pull/1772",
@@ -17612,11 +17621,11 @@
         "bytes": 2715
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/oidc_identity_test.rb"
       ],
       "base_commit": "f6fee24f99fc60e7829abbcfb0b2af528f3e9ed7",
       "pr_url": "https://github.com/we-promise/sure/pull/1777",
@@ -17652,11 +17661,13 @@
         "bytes": 34504
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/imports_controller_test.rb",
+        "test/jobs/process_pdf_job_test.rb",
+        "test/models/pdf_import_test.rb"
       ],
       "base_commit": "89f42497a9951fbb72ce087dc813ed9973f9e686",
       "pr_url": "https://github.com/we-promise/sure/pull/1786",
@@ -17703,11 +17714,11 @@
         "bytes": 36733
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/api/v1/users_controller_test.rb"
       ],
       "base_commit": "d8a12ad6be3f57ca49eeba394a49151500f1e18b",
       "pr_url": "https://github.com/we-promise/sure/pull/1835",
@@ -17746,11 +17757,11 @@
         "bytes": 4850
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/settings/hostings_controller_test.rb"
       ],
       "base_commit": "89f42497a9951fbb72ce087dc813ed9973f9e686",
       "pr_url": "https://github.com/we-promise/sure/pull/1862",
@@ -17787,11 +17798,12 @@
         "bytes": 6632
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/account/entry_test.rb",
+        "test/models/transaction/search_test.rb"
       ],
       "base_commit": "b101708409739c8f3e6167f3ccba08ddceba4970",
       "pr_url": "https://github.com/we-promise/sure/pull/1885",
@@ -17830,11 +17842,12 @@
         "bytes": 7898
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/settings/profiles_controller_test.rb",
+        "test/models/invitation_test.rb"
       ],
       "base_commit": "89f42497a9951fbb72ce087dc813ed9973f9e686",
       "pr_url": "https://github.com/we-promise/sure/pull/1896",
@@ -17876,11 +17889,11 @@
         "bytes": 6598
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/sync_test.rb"
       ],
       "base_commit": "89f42497a9951fbb72ce087dc813ed9973f9e686",
       "pr_url": "https://github.com/we-promise/sure/pull/1975",
@@ -17917,11 +17930,11 @@
         "bytes": 15774
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/snaptrade_account_processor_test.rb"
       ],
       "base_commit": "d8a12ad6be3f57ca49eeba394a49151500f1e18b",
       "pr_url": "https://github.com/we-promise/sure/pull/1979",
@@ -17961,11 +17974,12 @@
         "bytes": 7329
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/merchant/merger_test.rb",
+        "test/models/provider_merchant_test.rb"
       ],
       "base_commit": "d8a12ad6be3f57ca49eeba394a49151500f1e18b",
       "pr_url": "https://github.com/we-promise/sure/pull/1981",
@@ -18005,10 +18019,12 @@
         "bytes": 11772
       },
       "test_cmd": [
-        "npm",
+        "bundle",
+        "exec",
+        "rails",
         "test",
-        "--",
-        "--passWithNoTests"
+        "test/controllers/plaid_items_controller_test.rb",
+        "test/models/plaid_item_test.rb"
       ],
       "base_commit": "79ad3e764f40aa8bc796c8e3c23b913e8e89528c",
       "pr_url": "https://github.com/we-promise/sure/pull/1991",
@@ -18049,11 +18065,12 @@
         "bytes": 7662
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/account_test.rb",
+        "test/models/income_statement_test.rb"
       ],
       "base_commit": "0342958a324a3629936acbe88beced1a671fbc65",
       "pr_url": "https://github.com/we-promise/sure/pull/2004",
@@ -18092,11 +18109,12 @@
         "bytes": 10470
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/categories_controller_test.rb",
+        "test/models/category_test.rb"
       ],
       "base_commit": "f4eb58d5d650fcc97d91b6028570422f68c78093",
       "pr_url": "https://github.com/we-promise/sure/pull/2089",
@@ -18138,10 +18156,11 @@
         "bytes": 2086
       },
       "test_cmd": [
-        "npm",
+        "bundle",
+        "exec",
+        "rails",
         "test",
-        "--",
-        "--passWithNoTests"
+        "test/controllers/family_exports_controller_test.rb"
       ],
       "base_commit": "e70865e939dfcbbba9a790e4114aba09ec5bbab7",
       "pr_url": "https://github.com/we-promise/sure/pull/721",
@@ -18178,11 +18197,11 @@
         "bytes": 8089
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/rule/condition_test.rb"
       ],
       "base_commit": "4d867c193c24556834950d203f83d4c863562c66",
       "pr_url": "https://github.com/we-promise/sure/pull/790",
@@ -18219,11 +18238,11 @@
         "bytes": 16152
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/security/plan_restriction_tracker_test.rb"
       ],
       "base_commit": "aef582f5537a76e4b33c1279edae7df5770ee2fd",
       "pr_url": "https://github.com/we-promise/sure/pull/803",
@@ -18265,11 +18284,11 @@
         "bytes": 13832
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/family/month_start_day_test.rb"
       ],
       "base_commit": "fb9468d80b1c4fd6d1230ec37bc9e41b996f3904",
       "pr_url": "https://github.com/we-promise/sure/pull/810",
@@ -18314,11 +18333,11 @@
         "bytes": 6009
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/budget_test.rb"
       ],
       "base_commit": "bdfb0e64bc66dc69214c9f6ffe63d335d80dd1f9",
       "pr_url": "https://github.com/we-promise/sure/pull/824",
@@ -18354,11 +18373,12 @@
         "bytes": 50085
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/api/v1/tags_controller_test.rb",
+        "test/controllers/settings/hostings_controller_test.rb"
       ],
       "base_commit": "6f8858b1a6df2ecc86c35a0913b37614e416626d",
       "pr_url": "https://github.com/we-promise/sure/pull/846",
@@ -18406,11 +18426,11 @@
         "bytes": 53769
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/api/v1/auth_controller_test.rb"
       ],
       "base_commit": "4be1c39e1f4f32f0776e979f769f25e1bf073c35",
       "pr_url": "https://github.com/we-promise/sure/pull/860",
@@ -18456,11 +18476,12 @@
         "bytes": 13968
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/invitations_controller_test.rb",
+        "test/system/drag_and_drop_import_test.rb"
       ],
       "base_commit": "ca3abd5d8b38b6f198115462e5bdb0dbb24ed6a8",
       "pr_url": "https://github.com/we-promise/sure/pull/904",
@@ -18505,11 +18526,12 @@
         "bytes": 3085
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/api/v1/auth_controller_test.rb",
+        "test/models/mobile_device_test.rb"
       ],
       "base_commit": "87117445fe05b058c983244c1ff89f9d58f95767",
       "pr_url": "https://github.com/we-promise/sure/pull/916",
@@ -18547,11 +18569,11 @@
         "bytes": 13205
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/api_endpoint_consistency_rule_test.rb"
       ],
       "base_commit": "6a95c91d739ff718a1db4910bb568e76af51f65c",
       "pr_url": "https://github.com/we-promise/sure/pull/949",
@@ -18590,11 +18612,11 @@
         "bytes": 12596
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/controllers/rules_controller_test.rb"
       ],
       "base_commit": "32b01165c92f15bbf3485f5608b1d6c8c16fb373",
       "pr_url": "https://github.com/we-promise/sure/pull/965",
@@ -18643,11 +18665,12 @@
         "bytes": 19565
       },
       "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
+        "bundle",
+        "exec",
+        "rails",
+        "test",
+        "test/models/enable_banking_entry/processor_test.rb",
+        "test/models/enable_banking_item/importer_dedup_test.rb"
       ],
       "base_commit": "170bd2858d6fb34a3167be0948a497f997163e6b",
       "pr_url": "https://github.com/we-promise/sure/pull/988",

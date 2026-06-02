@@ -1,8 +1,8 @@
 {
   "generated_at": "2026-06-02",
-  "pool_size": 347,
+  "pool_size": 349,
   "shard_size": 30,
-  "oracle_score": 22.85,
+  "oracle_score": 22.81,
   "repos": {
     "entrius/gittensor": 93,
     "aglover1221/product-data-extractor": 1,
@@ -12,7 +12,7 @@
     "infiniflow/ragflow": 54,
     "jsonbored/awesome-claude": 21,
     "jsonbored/gittensory": 25,
-    "phase-rs/phase": 30,
+    "phase-rs/phase": 32,
     "seroperson/jvm-live-reload": 5,
     "touchpilot/touchpilot": 34,
     "vouchdev/vouch": 25,
@@ -22,7 +22,7 @@
     {
       "rank": null,
       "agent": "Oracle (accepted solution)",
-      "score": 22.85,
+      "score": 22.81,
       "model": "\u2014",
       "date": "\u2014",
       "note": "Upper bound (accepted solutions mean)"
@@ -8936,6 +8936,75 @@
       "test_files": [
         "crates/engine/tests/integration/main.rs",
         "crates/engine/tests/integration/obeka_splitter_additional_phases.rs"
+      ]
+    },
+    {
+      "id": "phase-rs_phase_1851",
+      "repo": "phase-rs/phase",
+      "pr": 1851,
+      "issue": 1373,
+      "title": "Exhibition Tidecaller \u2014 When you cast a spell with mv 5 or greater, it mills you for 10 instead of milling the target f\u2026",
+      "issue_body": "Reported in Discord: https://discord.com/channels/1485498006781427802/1509654248697102428/1509654248697102428\n\n**Thread:** Exhibition Tidecaller\n**Cards:** _none detected_\n**Parser status:** no_card\n**Extraction confidence:** 0.60\n\n## Summary\nWhen you cast a spell with mv 5 or greater, it mills you for 10 instead of milling the target for 10.\n\n## Oracle text (verified from `client/public/card-data.json`)\n_No card names were detected for this report._\n\n---\n<sub>report_id: `discord:1509654248697102428:1509654248697102428:0` \u00b7 discord: `1509654248697102428/1509654248697102428`</sub>",
+      "merged_at": "2026-06-02T05:33:35.000Z",
+      "das_score": 8.00261,
+      "das_base_score": 5.47,
+      "das_token_score": 20.391,
+      "das_structural_score": 13.645,
+      "das_total_nodes": 1279,
+      "baseline_score": 28.68,
+      "test_cmd": [
+        "cargo",
+        "test"
+      ],
+      "base_commit": "617c09162b2d89eefc3dca501279a371c5483e2b",
+      "pr_url": "https://github.com/phase-rs/phase/pull/1851",
+      "issue_url": "https://github.com/phase-rs/phase/issues/1373",
+      "context_files": [
+        "crates/engine/src/parser/oracle_effect/lower.rs",
+        "crates/engine/src/parser/oracle_effect/mod.rs",
+        "crates/engine/src/parser/oracle_trigger.rs",
+        "crates/engine/tests/integration/anaphoric_scope_allowlist_guard.rs",
+        "crates/engine/tests/integration/elusive_otter_repro.rs",
+        "crates/engine/tests/integration/exhibition_tidecaller_target_player_mill.rs",
+        "crates/engine/tests/integration/main.rs",
+        "crates/engine/tests/integration/yuriko_combat_damage.rs"
+      ],
+      "test_files": [
+        "crates/engine/tests/integration/anaphoric_scope_allowlist_guard.rs",
+        "crates/engine/tests/integration/elusive_otter_repro.rs",
+        "crates/engine/tests/integration/exhibition_tidecaller_target_player_mill.rs",
+        "crates/engine/tests/integration/main.rs",
+        "crates/engine/tests/integration/yuriko_combat_damage.rs"
+      ]
+    },
+    {
+      "id": "phase-rs_phase_1857",
+      "repo": "phase-rs/phase",
+      "pr": 1857,
+      "issue": 1531,
+      "title": "Terra, Herald of Hope gives game choice to player other than Terra \u2014 In this case, [[Terra, Herald of Hope]]'s optional\u2026",
+      "issue_body": "Reported in Discord: https://discord.com/channels/1485498006781427802/1510154982765105262/1510154982765105262\n\n**Thread:** Terra, Herald of Hope gives game choice to player other than Terra\n**Cards:** terra, herald of hope\n**Parser status:** fully_parsed\n**Extraction confidence:** 0.90\n\n## Summary\nIn this case, [[Terra, Herald of Hope]]'s optional effect choice was offered to me (Temmet), instead of Terra.\n\n## Oracle text (verified from `client/public/card-data.json`)\n### terra, herald of hope\nTrance \u2014 At the beginning of combat on your turn, mill two cards. Terra gains flying until end of turn.\nWhenever Terra deals combat damage to a player, you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped.\n\n---\n<sub>report_id: `discord:1510154982765105262:1510154982765105262:0` \u00b7 discord: `1510154982765105262/1510154982765105262`</sub>",
+      "merged_at": "2026-06-02T05:50:40.000Z",
+      "das_score": 0.0133,
+      "das_base_score": 0.01,
+      "das_token_score": 2.917,
+      "das_structural_score": 1.73,
+      "das_total_nodes": 576,
+      "baseline_score": 1.19,
+      "test_cmd": [
+        "cargo",
+        "test"
+      ],
+      "base_commit": "95d3f7b12fbb91b9d228c9e1f0f7295c91a47fd0",
+      "pr_url": "https://github.com/phase-rs/phase/pull/1857",
+      "issue_url": "https://github.com/phase-rs/phase/issues/1531",
+      "context_files": [
+        "crates/engine/tests/integration/main.rs",
+        "crates/engine/tests/integration/terra_herald_optional_prompt.rs"
+      ],
+      "test_files": [
+        "crates/engine/tests/integration/main.rs",
+        "crates/engine/tests/integration/terra_herald_optional_prompt.rs"
       ]
     },
     {

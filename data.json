@@ -1,15 +1,15 @@
 {
   "generated_at": "2026-06-02",
-  "pool_size": 343,
+  "pool_size": 347,
   "shard_size": 30,
-  "oracle_score": 22.84,
+  "oracle_score": 22.85,
   "repos": {
     "entrius/gittensor": 93,
     "aglover1221/product-data-extractor": 1,
     "entrius/allways": 3,
     "entrius/gittensor-ui": 7,
     "geniepod/genie-claw": 15,
-    "infiniflow/ragflow": 50,
+    "infiniflow/ragflow": 54,
     "jsonbored/awesome-claude": 21,
     "jsonbored/gittensory": 25,
     "phase-rs/phase": 30,
@@ -22,7 +22,7 @@
     {
       "rank": null,
       "agent": "Oracle (accepted solution)",
-      "score": 22.84,
+      "score": 22.85,
       "model": "\u2014",
       "date": "\u2014",
       "note": "Upper bound (accepted solutions mean)"
@@ -5710,6 +5710,72 @@
       ]
     },
     {
+      "id": "infiniflow_ragflow_15116",
+      "repo": "infiniflow/ragflow",
+      "pr": 15116,
+      "issue": 15115,
+      "title": "[Bug]: GET /api/v1/documents/images/<image_id> fails when thumbnail object key contains hyphens",
+      "issue_body": "### Self Checks\n\n- [x] I have searched for existing issues [search for existing issues](https://github.com/infiniflow/ragflow/issues), including closed ones.\n- [x] I confirm that I am using English to submit this report ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Non-english title submitions will be closed directly ( \u975e\u82f1\u6587\u6807\u9898\u7684\u63d0\u4ea4\u5c06\u4f1a\u88ab\u76f4\u63a5\u5173\u95ed ) ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Please do not modify this template :) and fill in all the required fields.\n\n### RAGFlow workspace code commit ID\n\n6b41c8c18d246749f5cebdbf5c4edbfab062667f\n\n### RAGFlow image version\n\n6b41c8c18\n\n### Other environment information\n\n```Markdown\n- OS type: Linux\n- Others: Reproducible from source in `api/apps/restful_apis/document_api.py` (`get_document_image`). Self-hosted / Docker deployments using current `main`.\n```\n\n### Actual behavior\n\n`GET /api/v1/documents/images/<image_id>` returns **Image not found** for valid thumbnails when the storage object key contains a hyphen.\n\nDocument list/detail APIs expose thumbnail URLs as:\n\n```text\n/api/v1/documents/images/{dataset_id}-{thumbnail}\n```\n\nIn `get_document_image()`, parsing uses:\n\n```python\narr = image_id.split(\"-\")\nif len(arr) != 2:\n    return get_data_error_result(message=\"Image not found.\")\nbkt, nm = image_id.split(\"-\")\n```\n\n`dataset_id` is a 32-character hex string (no hyphens), but `thumbnail` is the MinIO/storage object name and often includes hyphens (e.g. `page-1.png`, `img-preview.jpg`). Example `image_id`:\n\n```text\n<kb_id>-page-1.png\n```\n\n`split(\"-\")` yields more than two segments, so the handler rejects the request even when the blob exists in storage.\n\n### Expected behavior\n\nParse `image_id` by splitting only on the **first** hyphen between bucket (`dataset_id` / `kb_id`) and object key:\n\n```python\nparts = image_id.split(\"-\", 1)\nif len(parts) != 2:\n    return get_data_error_result(message=\"Image not found.\")\nbkt, nm = parts\n```\n\nThumbnail URLs from document APIs should load for object keys that contain hyphens.\n\n### Steps to reproduce\n\n```Markdown\n1. Ensure a document has a non-empty `thumbnail` stored in the knowledge-base bucket, with an object key that contains at least one hyphen (e.g. `page-1.png`).\n2. List documents via API and copy the returned `thumbnail` URL, or construct:  \n   `GET /api/v1/documents/images/<kb_id>-page-1.png`\n3. Request that URL (browser or `curl`).\n4. Observe response: **Image not found.**\n5. Confirm the object exists in storage under bucket `<kb_id>` and key `page-1.png` while the API parser fails because `len(image_id.split(\"-\")) > 2`.\n```\n\n### Additional information\n\n- Affected code: `api/apps/restful_apis/document_api.py` \u2014 `get_document_image()` (approx. lines 1618\u20131651).\n- Related but distinct: #14763 (missing auth / cross-tenant concerns on the same route).\n- Optional follow-up: the handler always sets `Content-Type: image/JPEG` even for PNG/WebP; consider inferring MIME from the object key extension like other d\u2026",
+      "merged_at": "2026-06-02T02:54:15.000Z",
+      "das_score": 2.8248,
+      "das_base_score": 3.21,
+      "das_token_score": 10.4895,
+      "das_structural_score": 7.41375,
+      "das_total_nodes": 369,
+      "baseline_score": 21.09,
+      "test_cmd": [
+        "python",
+        "-m",
+        "pytest",
+        "--tb=short",
+        "-q",
+        "test/testcases/test_web_api/test_document_app/test_document_metadata.py"
+      ],
+      "base_commit": "c2597f132e2d3992826a4e184143bd64c7c415df",
+      "pr_url": "https://github.com/infiniflow/ragflow/pull/15116",
+      "issue_url": "https://github.com/infiniflow/ragflow/issues/15115",
+      "context_files": [
+        "api/apps/restful_apis/document_api.py",
+        "test/testcases/test_web_api/test_document_app/test_document_metadata.py"
+      ],
+      "test_files": [
+        "test/testcases/test_web_api/test_document_app/test_document_metadata.py"
+      ]
+    },
+    {
+      "id": "infiniflow_ragflow_15118",
+      "repo": "infiniflow/ragflow",
+      "pr": 15118,
+      "issue": 15117,
+      "title": "[Bug]: id2image() fails to load chunk images when storage object key contains hyphens",
+      "issue_body": "### Self Checks\n\n- [x] I have searched for existing issues [search for existing issues](https://github.com/infiniflow/ragflow/issues), including closed ones.\n- [x] I confirm that I am using English to submit this report ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Non-english title submitions will be closed directly ( \u975e\u82f1\u6587\u6807\u9898\u7684\u63d0\u4ea4\u5c06\u4f1a\u88ab\u76f4\u63a5\u5173\u95ed ) ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Please do not modify this template :) and fill in all the required fields.\n\n### RAGFlow workspace code commit ID\n\n14649a2483c19e0f063ccc388d743c7b0dd6136e\n\n### RAGFlow image version\n\n14649a248\n\n### Other environment information\n\n```Markdown\n- OS type: Linux\n- Others: Reproducible from source in `rag/utils/base64_image.py` (`image2id` / `id2image`). Affects chunk indexing and retrieval when image object names include hyphens.\n```\n\n### Actual behavior\n\nChunk and document images are stored with a composite ID:\n\n```python\nd[\"img_id\"] = f\"{bucket}-{objname}\"\n```\n\n(`image2id` in `rag/utils/base64_image.py`)\n\nWhen loading the image later, `id2image()` parses the ID with:\n\n```python\narr = image_id.split(\"-\")\nif len(arr) != 2:\n    return\nbkt, nm = image_id.split(\"-\")\n```\n\nIf `objname` contains hyphens (e.g. `page-1.jpg`, `fig-preview.png`), `split(\"-\")` produces more than two segments, `len(arr) != 2`, and **`id2image` returns `None` silently**. Chunk previews and any code path that resolves `img_id` to a PIL image fail even though the blob exists in storage.\n\nThis is the same parsing mistake as #15115 (`GET /api/v1/documents/images/<image_id>`), but in the **RAG indexing/retrieval** path rather than the HTTP thumbnail endpoint.\n\n### Expected behavior\n\nParse the composite ID with `split(\"-\", 1)` so only the first hyphen separates bucket from object key:\n\n```python\nparts = image_id.split(\"-\", 1)\nif len(parts) != 2 or not parts[0] or not parts[1]:\n    return\nbkt, nm = parts\n```\n\nImages stored via `image2id` should load correctly when `objname` contains hyphens.\n\n### Steps to reproduce\n\n```Markdown\n1. Index a document/chunk where `image2id` is called with an `objname` that contains a hyphen (or inspect an existing chunk whose stored `img_id` looks like `<kb_id>-page-1.jpg`).\n2. Call `id2image(img_id, storage_get_func)` (or trigger retrieval/UI that displays chunk images from `img_id`).\n3. Observe `None` is returned with no image, while the object exists at bucket `<kb_id>` and key `page-1.jpg`.\n4. Compare with `image_id.split(\"-\", 1)` which correctly yields `(\"<kb_id>\", \"page-1.jpg\")`.\n```\n\n### Additional information\n\n- Affected code: `rag/utils/base64_image.py` \u2014 `id2image()` (lines ~96\u2013109); IDs are created in `image2id()` (line ~89).\n- Related: #15115 (HTTP `get_document_image` uses the same flawed `split(\"-\")` pattern; fix both for consistency).\n- Suggested fix: extract a shared `_parse_storage_composite_id(image_id)` helper used by `id2image` and `get_document_image`.",
+      "merged_at": "2026-06-02T02:52:52.000Z",
+      "das_score": 3.388,
+      "das_base_score": 3.85,
+      "das_token_score": 12.567,
+      "das_structural_score": 8.95875,
+      "das_total_nodes": 434,
+      "baseline_score": 22.34,
+      "test_cmd": [
+        "python",
+        "-m",
+        "pytest",
+        "--tb=short",
+        "-q",
+        "test/unit_test/rag/utils/test_base64_image.py"
+      ],
+      "base_commit": "57ddd791832f652d6ef673ee3cc2b233820b654c",
+      "pr_url": "https://github.com/infiniflow/ragflow/pull/15118",
+      "issue_url": "https://github.com/infiniflow/ragflow/issues/15117",
+      "context_files": [
+        "rag/utils/base64_image.py",
+        "test/unit_test/rag/utils/test_base64_image.py"
+      ],
+      "test_files": [
+        "test/unit_test/rag/utils/test_base64_image.py"
+      ]
+    },
+    {
       "id": "infiniflow_ragflow_15181",
       "repo": "infiniflow/ragflow",
       "pr": 15181,
@@ -5857,6 +5923,39 @@
       ]
     },
     {
+      "id": "infiniflow_ragflow_15266",
+      "repo": "infiniflow/ragflow",
+      "pr": 15266,
+      "issue": 15245,
+      "title": "[Bug]: Failed to encode response: json: unsupported value: NaN (status code: 500)",
+      "issue_body": "### Self Checks\n\n- [x] I have searched for existing issues [search for existing issues](https://github.com/infiniflow/ragflow/issues), including closed ones.\n- [x] I confirm that I am using English to submit this report ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Non-english title submitions will be closed directly ( \u975e\u82f1\u6587\u6807\u9898\u7684\u63d0\u4ea4\u5c06\u4f1a\u88ab\u76f4\u63a5\u5173\u95ed ) ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Please do not modify this template :) and fill in all the required fields.\n\n### RAGFlow workspace code commit ID\n\n1234a567b\n\n### RAGFlow image version\n\n0.25.2\n\n### Other environment information\n\n```Markdown\n\n```\n\n### Actual behavior\n\nWhen I invoke the \"converse with chat assistant\" interface for streaming response, sometimes the following error occurs: \"Failed to encode response: json: unsupported value: NaN (status code: 500)\". Moreover, when asking the same question repeatedly, sometimes the response is normal, but sometimes the above error will be reported.\n\n### Expected behavior\n\nI hope to receive the results in a normal streaming manner and without any errors.\n\n### Steps to reproduce\n\n```Markdown\ninterface:api/v1/chat/completions\nparameter:\n{\n    \"messages\":[\n            {\n                \"role\":\"user\",\n                \"content\":\"\u6211\u7684\u95ee\u9898\"\n            }\n        ],\n    \"stream\":true,\n    \"chat_id\":\"my_chat_id\",\n    \"session_id\":\"my_session_id\"\n}\n\nWhen using the above interface information to make the call, the streaming interface occasionally returns an error: \"Failed to encode response: json: unsupported value: NaN (status code: 500)\"\nThe current embedding model in use is bge-m3 from ollama.And the parsed document is also completely parsed.\n```\n\n### Additional information\n\nThe specific log information is as follows:\ndata:{\"code\": 500, \"message\": \"failed to encode response: json: unsupported value: NaN (status code: 500)\", \"data\": {\"answer\": \"**ERROR**: failed to encode response: json: unsupported value: NaN (status code: 500)\", \"reference\": []}}\ndata:{\"code\": 0, \"message\": \"\", \"data\": true}",
+      "merged_at": "2026-06-02T02:08:35.000Z",
+      "das_score": 0.0,
+      "das_base_score": 7.72,
+      "das_token_score": 27.29025,
+      "das_structural_score": 21.69,
+      "das_total_nodes": 1196,
+      "baseline_score": 26.64,
+      "test_cmd": [
+        "python",
+        "-m",
+        "pytest",
+        "--tb=short",
+        "-q",
+        "test/unit_test/api/apps/restful_apis/test_chat_completions_sanitize_floats.py"
+      ],
+      "base_commit": "3aea80f5f51d30f8c25f6894bc8c98ddcbc269ca",
+      "pr_url": "https://github.com/infiniflow/ragflow/pull/15266",
+      "issue_url": "https://github.com/infiniflow/ragflow/issues/15245",
+      "context_files": [
+        "api/apps/restful_apis/chat_api.py",
+        "test/unit_test/api/apps/restful_apis/test_chat_completions_sanitize_floats.py"
+      ],
+      "test_files": [
+        "test/unit_test/api/apps/restful_apis/test_chat_completions_sanitize_floats.py"
+      ]
+    },
+    {
       "id": "infiniflow_ragflow_15331",
       "repo": "infiniflow/ragflow",
       "pr": 15331,
@@ -5932,6 +6031,39 @@
       ],
       "test_files": [
         "test/unit_test/data_source/test_outlook_connector_unit.py"
+      ]
+    },
+    {
+      "id": "infiniflow_ragflow_15359",
+      "repo": "infiniflow/ragflow",
+      "pr": 15359,
+      "issue": 15358,
+      "title": "[Bug]: OpenAI-compatible chat completions crash when `messages[].content` is an array (multimodal)",
+      "issue_body": "### Self Checks\n\n- [x] I have searched for existing issues [search for existing issues](https://github.com/infiniflow/ragflow/issues), including closed ones.\n- [x] I confirm that I am using English to submit this report ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Non-english title submitions will be closed directly ( \u975e\u82f1\u6587\u6807\u9898\u7684\u63d0\u4ea4\u5c06\u4f1a\u88ab\u76f4\u63a5\u5173\u95ed ) ([Language Policy](https://github.com/infiniflow/ragflow/issues/5910)).\n- [x] Please do not modify this template :) and fill in all the required fields.\n\n### RAGFlow workspace code commit ID\n\n8468227a1ab4ba8c66ba33c6c83b2b5ac7773b5d\n\n### RAGFlow image version\n\n0.25.6\n\n### Other environment information\n\n```Markdown\nUbuntu 22.04\n```\n\n### Actual behavior\n\nThe OpenAI-compatible route forwards `messages` into `async_chat` without normalizing `content`. The dialog layer assumes **string** content and runs `re.sub` on it:\n\n```317:317:ragflow/api/db/services/dialog_service.py\n    msg = [{\"role\": m[\"role\"], \"content\": re.sub(r\"##\\d+\\$\\$\", \"\", m[\"content\"])} for m in messages if m[\"role\"] != \"system\"]\n```\n\nOpenAI-compatible clients may send multimodal content per the spec:\n\n```json\n{\n  \"role\": \"user\",\n  \"content\": [\n    {\"type\": \"text\", \"text\": \"What is in this image?\"},\n    {\"type\": \"image_url\", \"image_url\": {\"url\": \"https://example.com/a.png\"}}\n  ]\n}\n```\n\n**Result:** `TypeError: expected string or bytes-like object, got 'list'` (or similar) \u2192 HTTP 500 from the API.\n\n`openai_api.py` also uses `messages[-1][\"content\"]` as `prompt` and passes messages to token counting without type checks:\n\n```118:119:ragflow/api/apps/restful_apis/openai_api.py\n    prompt = messages[-1][\"content\"]\n    context_token_used = sum(num_tokens_from_string(message[\"content\"]) for message in messages)\n```\n\n(`num_tokens_from_string` returns 0 for non-strings via its exception handler, but `async_chat` still fails on `re.sub`.)\n\n### Expected behavior\n\n1. **Reject** non-string `content` with `400` and a clear error (if multimodal is unsupported on this route), or\n2. **Normalize** array content to text (concatenate `type:text` parts) and optionally map `image_url` to RAGFlow file attachments when vision models are configured.\n\n### Steps to reproduce\n\n```Markdown\nSet `BASE_URL`, `<CHAT_ID>`, and `<TOKEN>` for your deployment. Use `\"stream\": false` so the failure is a clear 500/JSON error, not SSE parsing noise.\n\n\ncurl -sS -X POST \"${BASE_URL}/api/v1/openai/<CHAT_ID>/chat/completions\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"model\": \"model\",\n    \"stream\": false,\n    \"messages\": [{\n      \"role\": \"user\",\n      \"content\": [\n        {\"type\": \"text\", \"text\": \"Hello\"}\n      ]\n    }]\n  }'\n\n\n**Observed:** 500 / server error response.  \n**Expected:** 400 with validation message, or successful completion if vision is supported.\n\n**Minimal variant:** even a text-only array (no images) triggers the bug \u2014 no external image URL required.\n```\n\n### Additional information\n\n_No response_",
+      "merged_at": "2026-06-02T02:27:04.000Z",
+      "das_score": 0.0,
+      "das_base_score": 11.94,
+      "das_token_score": 40.46775,
+      "das_structural_score": 32.2875,
+      "das_total_nodes": 1014,
+      "baseline_score": 24.62,
+      "test_cmd": [
+        "python",
+        "-m",
+        "pytest",
+        "--tb=short",
+        "-q",
+        "test/testcases/test_http_api/test_session_management/test_session_sdk_routes_unit.py"
+      ],
+      "base_commit": "c2597f132e2d3992826a4e184143bd64c7c415df",
+      "pr_url": "https://github.com/infiniflow/ragflow/pull/15359",
+      "issue_url": "https://github.com/infiniflow/ragflow/issues/15358",
+      "context_files": [
+        "api/apps/restful_apis/openai_api.py",
+        "test/testcases/test_http_api/test_session_management/test_session_sdk_routes_unit.py"
+      ],
+      "test_files": [
+        "test/testcases/test_http_api/test_session_management/test_session_sdk_routes_unit.py"
       ]
     },
     {

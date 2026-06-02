@@ -487,6 +487,15 @@
 
     /* ── Queue ──────────────────────────────────────────────── */
 
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    th.sortable:hover { color: var(--accent); }
+    th.sortable.sort-asc::after { content: ' ▲'; color: var(--accent); }
+    th.sortable.sort-desc::after { content: ' ▼'; color: var(--accent); }
+    th.sortable:not(.sort-asc):not(.sort-desc)::after { content: ' ↕'; color: var(--border); }
+
     .queue-empty {
       color: var(--muted);
       font-size: 13px;
@@ -587,8 +596,8 @@
           <th>Repo</th>
           <th>Issue / PR</th>
           <th>Title</th>
-          <th>Baseline</th>
-          <th>Merged</th>
+          <th class="sortable" data-col="baseline" title="Sort by difficulty">Baseline</th>
+          <th class="sortable" data-col="merged" title="Sort by merge date">Merged</th>
         </tr>
       </thead>
       <tbody id="problems-body"></tbody>
@@ -623,6 +632,8 @@
 let allProblems = [];
 let activeRow = null;
 let activeLang = '';
+let sortCol = null;   // 'baseline' | 'merged'
+let sortDir = 'asc';  // 'asc' | 'desc'
 
 function probLang(p) {
   const cmd = (p.test_cmd || [])[0] || '';
@@ -659,17 +670,21 @@ async function load() {
   const sotaScore = realEntries.length > 0
     ? Math.max(...realEntries.map(r => r.score)).toFixed(2)
     : '—';
+  const models = d.allowed_models || [];
+  const primaryModel = models[0] || 'any';
   const stats = [
     { label: 'Pool size', value: d.pool_size, sub: 'curated problems' },
     { label: 'Shard size', value: d.shard_size, sub: 'per eval round' },
     { label: 'Repos', value: Object.keys(d.repos).length, sub: 'across Gittensor network' },
     { label: 'Oracle score', value: d.oracle_score.toFixed(2), sub: 'accepted solution upper bound' },
     { label: 'Current SOTA', value: sotaScore, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet' },
+    { label: 'Allowed models', value: models.length, sub: primaryModel + (models.length > 1 ? ` + ${models.length - 1} more` : ''), title: models.join('\n') },
   ];
   const statsRow = document.getElementById('stats-row');
   stats.forEach(s => {
     const el = document.createElement('div');
     el.className = 'stat-card';
+    if (s.title) el.title = s.title;
     el.innerHTML = `<div class="label">${s.label}</div><div class="value">${s.value}</div><div class="sub">${s.sub}</div>`;
     statsRow.appendChild(el);
   });
@@ -793,11 +808,37 @@ async function load() {
     pb.innerHTML = '';
     activeRow = null;
     const q = document.getElementById('problem-search').value.toLowerCase();
+
+    // Filter
+    let visible = d.problems.filter(p => {
+      if (q && !p.title.toLowerCase().includes(q) && !p.repo.toLowerCase().includes(q)) return false;
+      if (activeLang && probLang(p) !== activeLang) return false;
+      return true;
+    });
+
+    // Sort
+    if (sortCol === 'baseline') {
+      visible.sort((a, b) => {
+        const av = a.baseline_score ?? -1;
+        const bv = b.baseline_score ?? -1;
+        return sortDir === 'asc' ? av - bv : bv - av;
+      });
+    } else if (sortCol === 'merged') {
+      visible.sort((a, b) => {
+        const av = a.merged_at || '';
+        const bv = b.merged_at || '';
+        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+    }
+
+    // Update sort header styles
+    document.querySelectorAll('th.sortable').forEach(th => {
+      th.classList.remove('sort-asc', 'sort-desc');
+      if (th.dataset.col === sortCol) th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+    });
+
     let shown = 0;
-    d.problems.forEach((p) => {
-      if (q && !p.title.toLowerCase().includes(q) && !p.repo.toLowerCase().includes(q)) return;
-      const pl = probLang(p);
-      if (activeLang && pl !== activeLang) return;
+    visible.forEach((p) => {
       shown++;
       const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
       const baselineScore = p.baseline_score !== null && p.baseline_score !== undefined
@@ -842,6 +883,20 @@ async function load() {
       document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       activeLang = chip.dataset.lang;
+      renderProblems();
+    });
+  });
+
+  // Column sort headers
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = col === 'baseline' ? 'asc' : 'desc'; // baseline: easiest first; merged: newest first
+      }
       renderProblems();
     });
   });

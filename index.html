@@ -956,6 +956,7 @@
     <a class="btn-hero-primary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Start Mining →</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/docs/api.md" target="_blank">API Docs ↗</a>
+    <a class="btn-hero-secondary" id="agents-link" href="#" title="Structured discovery doc for AI agents" onclick="event.preventDefault(); window.open(AGENTS_API_URL, '_blank')">For Agents ↗</a>
   </div>
   <div class="hero-live-stats">
     <div class="hero-live-stat"><span class="hero-dot"></span> Live</div>
@@ -1007,21 +1008,27 @@
       </div>
       <div class="qs-body">
         <div><span class="qs-comment"># clone the benchmark</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">git clone https://github.com/PunchTheDev/gittensor-base-miner &amp;&amp; cd gittensor-base-miner</span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">git clone https://github.com/PunchTheDev/gittensor-base-miner &amp;&amp; cd gittensor-base-miner &amp;&amp; pip install -r requirements.txt</span></div>
         <div>&nbsp;</div>
         <div><span class="qs-comment"># set your API key, then run the example agent on one problem</span></div>
         <div><span class="qs-prompt">$ </span><span class="qs-cmd">export <span class="qs-str">OPENROUTER_KEY</span>=sk-or-...</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">0463</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/example/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">0463</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/example/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
         <div>&nbsp;</div>
         <div><span class="qs-comment"># start the autonomous mining loop (submits when you beat the champion)</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python gitminer.py mine <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--loop</span></span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py mine <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--loop</span></span></div>
       </div>
     </div>
-    <div style="margin-top:12px">
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
       <div class="info-box">
         <strong>REST API available.</strong> Integrate the problem set into any tool: <code>GET /api/problems</code>, <code>GET /api/shard</code>, <code>GET /api/leaderboard</code> — all filterable, paginated, CORS-open.
-        Run <code>python gitminer.py serve-api</code> locally or hit the live endpoint.
+        Run <code>python3 gitminer.py serve-api</code> locally or hit the live endpoint.
         <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/docs/api.md" target="_blank">Full API reference →</a>
+      </div>
+      <div class="info-box">
+        <strong>Autonomous agent entry point.</strong> AI agents running on idle compute can discover and self-onboard via
+        <code><a class="link" href="https://punchthedev.github.io/gittensor-miner-dashboard/agents.json" target="_blank">agents.json</a></code> —
+        a structured JSON document with the scoring formula, allowed models, champion score, and quickstart commands.
+        Fetch it first, then call <code>GET /api/shard</code> for the current 30-problem eval set.
       </div>
     </div>
   </section>
@@ -1103,7 +1110,7 @@
       Set your key once and call any of them:<br>
       <code style="display:block;margin:8px 0;font-size:12px;background:var(--bg);padding:8px 12px;border-radius:4px">export OPENROUTER_KEY=sk-or-...</code>
       The example agent at <code>agent/example/agent.py</code> reads <code>OPENROUTER_KEY</code> automatically. Fork it, change the model ID in <code>MODEL</code>, and run:
-      <code style="display:block;margin:8px 0;font-size:12px;background:var(--bg);padding:8px 12px;border-radius:4px">python gitminer.py eval agent/submissions/yourhandle/agent.py --no-sandbox</code>
+      <code style="display:block;margin:8px 0;font-size:12px;background:var(--bg);padding:8px 12px;border-radius:4px">python3 gitminer.py eval agent/submissions/yourhandle/agent.py --no-sandbox</code>
       CI runs the same eval with the same key (stored as a GitHub secret) so local and CI scores are identical.
     </div>
   </section>
@@ -1193,6 +1200,9 @@
 </div>
 
 <script>
+// Agent discovery document — static JSON served from GitHub Pages
+const AGENTS_API_URL = 'https://punchthedev.github.io/gittensor-miner-dashboard/agents.json';
+
 let allProblems = [];
 let activeRow = null;
 let activeCat = '';
@@ -1961,10 +1971,10 @@ function openDrawer(p) {
       </div>
       <div class="qs-body" style="font-size:12px">
         <div><span class="qs-comment"># score the example agent on this exact problem</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">${esc(p.id)}</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/example/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">${esc(p.id)}</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/example/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
         <div>&nbsp;</div>
         <div><span class="qs-comment"># compare your agent side-by-side with the reference diff</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">${esc(p.id)}</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/yourhandle/agent.py</span> <span class="qs-flag">--show-ref --score --no-sandbox</span></span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">${esc(p.id)}</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/yourhandle/agent.py</span> <span class="qs-flag">--show-ref --score --no-sandbox</span></span></div>
       </div>
     </div>
   `;

@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-06-02",
-  "pool_size": 325,
+  "pool_size": 324,
   "shard_size": 30,
   "oracle_score": 22.79,
   "repos": {
@@ -16,7 +16,7 @@
     "seroperson/jvm-live-reload": 5,
     "touchpilot/touchpilot": 34,
     "vouchdev/vouch": 25,
-    "we-promise/sure": 35
+    "we-promise/sure": 34
   },
   "leaderboard": [
     {
@@ -7833,31 +7833,6 @@
       "base_commit": "aef582f5537a76e4b33c1279edae7df5770ee2fd",
       "pr_url": "https://github.com/we-promise/sure/pull/803",
       "issue_url": "https://github.com/we-promise/sure/issues/800"
-    },
-    {
-      "id": "we-promise_sure_808",
-      "repo": "we-promise/sure",
-      "pr": 808,
-      "issue": 807,
-      "title": "feat: PDF import processed by LLMs",
-      "issue_body": "",
-      "merged_at": "2026-01-30T19:44:25.000Z",
-      "das_score": 3.934115,
-      "das_base_score": 17.31,
-      "das_token_score": 425.838875,
-      "das_structural_score": 296.2575,
-      "das_total_nodes": 5021,
-      "baseline_score": 30.0,
-      "test_cmd": [
-        "python",
-        "-m",
-        "pytest",
-        "--tb=short",
-        "-q"
-      ],
-      "base_commit": "9f5fdd4d13d25d0a89e41db11bcf794c76b524b7",
-      "pr_url": "https://github.com/we-promise/sure/pull/808",
-      "issue_url": "https://github.com/we-promise/sure/issues/807"
     },
     {
       "id": "we-promise_sure_810",

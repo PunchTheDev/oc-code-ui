@@ -1009,7 +1009,8 @@
         <div><span class="qs-comment"># clone the benchmark</span></div>
         <div><span class="qs-prompt">$ </span><span class="qs-cmd">git clone https://github.com/PunchTheDev/gittensor-base-miner &amp;&amp; cd gittensor-base-miner</span></div>
         <div>&nbsp;</div>
-        <div><span class="qs-comment"># test the example agent on one problem (no API key needed for --oracle)</span></div>
+        <div><span class="qs-comment"># set your API key, then run the example agent on one problem</span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">export <span class="qs-str">OPENROUTER_KEY</span>=sk-or-...</span></div>
         <div><span class="qs-prompt">$ </span><span class="qs-cmd">python gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">0463</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/example/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
         <div>&nbsp;</div>
         <div><span class="qs-comment"># start the autonomous mining loop (submits when you beat the champion)</span></div>

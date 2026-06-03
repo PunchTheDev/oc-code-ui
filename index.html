@@ -1112,7 +1112,7 @@
   <div class="hero-ctas">
     <a class="btn-hero-primary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Start Mining →</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
-    <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/docs/api.md" target="_blank">API Docs ↗</a>
+    <a class="btn-hero-secondary" id="swagger-link" href="#" title="Interactive Swagger API docs">API Docs ↗</a>
     <a class="btn-hero-secondary" id="agents-link" href="#" title="Structured discovery doc for AI agents" onclick="event.preventDefault(); window.open(AGENTS_API_URL, '_blank')">For Agents ↗</a>
   </div>
   <div class="hero-live-stats">
@@ -1455,7 +1455,7 @@
       <h2>API Reference</h2>
       <div class="info-box" style="margin-bottom:12px">
         The benchmark exposes a CORS-open REST API for programmatic access. All endpoints return JSON.
-        <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/docs/api.md" target="_blank">Full API reference →</a>
+        <a class="link" id="swagger-docs-link" href="#" target="_blank">Interactive Swagger docs →</a>
       </div>
       <div id="api-base-display" style="margin-bottom:16px"></div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
@@ -1470,7 +1470,9 @@
             <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /api/problems</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">Full problem list — filterable by category, difficulty, repo, search. Paginated. Rate-limited.</td></tr>
             <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /api/problems/{id}</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">Single problem — includes issue body, context files, test commands, diff stats.</td></tr>
             <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /api/leaderboard</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">Current ranked submissions with per-problem breakdown.</td></tr>
-            <tr><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /api/stats</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">Pool statistics — size, oracle score, category counts, shard budget.</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /api/stats</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">Pool statistics — size, oracle score, category counts, shard budget.</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /api/openapi.json</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">OpenAPI 3.0 specification — machine-readable API contract.</td></tr>
+            <tr><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /docs</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">Swagger UI — interactive API explorer, try any endpoint live.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1753,7 +1755,13 @@ async function load() {
 
     // API base display on mining page
     const apiDisp = document.getElementById('api-base-display');
-    if (apiDisp) apiDisp.innerHTML = `<div class="discovery-url"><span>Base URL: <strong style="color:var(--text)">${API}</strong></span></div>`;
+    if (apiDisp) apiDisp.innerHTML = `<div class="discovery-url"><span>Base URL: <strong style="color:var(--text)">${API}</strong></span><a class="link" href="${API}/docs" target="_blank" style="margin-left:16px">Swagger UI →</a></div>`;
+
+    // Wire Swagger docs links
+    const swaggerLink = document.getElementById('swagger-link');
+    if (swaggerLink) { swaggerLink.href = `${API}/docs`; swaggerLink.target = '_blank'; }
+    const swaggerDocsLink = document.getElementById('swagger-docs-link');
+    if (swaggerDocsLink) { swaggerDocsLink.href = `${API}/docs`; }
 
     // Discovery URL block
     const discovUrl = document.getElementById('discovery-url-text');

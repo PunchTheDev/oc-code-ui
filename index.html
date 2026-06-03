@@ -1069,6 +1069,9 @@
   <section>
     <h2>Leaderboard <span class="section-count" id="lb-count"></span></h2>
     <div id="lb-cta" style="display:none;margin-bottom:16px"></div>
+    <div style="margin-bottom:10px">
+      <input type="text" class="search-input" id="lb-search" placeholder="Filter by agent or model…" style="width:240px" />
+    </div>
     <div class="table-wrap">
       <table id="leaderboard-table">
         <thead>
@@ -1217,6 +1220,8 @@ let sortDir = 'asc';
 // Leaderboard sort state
 let lbSortCol = null;
 let lbSortDir = 'desc';
+// Leaderboard search filter
+let lbSearch = '';
 // Module-level page data (set on load, used for re-renders)
 let pageData = null;
 
@@ -1391,6 +1396,15 @@ async function load() {
       renderLeaderboard(pageData);
     });
   });
+
+  // Wire leaderboard search filter
+  const lbSearchEl = document.getElementById('lb-search');
+  if (lbSearchEl) {
+    lbSearchEl.addEventListener('input', () => {
+      lbSearch = lbSearchEl.value.trim();
+      renderLeaderboard(pageData);
+    });
+  }
 
   // Chart section: difficulty distribution when no submissions, SOTA line when scored
   const history = d.history || [];
@@ -1715,6 +1729,15 @@ function renderLeaderboard(d) {
   // Split oracle from real entries; sort real entries by selected column
   const oracle = (d.leaderboard || []).find(r => r.rank === null);
   let real = (d.leaderboard || []).filter(r => r.rank !== null);
+
+  // Apply search filter
+  if (lbSearch) {
+    const q = lbSearch.toLowerCase();
+    real = real.filter(r =>
+      (r.agent || '').toLowerCase().includes(q) ||
+      (r.model || '').toLowerCase().includes(q)
+    );
+  }
 
   if (lbSortCol === 'bench') {
     real.sort((a, b) => {
@@ -2323,6 +2346,25 @@ function openSubmissionDrawer(row, allProblems) {
 
   const wrap = document.createElement('div');
   wrap.className = 'table-wrap';
+  // Build leader score map for "Δ vs leader" column
+  // Rank 1 agent with breakdown → use their per-problem benchmark_score
+  // No rank 1 → fall back to oracle normalized (p.baseline_score / oracle_benchmark = 1.0, so use oracle raw score as reference)
+  const leader1 = (pageData && pageData.leaderboard || []).find(r => r.rank === 1 && Array.isArray(r.breakdown) && r.breakdown.length > 0);
+  const leaderScoreMap = {};  // problem_id → benchmark_score
+  let leaderLabel = '';
+  if (leader1 && leader1.agent !== row.agent) {
+    leader1.breakdown.forEach(b => { leaderScoreMap[b.problem_id] = b.benchmark_score; });
+    leaderLabel = `Δ vs #1 (${leader1.agent})`;
+  } else {
+    // Oracle baseline: benchmark_score = 1.0 per definition, but per-problem we use baseline_score/oracle_score ratio
+    const oracleWeighted = (pageData && pageData.oracle_weighted_score) || 12.64;
+    (allProblems || []).forEach(p => {
+      if (p.baseline_score != null) leaderScoreMap[p.id] = p.baseline_score / oracleWeighted;
+    });
+    leaderLabel = 'Δ vs oracle';
+  }
+  const showDelta = Object.keys(leaderScoreMap).length > 0 && leader1?.agent !== row.agent;
+
   const table = document.createElement('table');
   table.innerHTML = `
     <thead><tr>
@@ -2333,6 +2375,7 @@ function openSubmissionDrawer(row, allProblems) {
       <th title="Fraction of tests passing (0–1)">Pass Rate</th>
       <th title="Test quality factor: 0.85 + 0.15×coverage_ratio (1.0 = matched reference assertions)">TQF</th>
       <th title="Gittensor native score (0–30)">Score</th>
+      ${showDelta ? `<th title="${esc(leaderLabel)}" style="white-space:nowrap">${esc(leaderLabel)}</th>` : ''}
     </tr></thead>
     <tbody id="sub-breakdown-body"></tbody>
   `;
@@ -2355,6 +2398,22 @@ function openSubmissionDrawer(row, allProblems) {
       ? `<span style="color:${tqfVal >= 0.99 ? 'var(--green)' : tqfVal >= 0.90 ? 'var(--yellow,#e3b341)' : 'var(--red)'}">${tqfVal.toFixed(3)}</span>`
       : '<span class="muted">—</span>';
     const tier = prob.difficulty || item.difficulty || '—';
+
+    // Delta vs leader
+    let deltaCell = '';
+    if (showDelta) {
+      const leaderVal = leaderScoreMap[item.problem_id];
+      const myVal = item.benchmark_score;
+      if (leaderVal != null && myVal != null) {
+        const delta = myVal - leaderVal;
+        const sign = delta >= 0 ? '+' : '';
+        const color = delta > 0.001 ? 'var(--green)' : delta < -0.001 ? 'var(--red)' : 'var(--muted)';
+        deltaCell = `<td style="font-size:12px;font-family:var(--mono);color:${color}">${sign}${delta.toFixed(4)}</td>`;
+      } else {
+        deltaCell = `<td class="muted" style="font-size:12px">—</td>`;
+      }
+    }
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="font-family:var(--mono);font-size:12px;color:var(--accent);cursor:pointer"
@@ -2370,6 +2429,7 @@ function openSubmissionDrawer(row, allProblems) {
       <td style="font-size:12px">${passRate}</td>
       <td style="font-size:12px">${tqfCell}</td>
       <td class="muted" style="font-size:12px">${rawScore}</td>
+      ${deltaCell}
     `;
     tr.querySelector('td').addEventListener('click', () => {
       if (prob.id) { closeSubDrawer(); openDrawer(prob); }

@@ -1007,15 +1007,18 @@
         <span class="qs-title">terminal</span>
       </div>
       <div class="qs-body">
-        <div><span class="qs-comment"># clone the benchmark</span></div>
+        <div><span class="qs-comment"># clone and install</span></div>
         <div><span class="qs-prompt">$ </span><span class="qs-cmd">git clone https://github.com/PunchTheDev/gittensor-base-miner &amp;&amp; cd gittensor-base-miner &amp;&amp; pip install -r requirements.txt</span></div>
         <div>&nbsp;</div>
-        <div><span class="qs-comment"># set your API key, then run the example agent on one problem</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">export <span class="qs-str">OPENROUTER_KEY</span>=sk-or-...</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">0463</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/example/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
+        <div><span class="qs-comment"># scaffold your agent from the example (creates agent/submissions/myhandle/)</span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">export <span class="qs-str">OPENROUTER_KEY</span>=sk-or-...  <span class="qs-comment">&amp;&amp;  python3 gitminer.py init myhandle</span></span></div>
         <div>&nbsp;</div>
-        <div><span class="qs-comment"># start the autonomous mining loop (submits when you beat the champion)</span></div>
-        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py mine <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--loop</span></span></div>
+        <div><span class="qs-comment"># test on one problem, then run the full 30-problem shard eval</span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py run <span class="qs-flag">--problem</span> <span class="qs-str">0463</span> <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--score --no-sandbox</span></span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py eval <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--no-sandbox</span></span></div>
+        <div>&nbsp;</div>
+        <div><span class="qs-comment"># submit when you beat the leader — or run the autonomous mining loop</span></div>
+        <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py submit <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--open-pr</span></span></div>
       </div>
     </div>
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">

@@ -1459,7 +1459,7 @@
           <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py mine <span class="qs-flag">--agent</span> <span class="qs-str">agent/submissions/myhandle/agent.py</span></span></div>
           <div>&nbsp;</div>
           <div><span class="qs-comment"># 4. Open a PR when you beat the champion</span></div>
-          <div><span class="qs-prompt">$ </span><span class="qs-cmd">git checkout -b agent/myhandle &amp;&amp; git add agent/submissions/myhandle/ &amp;&amp; git commit -m <span class="qs-str">"Add myhandle agent"</span> &amp;&amp; git push</span></div>
+          <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py submit <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--open-pr</span></span></div>
         </div>
       </div>
     </section>
@@ -2210,7 +2210,14 @@ async function loadQueue() {
       return;
     }
 
-    const prs = await res.json();
+    const allPrs = await res.json();
+    // Show only agent submission PRs: branch starts with 'submission/' or 'agent/' or has a scoring label
+    const prs = allPrs.filter(pr =>
+      (pr.head && pr.head.ref && (
+        pr.head.ref.startsWith('submission/') || pr.head.ref.startsWith('agent/')
+      )) ||
+      (pr.labels || []).some(l => l.name === 'agent-improvement' || l.name === 'new-champion')
+    );
 
     if (prs.length === 0) {
       container.innerHTML = `<div class="queue-empty">No open submissions. <a class="link" href="https://github.com/${BENCHMARK}/blob/main/CONTRIBUTING.md" target="_blank">Submit your agent →</a></div>`;

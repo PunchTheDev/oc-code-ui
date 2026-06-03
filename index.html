@@ -1075,11 +1075,11 @@
           <tr>
             <th style="width:50px">Rank</th>
             <th>Agent</th>
-            <th title="PRIMARY: difficulty-weighted test_pass_rate × relative_quality. Oracle = 1.0. Scale 0–2.0.">Benchmark</th>
-            <th title="Gittensor native weighted score (0–30). Used for on-chain emissions comparison.">Score / 30</th>
+            <th class="sortable lb-sortable" data-col="bench" title="PRIMARY: difficulty-weighted test_pass_rate × relative_quality. Oracle = 1.0. Scale 0–2.0.">Benchmark</th>
+            <th class="sortable lb-sortable" data-col="score" title="Gittensor native weighted score (0–30). Used for on-chain emissions comparison.">Score / 30</th>
             <th title="Benchmark score above previous champion — only the new champion earns this">Gain</th>
             <th>Model</th>
-            <th>Date</th>
+            <th class="sortable lb-sortable" data-col="date" title="Sort by submission date">Date</th>
             <th>Notes</th>
           </tr>
         </thead>
@@ -1205,14 +1205,20 @@
 </div>
 
 <script>
-// Agent discovery document — served from live API
-const AGENTS_API_URL = 'http://143.244.191.193:8083/api/agents';
+// API base — both agents discovery doc and live leaderboard/stats
+const API_BASE = 'http://143.244.191.193:8083';
+const AGENTS_API_URL = API_BASE + '/api/agents';
 
 let allProblems = [];
 let activeRow = null;
 let activeCat = '';
 let sortCol = null;
 let sortDir = 'asc';
+// Leaderboard sort state
+let lbSortCol = null;
+let lbSortDir = 'desc';
+// Module-level page data (set on load, used for re-renders)
+let pageData = null;
 
 function probCat(p) {
   return p.category || 'other';
@@ -1239,8 +1245,28 @@ function rankCell(row) {
 }
 
 async function load() {
-  const res = await fetch('data.json');
-  const d = await res.json();
+  // Fetch static snapshot + live API data in parallel
+  const [dataRes, lbRes, statsRes] = await Promise.all([
+    fetch('data.json'),
+    fetch(API_BASE + '/api/leaderboard').catch(() => null),
+    fetch(API_BASE + '/api/stats').catch(() => null),
+  ]);
+  const d = await dataRes.json();
+
+  // Override stale snapshot data with live API responses
+  if (lbRes?.ok) {
+    const lbData = await lbRes.json();
+    if (Array.isArray(lbData.entries)) d.leaderboard = lbData.entries;
+  }
+  if (statsRes?.ok) {
+    const s = await statsRes.json();
+    if (s.pool_size != null) d.pool_size = s.pool_size;
+    if (s.oracle_score != null) d.oracle_score = s.oracle_score;
+    if (s.shard_size != null) d.shard_size = s.shard_size;
+    if (s.by_category) d.categories = s.by_category;
+  }
+
+  pageData = d;
   allProblems = d.problems;
 
   // Hide loading overlay
@@ -1349,49 +1375,21 @@ async function load() {
     }
   }
 
-  // Leaderboard
-  const lb = document.getElementById('leaderboard-body');
-  d.leaderboard.forEach(row => {
-    const isOracle = row.rank === null;
-    // Primary: weighted_benchmark_score (0–2.0, oracle = 1.0)
-    const benchVal = row.weighted_benchmark_score != null ? row.weighted_benchmark_score : (isOracle ? 1.0 : null);
-    const benchPct = benchVal !== null ? Math.min(benchVal / 2.0 * 100, 100).toFixed(1) : null;
-    // Secondary: Gittensor native weighted score (0–30)
-    const weightedVal = row.weighted_score != null ? row.weighted_score.toFixed(2) : (isOracle ? d.oracle_score.toFixed(2) : '—');
-    const gainVal = (!isOracle && row.marginal_gain != null)
-      ? (row.marginal_gain > 0 ? `<span style="color:var(--green)">+${row.marginal_gain.toFixed(4)}</span>` : `<span class="muted">0</span>`)
-      : '<span class="muted">—</span>';
-    const hasBreakdown = Array.isArray(row.breakdown) && row.breakdown.length > 0;
-    const tr = document.createElement('tr');
-    if (hasBreakdown || isOracle) tr.style.cursor = 'pointer';
-    tr.innerHTML = `
-      ${rankCell(row)}
-      <td style="font-weight:${isOracle ? 400 : 500}">
-        ${esc(row.agent)}
-        ${hasBreakdown ? `<span style="font-size:10px;color:var(--accent);margin-left:6px">▸ breakdown</span>` : ''}
-        ${isOracle ? `<span style="font-size:10px;color:var(--muted);margin-left:6px">▸ per-problem</span>` : ''}
-      </td>
-      <td>
-        ${benchVal !== null
-          ? `<div class="score-bar-wrap">
-               <span class="score">${benchVal.toFixed(4)}</span>
-               <div class="score-bar"><div class="score-bar-fill" style="width:${benchPct}%"></div></div>
-             </div>`
-          : `<span class="pending">pending CI eval</span>`
-        }
-      </td>
-      <td class="muted" style="font-size:12px">${weightedVal}</td>
-      <td style="font-size:12px">${gainVal}</td>
-      <td><span class="badge-model">${esc(row.model)}</span></td>
-      <td class="muted" style="font-size:12px;white-space:nowrap">${esc(row.date)}</td>
-      <td class="muted" style="font-size:12px">${esc(row.note)}</td>
-    `;
-    if (hasBreakdown) {
-      tr.addEventListener('click', () => openSubmissionDrawer(row, d.problems));
-    } else if (isOracle) {
-      tr.addEventListener('click', () => openOracleBreakdown(d.problems));
-    }
-    lb.appendChild(tr);
+  // Leaderboard — rendered via renderLeaderboard() so sort can re-invoke it
+  renderLeaderboard(d);
+
+  // Wire sort clicks for leaderboard headers
+  document.querySelectorAll('#leaderboard-table th.lb-sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (lbSortCol === col) {
+        lbSortDir = lbSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        lbSortCol = col;
+        lbSortDir = 'desc';
+      }
+      renderLeaderboard(pageData);
+    });
   });
 
   // Chart section: difficulty distribution when no submissions, SOTA line when scored
@@ -1592,7 +1590,7 @@ async function load() {
       });
     }
 
-    document.querySelectorAll('th.sortable').forEach(th => {
+    document.querySelectorAll('#problems-table th.sortable').forEach(th => {
       th.classList.remove('sort-asc', 'sort-desc');
       if (th.dataset.col === sortCol) th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
     });
@@ -1652,7 +1650,7 @@ async function load() {
     });
   });
 
-  document.querySelectorAll('th.sortable').forEach(th => {
+  document.querySelectorAll('#problems-table th.sortable').forEach(th => {
     th.addEventListener('click', () => {
       const col = th.dataset.col;
       if (sortCol === col) {
@@ -1669,28 +1667,131 @@ async function load() {
   const gen = d.generated_at ? `Data updated ${d.generated_at}` : '';
   document.getElementById('footer-date').textContent = gen;
 
-  // Deep link: open problem drawer if URL hash matches #/problem/<id>
-  const hashMatch = window.location.hash.match(/^#\/problem\/(.+)$/);
-  if (hashMatch) {
-    const pid = decodeURIComponent(hashMatch[1]);
-    const target = (d.problems || []).find(p => p.id === pid);
-    if (target) openDrawer(target, false);
-  }
+  // Deep link: open problem or agent drawer on initial load
+  handleHashRoute(d);
 
-  // Handle browser back/forward through problem links
-  window.addEventListener('hashchange', () => {
-    const m = window.location.hash.match(/^#\/problem\/(.+)$/);
-    if (m) {
-      const pid = decodeURIComponent(m[1]);
-      const target = (d.problems || []).find(p => p.id === pid);
-      if (target) openDrawer(target, false);
-    } else {
-      closeDrawer();
-    }
-  });
+  // Handle browser back/forward navigation
+  window.addEventListener('hashchange', () => handleHashRoute(d));
 
   // Submission queue
   loadQueue();
+}
+
+function handleHashRoute(d) {
+  const hash = window.location.hash;
+  const probMatch = hash.match(/^#\/problem\/(.+)$/);
+  const agentMatch = hash.match(/^#\/agent\/(.+)$/);
+  if (probMatch) {
+    const pid = decodeURIComponent(probMatch[1]);
+    const target = (d.problems || []).find(p => p.id === pid);
+    if (target) openDrawer(target, false);
+    else closeDrawer();
+  } else if (agentMatch) {
+    const handle = decodeURIComponent(agentMatch[1]);
+    const row = (d.leaderboard || []).find(r => r.agent === handle);
+    if (row && Array.isArray(row.breakdown) && row.breakdown.length > 0) {
+      openSubmissionDrawer(row, d.problems);
+    } else if (handle === 'oracle') {
+      openOracleBreakdown(d.problems);
+    } else {
+      closeSubDrawer();
+      closeDrawer();
+    }
+  } else if (hash === '#/oracle') {
+    openOracleBreakdown(d.problems);
+  } else {
+    closeDrawer();
+    closeSubDrawer();
+  }
+}
+
+// ── Leaderboard render (called from load() and on sort clicks) ────────────────
+
+function renderLeaderboard(d) {
+  if (!d) return;
+  const lb = document.getElementById('leaderboard-body');
+  lb.innerHTML = '';
+
+  // Split oracle from real entries; sort real entries by selected column
+  const oracle = (d.leaderboard || []).find(r => r.rank === null);
+  let real = (d.leaderboard || []).filter(r => r.rank !== null);
+
+  if (lbSortCol === 'bench') {
+    real.sort((a, b) => {
+      const av = a.weighted_benchmark_score ?? a.benchmark_score ?? -1;
+      const bv = b.weighted_benchmark_score ?? b.benchmark_score ?? -1;
+      return lbSortDir === 'asc' ? av - bv : bv - av;
+    });
+  } else if (lbSortCol === 'score') {
+    real.sort((a, b) => {
+      const av = a.weighted_score ?? a.score ?? -1;
+      const bv = b.weighted_score ?? b.score ?? -1;
+      return lbSortDir === 'asc' ? av - bv : bv - av;
+    });
+  } else if (lbSortCol === 'date') {
+    real.sort((a, b) => {
+      return lbSortDir === 'asc'
+        ? (a.date || '').localeCompare(b.date || '')
+        : (b.date || '').localeCompare(a.date || '');
+    });
+  }
+
+  // Oracle always appears last; it's the baseline reference row
+  const entries = [...real, ...(oracle ? [oracle] : [])];
+
+  entries.forEach(row => {
+    const isOracle = row.rank === null;
+    const benchVal = row.weighted_benchmark_score != null ? row.weighted_benchmark_score : (isOracle ? 1.0 : null);
+    const benchPct = benchVal !== null ? Math.min(benchVal / 2.0 * 100, 100).toFixed(1) : null;
+    const weightedVal = row.weighted_score != null ? row.weighted_score.toFixed(2) : (isOracle ? d.oracle_score.toFixed(2) : '—');
+    const gainVal = (!isOracle && row.marginal_gain != null)
+      ? (row.marginal_gain > 0 ? `<span style="color:var(--green)">+${row.marginal_gain.toFixed(4)}</span>` : `<span class="muted">0</span>`)
+      : '<span class="muted">—</span>';
+    const hasBreakdown = Array.isArray(row.breakdown) && row.breakdown.length > 0;
+    const codeLink = !isOracle
+      ? ` <a class="link" style="font-size:10px;margin-left:8px" href="https://github.com/PunchTheDev/gittensor-base-miner/tree/main/agent/submissions/${esc(row.agent)}/agent.py" target="_blank" title="View submitted agent code">code ↗</a>`
+      : '';
+
+    const tr = document.createElement('tr');
+    if (hasBreakdown || isOracle) tr.style.cursor = 'pointer';
+    tr.innerHTML = `
+      ${rankCell(row)}
+      <td style="font-weight:${isOracle ? 400 : 500}">
+        ${esc(row.agent)}${codeLink}
+        ${hasBreakdown ? `<span style="font-size:10px;color:var(--accent);margin-left:6px">▸ breakdown</span>` : ''}
+        ${isOracle ? `<span style="font-size:10px;color:var(--muted);margin-left:6px">▸ per-problem</span>` : ''}
+      </td>
+      <td>
+        ${benchVal !== null
+          ? `<div class="score-bar-wrap">
+               <span class="score">${benchVal.toFixed(4)}</span>
+               <div class="score-bar"><div class="score-bar-fill" style="width:${benchPct}%"></div></div>
+             </div>`
+          : `<span class="pending">pending CI eval</span>`
+        }
+      </td>
+      <td class="muted" style="font-size:12px">${weightedVal}</td>
+      <td style="font-size:12px">${gainVal}</td>
+      <td><span class="badge-model">${esc(row.model)}</span></td>
+      <td class="muted" style="font-size:12px;white-space:nowrap">${esc(row.date)}</td>
+      <td class="muted" style="font-size:12px">${esc(row.note)}</td>
+    `;
+    if (hasBreakdown) {
+      tr.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') return;
+        openSubmissionDrawer(row, d.problems);
+      });
+    } else if (isOracle) {
+      tr.addEventListener('click', () => openOracleBreakdown(d.problems));
+    }
+    lb.appendChild(tr);
+  });
+
+  // Update sort indicators
+  document.querySelectorAll('#leaderboard-table th.lb-sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.col === lbSortCol) th.classList.add(lbSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+  });
 }
 
 // ── Submission queue ──────────────────────────────────────────────────────────
@@ -2081,11 +2182,15 @@ function closeDrawer() {
 
 function closeSubDrawer() {
   document.getElementById('sub-drawer-overlay').classList.remove('open');
+  if (window.location.hash.startsWith('#/agent/') || window.location.hash === '#/oracle') {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
 }
 
 // ── Submission breakdown (real miner result) ──────────────────────────────────
 
 function openSubmissionDrawer(row, allProblems) {
+  history.replaceState(null, '', '#/agent/' + encodeURIComponent(row.agent));
   document.getElementById('sub-drawer-title').textContent = row.agent;
   const benchmarkDisplay = row.weighted_benchmark_score != null
     ? `${row.weighted_benchmark_score.toFixed(4)} benchmark`
@@ -2171,6 +2276,7 @@ function openSubmissionDrawer(row, allProblems) {
 // ── Oracle per-problem breakdown (reference solutions) ────────────────────────
 
 function openOracleBreakdown(allProblems) {
+  history.replaceState(null, '', '#/oracle');
   document.getElementById('sub-drawer-title').textContent = 'Oracle — accepted solution scores';
   document.getElementById('sub-drawer-meta').innerHTML = `
     <span class="muted" style="font-size:12px">Per-problem baseline score for each accepted (merged) solution</span>

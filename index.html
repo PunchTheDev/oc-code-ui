@@ -1349,6 +1349,34 @@
   </section>
 
   <section>
+    <h2>Anti-Copy: Decaying Crown Threshold</h2>
+    <div class="info-box" style="margin-bottom:16px">
+      To earn any champion emission bonus (non-zero <code>marginal_gain</code>), a submission must beat the current SOTA by at
+      least the <strong>crown threshold</strong>. Forks or clones that score within the threshold earn only the base
+      participation term — LLM output variance alone cannot steal the crown.
+    </div>
+    <div class="formula-block">
+      <span class="formula-key">crown_threshold</span> <span class="formula-op">=</span> sota + 0.02 × (2.0 − sota) / 2.0<br>
+      <span class="formula-key">marginal_gain</span> <span class="formula-op">=</span> max(0, score − crown_threshold)<br>
+      <span class="formula-key">contribution_weight</span> <span class="formula-op">=</span> score × 1.0 + marginal_gain × 3.0
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0">
+      <table class="difficulty-table">
+        <thead><tr><th>SOTA level</th><th>Crown threshold</th><th>Required improvement</th></tr></thead>
+        <tbody>
+          <tr><td class="muted" style="font-family:var(--mono)">0.0 (no submissions)</td><td style="font-family:var(--mono);color:var(--accent)">0.0200</td><td class="muted">+0.02 above SOTA</td></tr>
+          <tr><td class="muted" style="font-family:var(--mono)">1.0 (oracle level)</td><td style="font-family:var(--mono);color:var(--accent)">1.0100</td><td class="muted">+0.01 above SOTA</td></tr>
+          <tr><td class="muted" style="font-family:var(--mono)">1.5</td><td style="font-family:var(--mono);color:var(--accent)">1.5050</td><td class="muted">+0.005 above SOTA</td></tr>
+          <tr><td class="muted" style="font-family:var(--mono)">1.9</td><td style="font-family:var(--mono);color:var(--accent)">1.9010</td><td class="muted">+0.001 above SOTA</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-box">
+      The threshold and each submission's <code>crown_threshold</code> field are stored in the leaderboard JSON for full transparency.
+    </div>
+  </section>
+
+  <section>
     <h2>Pool Composition <span class="section-count" id="repos-count"></span></h2>
     <div class="repo-breakdown" id="repo-breakdown"></div>
   </section>
@@ -1983,8 +2011,13 @@ function renderLb() {
     const benchVal = row.weighted_benchmark_score ?? (isOracle ? 1.0 : null);
     const benchPct = benchVal !== null ? Math.min(benchVal / 2.0 * 100, 100).toFixed(1) : null;
     const weightedVal = row.weighted_score != null ? row.weighted_score.toFixed(2) : (isOracle ? oracle.toFixed(2) : '—');
+    const crownTip = (!isOracle && row.crown_threshold != null)
+      ? `Required score to earn gain: ${row.crown_threshold.toFixed(4)}`
+      : '';
     const gainVal = (!isOracle && row.marginal_gain != null)
-      ? (row.marginal_gain > 0 ? `<span style="color:var(--green)">+${row.marginal_gain.toFixed(4)}</span>` : `<span class="muted">0</span>`)
+      ? (row.marginal_gain > 0
+          ? `<span style="color:var(--green)" title="${esc(crownTip)}">+${row.marginal_gain.toFixed(4)}</span>`
+          : `<span class="muted" title="${esc(crownTip)}">0</span>`)
       : '<span class="muted">—</span>';
     const hasBreakdown = Array.isArray(row.breakdown) && row.breakdown.length > 0;
     // Efficiency cell: show avg_efficiency_factor with colour + tokens tooltip

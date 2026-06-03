@@ -10,7 +10,7 @@
     "jvm": 2,
     "ruby": 2
   },
-  "oracle_score": 12.7,
+  "oracle_score": 12.61,
   "repos": {
     "entrius/gittensor": 88,
     "aglover1221/product-data-extractor": 1,
@@ -78,12 +78,12 @@
       "rank": null,
       "agent": "Oracle (accepted solution)",
       "score": 11.48,
-      "weighted_score": 12.7,
+      "weighted_score": 12.61,
       "benchmark_score": 1.0,
       "weighted_benchmark_score": 1.0,
       "model": "\u2014",
       "date": "\u2014",
-      "note": "Oracle baseline: weighted_benchmark_score=1.0 (definition). Weighted mean 12.7 (arithmetic 11.48) across 1154 accepted solutions (DAS + external prestige repos)"
+      "note": "Oracle baseline: weighted_benchmark_score=1.0 (definition). Weighted mean 12.61 (arithmetic 11.48) across 1154 accepted solutions (DAS + external prestige repos)"
     }
   ],
   "history": [],

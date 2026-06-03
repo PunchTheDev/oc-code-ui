@@ -2181,6 +2181,7 @@ function closeDrawer() {
 }
 
 function closeSubDrawer() {
+  if (_agentHistoryChart) { _agentHistoryChart.destroy(); _agentHistoryChart = null; }
   document.getElementById('sub-drawer-overlay').classList.remove('open');
   if (window.location.hash.startsWith('#/agent/') || window.location.hash === '#/oracle') {
     history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -2188,6 +2189,112 @@ function closeSubDrawer() {
 }
 
 // ── Submission breakdown (real miner result) ──────────────────────────────────
+
+let _agentHistoryChart = null;
+
+function renderAgentHistory(handle, submissions, body) {
+  if (!submissions || submissions.length === 0) return;
+  const sec = document.createElement('div');
+  sec.className = 'drawer-section';
+  const count = submissions.length;
+  const best = submissions.reduce((a, b) =>
+    (b.weighted_benchmark_score || 0) > (a.weighted_benchmark_score || 0) ? b : a, submissions[0]);
+  sec.innerHTML = `
+    <div class="drawer-section-title">Submission History (${count} run${count !== 1 ? 's' : ''})</div>
+    <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+      <div style="background:var(--surface);border-radius:6px;padding:8px 14px;min-width:90px">
+        <div class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em">Runs</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono)">${count}</div>
+      </div>
+      <div style="background:var(--surface);border-radius:6px;padding:8px 14px;min-width:90px">
+        <div class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em">Best</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--accent)">${best.weighted_benchmark_score != null ? best.weighted_benchmark_score.toFixed(4) : '—'}</div>
+      </div>
+      <div style="background:var(--surface);border-radius:6px;padding:8px 14px;min-width:90px">
+        <div class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em">Latest</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono)">${(submissions[submissions.length-1].weighted_benchmark_score || 0).toFixed(4)}</div>
+      </div>
+    </div>
+  `;
+  // Progression chart (only when ≥2 runs)
+  if (count >= 2) {
+    const canvasWrap = document.createElement('div');
+    canvasWrap.style.cssText = 'position:relative;height:100px;margin-bottom:12px';
+    const canvas = document.createElement('canvas');
+    canvas.id = 'agent-history-chart';
+    canvasWrap.appendChild(canvas);
+    sec.appendChild(canvasWrap);
+    // Chart rendered after append below
+    requestAnimationFrame(() => {
+      if (_agentHistoryChart) { _agentHistoryChart.destroy(); _agentHistoryChart = null; }
+      _agentHistoryChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: submissions.map((s, i) => s.date || `#${i+1}`),
+          datasets: [{
+            label: 'Benchmark score',
+            data: submissions.map(s => s.weighted_benchmark_score || 0),
+            borderColor: '#58a6ff',
+            backgroundColor: 'rgba(88,166,255,0.08)',
+            pointRadius: 3,
+            tension: 0.3,
+            fill: true,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => `benchmark: ${ctx.parsed.y.toFixed(4)}` }
+          }},
+          scales: {
+            x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+          },
+        },
+      });
+    });
+  }
+  // History table
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+  const t = document.createElement('table');
+  t.innerHTML = `<thead><tr><th>#</th><th>Date</th><th>Benchmark</th><th>Score/30</th><th>Model</th><th>Marginal gain</th></tr></thead><tbody></tbody>`;
+  const tb = t.querySelector('tbody');
+  [...submissions].reverse().forEach((s, ri) => {
+    const n = submissions.length - ri;
+    const isBest = s === best;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="muted" style="font-size:11px">${n}</td>
+      <td style="font-size:12px">${esc(s.date || '—')}</td>
+      <td style="font-family:var(--mono);font-size:13px;color:${isBest ? 'var(--accent)' : 'inherit'}">
+        ${s.weighted_benchmark_score != null ? s.weighted_benchmark_score.toFixed(4) : '—'}
+        ${isBest ? '<span style="font-size:10px;color:var(--green);margin-left:4px">best</span>' : ''}
+      </td>
+      <td class="muted" style="font-size:12px">${s.weighted_score != null ? s.weighted_score.toFixed(2) : '—'}</td>
+      <td><span class="badge-model">${esc(s.model || '—')}</span></td>
+      <td style="font-size:12px;color:${(s.marginal_gain || 0) > 0 ? 'var(--green)' : 'var(--muted)'}">
+        ${s.marginal_gain != null ? (s.marginal_gain > 0 ? '+' : '') + s.marginal_gain.toFixed(4) : '—'}
+      </td>
+    `;
+    tb.appendChild(tr);
+  });
+  wrap.appendChild(t);
+  sec.appendChild(wrap);
+  body.insertBefore(sec, body.firstChild);
+}
+
+async function loadAgentHistory(handle, allProblems, row) {
+  const body = document.getElementById('sub-drawer-body');
+  try {
+    const resp = await fetch(`${API_BASE}/api/agents/${encodeURIComponent(handle)}/history`);
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (data.submissions && data.submissions.length > 0) {
+      renderAgentHistory(handle, data.submissions, body);
+    }
+  } catch (_) { /* silently skip if history unavailable */ }
+}
 
 function openSubmissionDrawer(row, allProblems) {
   history.replaceState(null, '', '#/agent/' + encodeURIComponent(row.agent));
@@ -2271,6 +2378,9 @@ function openSubmissionDrawer(row, allProblems) {
   });
 
   document.getElementById('sub-drawer-overlay').classList.add('open');
+
+  // Load history async — inserts above per-problem table when ready
+  loadAgentHistory(row.agent, allProblems, row);
 }
 
 // ── Oracle per-problem breakdown (reference solutions) ────────────────────────

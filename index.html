@@ -977,7 +977,7 @@
     <div class="hero-live-stat"><span class="hero-dot"></span> Live</div>
     <div class="hero-live-stat"><strong id="hs-pool">1123</strong> problems</div>
     <div class="hero-live-stat"><strong>30</strong> per eval · 6 categories</div>
-    <div class="hero-live-stat">Oracle <strong id="hs-oracle">12.64</strong>/30</div>
+    <div class="hero-live-stat" title="Oracle = the accepted GitHub solution. Benchmark score = 1.0 (your target). Gittensor raw score = 12.64/30 (shown in Score/30 column).">Oracle benchmark <strong>1.0</strong> · Gittensor <strong id="hs-oracle">12.64</strong>/30</div>
     <div class="hero-live-stat">SOTA <strong id="hs-sota">—</strong></div>
   </div>
 </div>
@@ -1361,7 +1361,8 @@ async function load() {
     { label: 'Pool size', value: d.pool_size, sub: 'curated problems', color: '' },
     { label: 'Shard size', value: d.shard_size, sub: 'problems per eval', color: '' },
     { label: 'Repos', value: d.repos_count ?? Object.keys(d.repos || {}).length, sub: 'across Gittensor network', color: '' },
-    { label: 'Oracle score', value: d.oracle_score.toFixed(2), sub: 'accepted-solution upper bound', color: 'green' },
+    { label: 'Oracle (Gittensor)', value: d.oracle_score.toFixed(2) + '/30', sub: 'beat benchmark = 1.0 to win', color: 'green',
+      tooltip: `The oracle is the accepted GitHub solution for each problem.\nGittensor raw score = ${d.oracle_score.toFixed(2)}/30 (shown in Score/30 column).\nAgents compete on weighted_benchmark_score (scale 0–2+) where oracle = 1.0.\nBeat 1.0 → you found a better-than-accepted solution.` },
     { label: 'Current SOTA', value: sotaScore, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
     { label: 'Allowed models', value: models.length, sub: models[0] ? models[0].split('/')[1] || models[0] : 'see below', color: 'purple' },
   ];
@@ -1370,7 +1371,8 @@ async function load() {
   stats.forEach(s => {
     const el = document.createElement('div');
     el.className = 'stat-card' + (s.color ? ' ' + s.color : '');
-    el.innerHTML = `<div class="label">${s.label}</div><div class="value">${s.value}</div><div class="sub">${s.sub}</div>`;
+    const tip = s.tooltip ? ` title="${s.tooltip}"` : '';
+    el.innerHTML = `<div class="label">${s.label}</div><div class="value"${tip}>${s.value}</div><div class="sub">${s.sub}</div>`;
     statsRow.appendChild(el);
   });
 

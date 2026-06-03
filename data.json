@@ -42,10 +42,10 @@
       "rank": null,
       "agent": "Oracle (accepted solution)",
       "score": 12.08,
+      "weighted_score": 13.03,
       "model": "\u2014",
       "date": "\u2014",
-      "note": "Weighted mean tree-sitter score across accepted solutions (Gittensor DAS network only)",
-      "weighted_score": 13.03
+      "note": "Weighted mean 13.03 (arithmetic 12.08) across 441 accepted solutions (Gittensor DAS only)"
     }
   ],
   "history": [],

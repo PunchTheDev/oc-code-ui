@@ -1253,13 +1253,16 @@ function rankCell(row) {
 }
 
 async function load() {
-  // Fetch static snapshot + live API data in parallel
-  const [dataRes, lbRes, statsRes] = await Promise.all([
-    fetch('data.json'),
+  // Fetch static snapshot + live API data in parallel.
+  // Problems are fetched from the live API so the problem browser is always
+  // current after pool rotations (no stale data.json required).
+  const [dataRes, lbRes, statsRes, problemsRes] = await Promise.all([
+    fetch('data.json').catch(() => null),
     fetch(API_BASE + '/api/leaderboard').catch(() => null),
     fetch(API_BASE + '/api/stats').catch(() => null),
+    fetch(API_BASE + '/api/problems?limit=2000').catch(() => null),
   ]);
-  const d = await dataRes.json();
+  const d = dataRes?.ok ? await dataRes.json() : {};
 
   // Override stale snapshot data with live API responses
   if (lbRes?.ok) {
@@ -1272,6 +1275,17 @@ async function load() {
     if (s.oracle_score != null) d.oracle_score = s.oracle_score;
     if (s.shard_size != null) d.shard_size = s.shard_size;
     if (s.by_category) d.categories = s.by_category;
+    if (s.by_difficulty) d.difficulty_counts = s.by_difficulty;
+    if (s.shard_budget) d.shard_budget = s.shard_budget;
+    if (s.repos != null) d.repos_count = s.repos;
+  }
+  // Live problem list overrides data.json — stays fresh after every pool rotation
+  if (problemsRes?.ok) {
+    const pData = await problemsRes.json();
+    if (Array.isArray(pData.problems) && pData.problems.length > 0) {
+      d.problems = pData.problems;
+      if (pData.total != null) d.pool_size = pData.total;
+    }
   }
 
   pageData = d;
@@ -1327,7 +1341,7 @@ async function load() {
   const stats = [
     { label: 'Pool size', value: d.pool_size, sub: 'curated problems', color: '' },
     { label: 'Shard size', value: d.shard_size, sub: 'problems per eval', color: '' },
-    { label: 'Repos', value: Object.keys(d.repos || {}).length, sub: 'across Gittensor network', color: '' },
+    { label: 'Repos', value: d.repos_count ?? Object.keys(d.repos || {}).length, sub: 'across Gittensor network', color: '' },
     { label: 'Oracle score', value: d.oracle_score.toFixed(2), sub: 'accepted-solution upper bound', color: 'green' },
     { label: 'Current SOTA', value: sotaScore, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
     { label: 'Allowed models', value: models.length, sub: models[0] ? models[0].split('/')[1] || models[0] : 'see below', color: 'purple' },

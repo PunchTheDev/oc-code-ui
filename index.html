@@ -1578,6 +1578,7 @@ const LB_PAGE_SIZE = 25;
 // Chart instances
 let sotaChart = null;
 let diffChart = null;
+let agentHistChart = null;
 
 // ── Routing ───────────────────────────────────────────────────
 const PAGES = ['home', 'problems', 'leaderboard', 'scoring', 'mining'];
@@ -2630,11 +2631,14 @@ function closeDrawer() {
 
 function closeSubDrawer() {
   document.getElementById('sub-drawer-overlay').classList.remove('open');
+  if (agentHistChart) { agentHistChart.destroy(); agentHistChart = null; }
 }
 
 // ── Submission breakdown (real miner result) ──────────────────────────────────
 
 function openSubmissionDrawer(row, allProblems) {
+  if (agentHistChart) { agentHistChart.destroy(); agentHistChart = null; }
+
   document.getElementById('sub-drawer-title').textContent = row.agent;
   const benchmarkDisplay = row.weighted_benchmark_score != null
     ? `${row.weighted_benchmark_score.toFixed(4)} benchmark`
@@ -2658,8 +2662,24 @@ function openSubmissionDrawer(row, allProblems) {
   const breakdown = row.breakdown || [];
   const probMap = Object.fromEntries((allProblems || []).map(p => [p.id, p]));
 
-  // Sort by score desc
-  const sorted = [...breakdown].sort((a,b) => (b.score || 0) - (a.score || 0));
+  // Build Δ vs leader map: rank-1 non-oracle per-problem benchmark scores
+  const rankedEntries = (allLeaderboard || []).filter(e => e.rank != null && Array.isArray(e.breakdown) && e.breakdown.length > 0);
+  rankedEntries.sort((a,b) => a.rank - b.rank);
+  const isLeader = rankedEntries.length > 0 && rankedEntries[0].agent === row.agent;
+  // Compare vs rank-1 if this agent isn't rank-1; vs rank-2 if it is; fall back to oracle baseline
+  let leaderRow = null;
+  let leaderLabel = '';
+  if (rankedEntries.length > 0) {
+    leaderRow = isLeader ? (rankedEntries[1] || null) : rankedEntries[0];
+    leaderLabel = leaderRow ? `vs #${leaderRow.rank} ${leaderRow.agent}` : '';
+  }
+  const leaderMap = leaderRow
+    ? Object.fromEntries((leaderRow.breakdown || []).map(b => [b.problem_id, b.benchmark_score]))
+    : {};
+  const showDelta = leaderRow != null;
+
+  // Sort by benchmark_score desc
+  const sorted = [...breakdown].sort((a,b) => (b.benchmark_score || b.score || 0) - (a.benchmark_score || a.score || 0));
 
   const section = document.createElement('div');
   section.className = 'drawer-section';
@@ -2674,9 +2694,10 @@ function openSubmissionDrawer(row, allProblems) {
       <th>Repo</th>
       <th>Tier</th>
       <th title="benchmark_score = test_pass_rate × relative_quality × tqf × efficiency">Benchmark</th>
+      ${showDelta ? `<th title="${esc(leaderLabel)}" style="white-space:nowrap">Δ Leader</th>` : ''}
       <th title="Fraction of tests passing (0–1)">Pass Rate</th>
       <th title="Test quality factor: 0.85 + 0.15×coverage_ratio (1.0 = matched reference assertions)">TQF</th>
-      <th title="Efficiency factor: 1.0 at ≤10k output tokens, linear decay to 0.85 at 50k budget. Hover for token count.">Efficiency</th>
+      <th title="Efficiency factor: 1.0 at ≤10k output tokens, linear decay to 0.85 at 50k budget. Hover for token count.">Eff</th>
       <th title="Gittensor native score (0–30)">Score</th>
     </tr></thead>
     <tbody id="sub-breakdown-body"></tbody>
@@ -2708,6 +2729,18 @@ function openSubmissionDrawer(row, allProblems) {
     } else {
       efCell = '<span class="muted" title="no token data">1.000</span>';
     }
+    let deltaCell = '';
+    if (showDelta) {
+      const lScore = leaderMap[item.problem_id];
+      if (lScore != null && item.benchmark_score != null) {
+        const d = item.benchmark_score - lScore;
+        const sign = d >= 0 ? '+' : '';
+        const color = d > 0.001 ? 'var(--green)' : d < -0.001 ? 'var(--red)' : 'var(--muted)';
+        deltaCell = `<td style="font-family:var(--mono);font-size:12px;color:${color}">${sign}${d.toFixed(4)}</td>`;
+      } else {
+        deltaCell = `<td class="muted" style="font-size:12px">—</td>`;
+      }
+    }
     const tier = prob.difficulty || item.difficulty || '—';
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -2721,6 +2754,7 @@ function openSubmissionDrawer(row, allProblems) {
           ${item.benchmark_score != null ? `<div class="score-bar"><div class="score-bar-fill" style="width:${benchPct}%"></div></div>` : ''}
         </div>
       </td>
+      ${deltaCell}
       <td style="font-size:12px">${passRate}</td>
       <td style="font-size:12px">${tqfCell}</td>
       <td style="font-size:12px">${efCell}</td>
@@ -2731,6 +2765,92 @@ function openSubmissionDrawer(row, allProblems) {
     });
     tbody.appendChild(tr);
   });
+
+  // History section — async-loaded
+  const histSection = document.createElement('div');
+  histSection.className = 'drawer-section';
+  histSection.innerHTML = `<div class="drawer-section-title">Submission History</div><div id="agent-hist-loading" class="muted" style="font-size:12px;padding:8px 0">Loading…</div>`;
+  body.appendChild(histSection);
+
+  fetch(`${API}/api/agents/${encodeURIComponent(row.agent)}/history`)
+    .then(r => r.ok ? r.json() : null)
+    .catch(() => null)
+    .then(data => {
+      const loadEl = document.getElementById('agent-hist-loading');
+      if (!loadEl) return; // drawer closed
+      if (!data || !data.submissions || data.submissions.length === 0) {
+        loadEl.textContent = 'No prior submissions.';
+        return;
+      }
+      const subs = data.submissions;
+      loadEl.remove();
+
+      // Stat cards
+      const bestScore = Math.max(...subs.map(s => s.weighted_benchmark_score ?? 0));
+      const avgScore = subs.reduce((a,s) => a + (s.weighted_benchmark_score ?? 0), 0) / subs.length;
+      const statsDiv = document.createElement('div');
+      statsDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px';
+      statsDiv.innerHTML = `
+        <div class="stat-card" style="flex:1;min-width:120px">
+          <div class="label">Runs</div><div class="value" style="font-size:22px">${subs.length}</div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:120px">
+          <div class="label">Best</div><div class="value" style="font-size:22px;color:var(--green)">${bestScore.toFixed(4)}</div>
+          <div class="sub">benchmark</div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:120px">
+          <div class="label">Avg</div><div class="value" style="font-size:22px">${avgScore.toFixed(4)}</div>
+          <div class="sub">benchmark</div>
+        </div>
+      `;
+      histSection.appendChild(statsDiv);
+
+      // Progression chart (≥2 runs)
+      if (subs.length >= 2) {
+        const chartWrap = document.createElement('div');
+        chartWrap.className = 'chart-wrap';
+        chartWrap.style.marginBottom = '16px';
+        const canvas = document.createElement('canvas');
+        canvas.id = 'agent-hist-chart';
+        canvas.height = 60;
+        chartWrap.appendChild(canvas);
+        histSection.appendChild(chartWrap);
+        const labels = subs.map(s => s.date || '?');
+        const scores = subs.map(s => s.weighted_benchmark_score ?? null);
+        agentHistChart = new Chart(canvas, {
+          type: 'line',
+          data: { labels, datasets: [
+            { label: 'benchmark score', data: scores, borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.10)', pointBackgroundColor: '#58a6ff', pointRadius: 4, fill: true, tension: 0.2 },
+            { label: 'oracle (1.0)', data: subs.map(() => 1.0), borderColor: '#3fb950', borderDash: [5,3], pointRadius: 0, fill: false },
+          ]},
+          options: { responsive: true, plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: '#21262d' } }, y: { min: 0, ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: '#21262d' } } } },
+        });
+      }
+
+      // History table
+      const histWrap = document.createElement('div');
+      histWrap.className = 'table-wrap';
+      const histTable = document.createElement('table');
+      histTable.innerHTML = `
+        <thead><tr><th>Date</th><th>Model</th><th>Benchmark</th><th>Score/30</th></tr></thead>
+        <tbody></tbody>
+      `;
+      const htbody = histTable.querySelector('tbody');
+      subs.forEach(s => {
+        const tr = document.createElement('tr');
+        const bv = s.weighted_benchmark_score != null ? s.weighted_benchmark_score.toFixed(4) : '—';
+        const sv = s.weighted_score != null ? s.weighted_score.toFixed(2) : '—';
+        tr.innerHTML = `
+          <td class="muted" style="font-size:12px;white-space:nowrap">${esc(s.date || '—')}</td>
+          <td><span class="badge-model">${esc(s.model || '—')}</span></td>
+          <td style="font-family:var(--mono);font-size:13px;color:var(--accent)">${esc(bv)}</td>
+          <td class="muted" style="font-size:12px">${esc(sv)}</td>
+        `;
+        htbody.appendChild(tr);
+      });
+      histWrap.appendChild(histTable);
+      histSection.appendChild(histWrap);
+    });
 
   document.getElementById('sub-drawer-overlay').classList.add('open');
 }

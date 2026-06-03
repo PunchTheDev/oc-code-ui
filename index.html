@@ -362,6 +362,19 @@
     .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--muted); }
 
+    .lb-page-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .lb-page-btn:hover:not(:disabled) { border-color: var(--accent); }
+    .lb-page-btn:disabled { opacity: 0.35; cursor: default; }
+
     .lang-chip {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -1091,6 +1104,7 @@
         </thead>
         <tbody id="leaderboard-body"></tbody>
       </table>
+      <div id="lb-pagination" style="display:flex;align-items:center;gap:12px;margin-top:10px;justify-content:center"></div>
     </div>
   </section>
 
@@ -1225,6 +1239,9 @@ let lbSortCol = null;
 let lbSortDir = 'desc';
 // Leaderboard search filter
 let lbSearch = '';
+// Leaderboard pagination
+let lbPage = 1;
+const LB_PAGE_SIZE = 25;
 // Module-level page data (set on load, used for re-renders)
 let pageData = null;
 
@@ -1410,15 +1427,17 @@ async function load() {
         lbSortCol = col;
         lbSortDir = 'desc';
       }
+      lbPage = 1;
       renderLeaderboard(pageData);
     });
   });
 
-  // Wire leaderboard search filter
+  // Wire leaderboard search filter — reset to page 1 on new query
   const lbSearchEl = document.getElementById('lb-search');
   if (lbSearchEl) {
     lbSearchEl.addEventListener('input', () => {
       lbSearch = lbSearchEl.value.trim();
+      lbPage = 1;
       renderLeaderboard(pageData);
     });
   }
@@ -1776,10 +1795,18 @@ function renderLeaderboard(d) {
     });
   }
 
-  // Oracle always appears last; it's the baseline reference row
-  const entries = [...real, ...(oracle ? [oracle] : [])];
+  // Paginate real entries; oracle always pinned last (outside page window)
+  const totalReal = real.length;
+  const totalPages = Math.max(1, Math.ceil(totalReal / LB_PAGE_SIZE));
+  lbPage = Math.max(1, Math.min(lbPage, totalPages));
+  const pageStart = (lbPage - 1) * LB_PAGE_SIZE;
+  const pageReal = real.slice(pageStart, pageStart + LB_PAGE_SIZE);
 
-  entries.forEach(row => {
+  // Oracle always appears last on the final page (or always if ≤1 page)
+  const showOracle = oracle && (lbPage === totalPages || totalReal === 0);
+  const entries = [...pageReal, ...(showOracle ? [oracle] : [])];
+
+  function renderRow(row) {
     const isOracle = row.rank === null;
     const benchVal = row.weighted_benchmark_score != null ? row.weighted_benchmark_score : (isOracle ? 1.0 : null);
     const benchPct = benchVal !== null ? Math.min(benchVal / 2.0 * 100, 100).toFixed(1) : null;
@@ -1825,7 +1852,31 @@ function renderLeaderboard(d) {
       tr.addEventListener('click', () => openOracleBreakdown(d.problems));
     }
     lb.appendChild(tr);
-  });
+  }
+
+  entries.forEach(renderRow);
+
+  // Pagination controls (below the table, only when >1 page)
+  const paginEl = document.getElementById('lb-pagination');
+  if (paginEl) {
+    if (totalPages <= 1) {
+      paginEl.innerHTML = '';
+    } else {
+      paginEl.innerHTML = `
+        <button class="lb-page-btn" id="lb-prev" ${lbPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+        <span style="font-size:12px;color:var(--muted)">Page ${lbPage} of ${totalPages} · ${totalReal} submissions</span>
+        <button class="lb-page-btn" id="lb-next" ${lbPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      `;
+      document.getElementById('lb-prev').addEventListener('click', () => {
+        lbPage = Math.max(1, lbPage - 1);
+        renderLeaderboard(pageData);
+      });
+      document.getElementById('lb-next').addEventListener('click', () => {
+        lbPage = Math.min(totalPages, lbPage + 1);
+        renderLeaderboard(pageData);
+      });
+    }
+  }
 
   // Update sort indicators
   document.querySelectorAll('#leaderboard-table th.lb-sortable').forEach(th => {

@@ -1,81 +1,82 @@
 {
-    "name": "Gittensor Base Miner Benchmark",
-    "description": "A competitive benchmark on Gittensor subnet 74 (Bittensor). Build an AI agent that solves real GitHub issues from the Gittensor network. The agent with the highest well-rounded score across 30 sampled problems earns TAO mining emissions and becomes the new base miner for the subnet.",
-    "version": "1.0",
-    "subnet": 74,
-    "network": "Bittensor / Gittensor",
-    "dashboard": "https://punchthedev.github.io/gittensor-miner-dashboard/",
-    "repo": "https://github.com/PunchTheDev/gittensor-base-miner",
-    "interface": {
-        "class": "BaseAgent",
-        "method": "solve(problem: Problem) -> Patch",
-        "location": "agent/base.py",
-        "example": "agent/example/agent.py"
+  "name": "Gittensor Base Miner Benchmark",
+  "description": "A competitive benchmark on Gittensor subnet 74 (Bittensor). Build an AI agent that solves real GitHub issues from the Gittensor network. The agent with the highest well-rounded score across 30 sampled problems earns TAO mining emissions and becomes the new base miner for the subnet.",
+  "version": "1.0",
+  "subnet": 74,
+  "network": "Bittensor / Gittensor",
+  "dashboard": "https://punchthedev.github.io/gittensor-miner-dashboard/",
+  "repo": "https://github.com/PunchTheDev/gittensor-base-miner",
+  "interface": {
+    "class": "BaseAgent",
+    "method": "solve(problem: Problem) -> Patch",
+    "location": "agent/base.py",
+    "example": "agent/example/agent.py"
+  },
+  "pool": {
+    "total_problems": 430,
+    "shard_size": 30,
+    "rotation": "weekly",
+    "categories": {
+      "python": 12,
+      "typescript": 8,
+      "rust": 5,
+      "jvm": 3,
+      "ruby": 2
     },
-    "pool": {
-        "total_problems": 430,
-        "shard_size": 30,
-        "rotation": "weekly",
-        "categories": {
-            "python": 12,
-            "typescript": 8,
-            "rust": 5,
-            "jvm": 3,
-            "ruby": 2
-        },
-        "source": "Gittensor DAS network \u2014 real merged PRs from registered repos"
-    },
-    "scoring": {
-        "formula": "25 * (1 - exp(-tokens / 58)) + bonus",
-        "max_score": 30,
-        "correctness_gates_quality": true,
-        "oracle_score": 11.83,
-        "champion_score": null,
-        "champion_agent": null,
-        "note": "Structural AST tokens (functions, classes, branches) count. Comments and whitespace score 0. Beat the champion's mean score across 30 problems to win."
-    },
-    "constraints": {
-        "wall_time_s": 120,
-        "output_tokens": 50000,
-        "network": "blocked_except_model_api",
-        "allowed_models": [
-            "deepseek/deepseek-chat",
-            "deepseek/deepseek-coder",
-            "deepseek/deepseek-r1-distill-qwen-32b",
-            "anthropic/claude-3-5-haiku",
-            "anthropic/claude-3-haiku",
-            "openai/gpt-4o-mini",
-            "openai/gpt-4o",
-            "google/gemini-flash-1.5",
-            "meta-llama/llama-3.1-8b-instruct",
-            "meta-llama/llama-3.1-70b-instruct",
-            "mistralai/mistral-7b-instruct"
-        ]
-    },
-    "submission": {
-        "method": "GitHub pull request",
-        "url": "https://github.com/PunchTheDev/gittensor-base-miner/compare",
-        "path": "agent/submissions/<your-handle>/agent.py",
-        "ci": "automatic \u2014 CI scores your agent and posts results as a PR comment"
-    },
-    "quickstart": {
-        "clone": "git clone https://github.com/PunchTheDev/gittensor-base-miner",
-        "install": "pip install -r requirements.txt",
-        "env": "export OPENROUTER_KEY=sk-or-...",
-        "run_one": "python3 gitminer.py run --problem 0463 --agent agent/example/agent.py --score --no-sandbox",
-        "run_shard": "python3 gitminer.py eval agent/submissions/<handle>/agent.py --no-sandbox",
-        "mine_loop": "python3 gitminer.py mine --agent agent/submissions/<handle>/agent.py --loop"
-    },
-    "api": {
-        "base": "http://localhost:8083",
-        "endpoints": {
-            "/api/shard": "Current 30-problem weekly eval set (category-balanced)",
-            "/api/problems": "Full pool (filterable: ?cat=python&difficulty=hard)",
-            "/api/problems/{id}": "Single problem detail with context files",
-            "/api/problems/{id}/diff": "Reference diff (accepted solution)",
-            "/api/leaderboard": "Ranked submissions",
-            "/api/stats": "Pool statistics and oracle score",
-            "/api/agents": "This document"
-        }
+    "source": "Gittensor DAS network \u2014 real merged PRs from registered repos"
+  },
+  "scoring": {
+    "formula": "25 * (1 - exp(-tokens / 58)) + bonus",
+    "max_score": 30,
+    "correctness_gates_quality": true,
+    "oracle_score": 12.77,
+    "champion_score": null,
+    "champion_agent": null,
+    "note": "Structural AST tokens (functions, classes, branches) count. Comments and whitespace score 0. oracle_score is the difficulty-weighted mean (hard\u00d72/medium\u00d71.5/easy\u00d71). Beat the champion weighted mean to win.",
+    "oracle_score_arithmetic": 11.83
+  },
+  "constraints": {
+    "wall_time_s": 120,
+    "output_tokens": 50000,
+    "network": "blocked_except_model_api",
+    "allowed_models": [
+      "deepseek/deepseek-chat",
+      "deepseek/deepseek-coder",
+      "deepseek/deepseek-r1-distill-qwen-32b",
+      "anthropic/claude-3-5-haiku",
+      "anthropic/claude-3-haiku",
+      "openai/gpt-4o-mini",
+      "openai/gpt-4o",
+      "google/gemini-flash-1.5",
+      "meta-llama/llama-3.1-8b-instruct",
+      "meta-llama/llama-3.1-70b-instruct",
+      "mistralai/mistral-7b-instruct"
+    ]
+  },
+  "submission": {
+    "method": "GitHub pull request",
+    "url": "https://github.com/PunchTheDev/gittensor-base-miner/compare",
+    "path": "agent/submissions/<your-handle>/agent.py",
+    "ci": "automatic \u2014 CI scores your agent and posts results as a PR comment"
+  },
+  "quickstart": {
+    "clone": "git clone https://github.com/PunchTheDev/gittensor-base-miner",
+    "install": "pip install -r requirements.txt",
+    "env": "export OPENROUTER_KEY=sk-or-...",
+    "run_one": "python3 gitminer.py run --problem 0463 --agent agent/example/agent.py --score --no-sandbox",
+    "run_shard": "python3 gitminer.py eval agent/submissions/<handle>/agent.py --no-sandbox",
+    "mine_loop": "python3 gitminer.py mine --agent agent/submissions/<handle>/agent.py --loop"
+  },
+  "api": {
+    "base": "http://localhost:8083",
+    "endpoints": {
+      "/api/shard": "Current 30-problem weekly eval set (category-balanced)",
+      "/api/problems": "Full pool (filterable: ?cat=python&difficulty=hard)",
+      "/api/problems/{id}": "Single problem detail with context files",
+      "/api/problems/{id}/diff": "Reference diff (accepted solution)",
+      "/api/leaderboard": "Ranked submissions",
+      "/api/stats": "Pool statistics and oracle score",
+      "/api/agents": "This document"
     }
+  }
 }

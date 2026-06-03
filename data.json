@@ -9,7 +9,7 @@
     "jvm": 3,
     "ruby": 2
   },
-  "oracle_score": 11.83,
+  "oracle_score": 12.77,
   "repos": {
     "entrius/gittensor": 96,
     "aglover1221/product-data-extractor": 1,
@@ -44,7 +44,8 @@
       "score": 11.83,
       "model": "\u2014",
       "date": "\u2014",
-      "note": "Mean tree-sitter score across 430 accepted solutions (Gittensor DAS network only)"
+      "note": "Weighted mean tree-sitter score across accepted solutions (Gittensor DAS network only)",
+      "weighted_score": 12.77
     }
   ],
   "history": [],

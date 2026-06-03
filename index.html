@@ -2481,43 +2481,72 @@ function openDrawer(p, pushHash = true) {
 }
 
 async function loadDiff(p, container) {
+  if (p._rawDiff) {
+    container.innerHTML = `<div class="drawer-section-title">Reference Diff</div>` + renderDiff(p._rawDiff);
+    return;
+  }
   container.innerHTML = `<div class="drawer-section-title">Reference Diff</div><div class="diff-loading">Loading diff…</div>`;
-  const url = `https://raw.githubusercontent.com/PunchTheDev/gittensor-base-miner/main/benchmark/problems/${encodeURIComponent(p.id)}/reference.diff`;
+  const diffUrl = p.diff_url
+    ? (p.diff_url.startsWith('http') ? p.diff_url : `${API}${p.diff_url}`)
+    : `${API}/api/problems/${encodeURIComponent(p.id)}/diff`;
+  const prUrl = p.pr_url || (p.pr ? `https://github.com/${p.repo}/pull/${p.pr}` : '#');
   try {
-    const res = await fetch(url);
+    const res = await fetch(diffUrl);
     if (!res.ok) throw new Error(`${res.status}`);
     const raw = await res.text();
+    p._rawDiff = raw;
     container.innerHTML = `<div class="drawer-section-title">Reference Diff</div>` + renderDiff(raw);
   } catch (err) {
-    container.innerHTML = `
-      <div class="drawer-section-title">Reference Diff</div>
-      <div class="diff-error">Could not load diff (${esc(err.message)}).
-        <a class="link" href="${esc(p.pr_url)}/files" target="_blank">View on GitHub ↗</a>
-      </div>
-    `;
+    container.innerHTML = `<div class="drawer-section-title">Reference Diff</div><div class="diff-error">Could not load diff (${esc(err.message)}). <a class="link" href="${esc(prUrl)}/files" target="_blank">View on GitHub ↗</a></div>`;
   }
 }
 
 function renderDiff(raw) {
   const lines = raw.split('\n');
-  let html = '<div class="diff-container">';
+  const files = [];
+  let cur = null;
   for (const line of lines) {
     if (line.startsWith('diff --git')) {
+      if (cur) files.push(cur);
       const m = line.match(/b\/(.+)$/);
-      html += `<div class="diff-file-header">${esc(m ? m[1] : line)}</div>`;
-    } else if (line.startsWith('@@')) {
-      html += `<span class="diff-line hunk">${esc(line)}</span>`;
-    } else if (line.startsWith('+') && !line.startsWith('+++')) {
-      html += `<span class="diff-line add">${esc(line)}</span>`;
-    } else if (line.startsWith('-') && !line.startsWith('---')) {
-      html += `<span class="diff-line remove">${esc(line)}</span>`;
-    } else if (line.startsWith('---') || line.startsWith('+++') || line.startsWith('index ') || line.startsWith('new file') || line.startsWith('deleted file')) {
-      html += `<span class="diff-line meta">${esc(line)}</span>`;
-    } else {
-      html += `<span class="diff-line">${esc(line)}</span>`;
+      cur = { name: m ? m[1] : line, add: 0, remove: 0, lines: [] };
+    } else if (cur) {
+      if (line.startsWith('+') && !line.startsWith('+++')) cur.add++;
+      else if (line.startsWith('-') && !line.startsWith('---')) cur.remove++;
+      cur.lines.push(line);
     }
   }
-  html += '</div>';
+  if (cur) files.push(cur);
+  if (files.length === 0) {
+    let html = '<div class="diff-container" style="max-height:500px;overflow-y:auto">';
+    for (const line of lines) {
+      if (line.startsWith('@@')) html += `<span class="diff-line hunk">${esc(line)}</span>`;
+      else if (line.startsWith('+') && !line.startsWith('+++')) html += `<span class="diff-line add">${esc(line)}</span>`;
+      else if (line.startsWith('-') && !line.startsWith('---')) html += `<span class="diff-line remove">${esc(line)}</span>`;
+      else html += `<span class="diff-line meta">${esc(line)}</span>`;
+    }
+    return html + '</div>';
+  }
+  let html = `<div style="font-size:12px;color:var(--muted);margin-bottom:8px">${files.length} file${files.length!==1?'s':''} changed · <span style="color:var(--green)">+${files.reduce((s,f)=>s+f.add,0)}</span> <span style="color:var(--red)">−${files.reduce((s,f)=>s+f.remove,0)}</span></div>`;
+  files.forEach((f, fi) => {
+    const collapsed = f.lines.length > 100;
+    const addStr = f.add > 0 ? `<span style="color:var(--green)">+${f.add}</span>` : '';
+    const remStr = f.remove > 0 ? `<span style="color:var(--red)"> −${f.remove}</span>` : '';
+    html += `<div class="diff-container" style="margin-bottom:8px;max-height:none">
+      <div class="diff-file-header" style="cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between" onclick="(function(el){var b=el.nextElementSibling;var open=b.style.display!=='none';b.style.display=open?'none':'block';el.querySelector('.diff-toggle').textContent=open?'▶ expand':'▼ collapse';})(this)">
+        <span>${esc(f.name)} ${addStr}${remStr}</span>
+        <span class="diff-toggle" style="font-size:10px;color:var(--muted)">${collapsed ? '▶ expand' : '▼ collapse'}</span>
+      </div>
+      <div class="diff-file-body" style="display:${collapsed ? 'none' : 'block'}">`;
+    for (const line of f.lines) {
+      if (line.startsWith('@@')) html += `<span class="diff-line hunk">${esc(line)}</span>`;
+      else if (line.startsWith('+') && !line.startsWith('+++')) html += `<span class="diff-line add">${esc(line)}</span>`;
+      else if (line.startsWith('-') && !line.startsWith('---')) html += `<span class="diff-line remove">${esc(line)}</span>`;
+      else if (line.startsWith('---') || line.startsWith('+++') || line.startsWith('index ') || line.startsWith('new file') || line.startsWith('deleted file')) html += `<span class="diff-line meta">${esc(line)}</span>`;
+      else html += `<span class="diff-line">${esc(line)}</span>`;
+    }
+    html += `</div></div>`;
+  });
   return html;
 }
 

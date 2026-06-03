@@ -9,7 +9,7 @@
     "jvm": 3,
     "ruby": 2
   },
-  "oracle_score": 15.02,
+  "oracle_score": 15.15,
   "repos": {
     "entrius/gittensor": 96,
     "aglover1221/product-data-extractor": 1,
@@ -41,11 +41,11 @@
     {
       "rank": null,
       "agent": "Oracle (accepted solution)",
-      "score": 13.91,
-      "weighted_score": 15.02,
+      "score": 14.04,
+      "weighted_score": 15.15,
       "model": "\u2014",
       "date": "\u2014",
-      "note": "Weighted mean 15.02 (arithmetic 13.91) across 441 accepted solutions (Gittensor DAS only)"
+      "note": "Weighted mean 15.15 (arithmetic 14.04) across 446 accepted solutions (Gittensor DAS only)"
     }
   ],
   "history": [],
@@ -15203,9 +15203,9 @@
       "das_token_score": 143.781,
       "das_structural_score": 69.76,
       "das_total_nodes": 6824,
-      "baseline_score": null,
-      "src_token_score": null,
-      "total_token_score": null,
+      "baseline_score": 26.8,
+      "src_token_score": 532.14,
+      "total_token_score": 540.5,
       "diff_stats": {
         "add": 1032,
         "remove": 69,
@@ -15260,9 +15260,9 @@
       "das_token_score": 24.796,
       "das_structural_score": 13.125,
       "das_total_nodes": 3385,
-      "baseline_score": null,
-      "src_token_score": null,
-      "total_token_score": null,
+      "baseline_score": 26.38,
+      "src_token_score": 418.9,
+      "total_token_score": 418.92,
       "diff_stats": {
         "add": 641,
         "remove": 12,
@@ -15313,9 +15313,9 @@
       "das_token_score": 188.15,
       "das_structural_score": 96.845,
       "das_total_nodes": 2609,
-      "baseline_score": null,
-      "src_token_score": null,
-      "total_token_score": null,
+      "baseline_score": 24.79,
+      "src_token_score": 195.0,
+      "total_token_score": 196.87,
       "diff_stats": {
         "add": 415,
         "remove": 0,
@@ -15354,9 +15354,9 @@
       "das_token_score": 76.233,
       "das_structural_score": 34.76,
       "das_total_nodes": 2590,
-      "baseline_score": null,
-      "src_token_score": null,
-      "total_token_score": null,
+      "baseline_score": 22.26,
+      "src_token_score": 119.92,
+      "total_token_score": 127.1,
       "diff_stats": {
         "add": 453,
         "remove": 77,
@@ -15407,9 +15407,9 @@
       "das_token_score": 134.0375,
       "das_structural_score": 76.575,
       "das_total_nodes": 5301,
-      "baseline_score": null,
-      "src_token_score": null,
-      "total_token_score": null,
+      "baseline_score": 26.31,
+      "src_token_score": 394.37,
+      "total_token_score": 402.78,
       "diff_stats": {
         "add": 915,
         "remove": 6,

@@ -534,22 +534,51 @@
     #cat-breakdown .stat-card:hover::after { opacity: 1; transform: translateX(2px); }
 
     /* ── Repo breakdown ──────────────────────────────────── */
-    .repo-breakdown { display: flex; flex-direction: column; gap: 8px; }
+    .repo-breakdown { display: flex; flex-direction: column; gap: 4px; }
+    .repo-breakdown-caption {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; margin-bottom: 8px;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      font-size: 11px;
+    }
+    .repo-breakdown-caption .rbc-left { color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+    .repo-breakdown-caption .rbc-left strong { color: var(--text); font-family: var(--mono); }
+    .repo-breakdown-caption .rbc-right { color: var(--accent); font-size: 12px; }
 
     .repo-row {
       display: flex;
       align-items: center;
       gap: 12px;
       font-size: 13px;
-      padding: 6px 0;
+      padding: 6px 12px 6px 10px;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      border-radius: 0 4px 4px 0;
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+      position: relative;
     }
+    .repo-row:hover {
+      background: rgba(88,166,255,0.06);
+      border-left-color: var(--accent);
+      transform: translateX(2px);
+    }
+    .repo-row .repo-jump {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      font-size: 10px; color: var(--accent); background: rgba(88,166,255,0.12);
+      border: 1px solid rgba(88,166,255,0.35); border-radius: 3px;
+      padding: 1px 6px; letter-spacing: 0.5px; text-transform: uppercase;
+      opacity: 0; transition: opacity 0.15s;
+      pointer-events: none;
+    }
+    .repo-row:hover .repo-jump { opacity: 1; }
+    .repo-row:hover .repo-pct { opacity: 0; }
     .repo-name { min-width: 210px; }
     .repo-name a { color: var(--accent); font-family: var(--mono); font-size: 12px; text-decoration: none; }
     .repo-name a:hover { text-decoration: underline; }
     .repo-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .repo-bar-fill { height: 100%; background: linear-gradient(90deg, #1f6feb, #58a6ff); border-radius: 3px; transition: width 0.6s; }
     .repo-count { color: var(--muted); font-size: 12px; min-width: 30px; text-align: right; font-family: var(--mono); }
-    .repo-pct { color: var(--muted); font-size: 11px; min-width: 36px; text-align: right; }
+    .repo-pct { color: var(--muted); font-size: 11px; min-width: 36px; text-align: right; transition: opacity 0.15s; }
 
     /* ── Allowed models ──────────────────────────────────── */
     .models-grid {
@@ -3304,6 +3333,18 @@ function initScoringPage() {
     other:      'linear-gradient(90deg,#1f6feb,#58a6ff)',
   };
 
+  // Caption row above the breakdown — matches cat-breakdown / tier-row affordance pattern
+  if (!document.getElementById('repo-breakdown-caption')) {
+    const cap = document.createElement('div');
+    cap.id = 'repo-breakdown-caption';
+    cap.className = 'repo-breakdown-caption';
+    cap.innerHTML = `
+      <div class="rbc-left"><strong>${Object.keys(repos).length}</strong> repos · <strong>${totalProblems.toLocaleString()}</strong> problems · bars colored by dominant language</div>
+      <div class="rbc-right">Click any repo to filter the Problems page →</div>
+    `;
+    rb.parentNode.insertBefore(cap, rb);
+  }
+
   Object.entries(repos).sort((a, b) => b[1] - a[1]).forEach(([repo, count]) => {
     const pct = (count / maxCount * 100).toFixed(0);
     const poolPct = totalProblems > 0 ? ((count / totalProblems) * 100).toFixed(0) : 0;
@@ -3311,12 +3352,31 @@ function initScoringPage() {
     const gradient = langGradients[lang] || langGradients.other;
     const div = document.createElement('div');
     div.className = 'repo-row';
+    div.dataset.repo = repo;
+    div.title = `Click to filter the Problems page to ${repo} (${count} problems)`;
     div.innerHTML = `
-      <span class="repo-name"><a href="https://github.com/${repo}" target="_blank">${repo}</a></span>
+      <span class="repo-name"><a href="https://github.com/${repo}" target="_blank" onclick="event.stopPropagation()">${repo}</a></span>
       <div class="repo-bar-wrap"><div class="repo-bar-fill" style="width:${pct}%;background:${gradient}"></div></div>
       <span class="repo-count">${count}</span>
       <span class="repo-pct">${poolPct}%</span>
+      <span class="repo-jump">→ Filter</span>
     `;
+    div.addEventListener('click', () => {
+      const search = document.getElementById('problem-search');
+      if (search) {
+        search.value = repo;
+        // Reset other filters so the repo is the dominant lens
+        activeCat = '';
+        activeDiff = '';
+        document.querySelectorAll('.lang-chip').forEach(c => c.classList.toggle('active', !c.dataset.cat));
+        document.querySelectorAll('.diff-chip').forEach(c => c.classList.toggle('active', !c.dataset.diff));
+      }
+      setPage('problems', true);
+      probPage = 1;
+      const pb = document.getElementById('problems-body');
+      if (pb) pb.dataset.init = '';
+      renderProblems();
+    });
     rb.appendChild(div);
   });
 

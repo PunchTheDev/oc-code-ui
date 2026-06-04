@@ -467,28 +467,47 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 16px; height: 16px;
+      width: 18px; height: 18px;
       border-radius: 50%;
-      background: transparent;
-      border: none;
-      color: var(--muted);
+      background: rgba(248, 81, 73, 0.10);
+      border: 1px solid rgba(248, 81, 73, 0.25);
+      color: var(--red);
       cursor: pointer;
       font-size: 13px;
       line-height: 1;
       padding: 0;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
     }
-    .active-filters-bar .afb-pill .afb-x:hover { background: var(--border); color: var(--text); }
+    .active-filters-bar .afb-pill:hover .afb-x { background: rgba(248, 81, 73, 0.18); border-color: rgba(248, 81, 73, 0.45); }
+    .active-filters-bar .afb-pill .afb-x:hover,
+    .active-filters-bar .afb-pill .afb-x:focus-visible {
+      background: var(--red);
+      border-color: var(--red);
+      color: #0d1117;
+      transform: scale(1.08);
+      outline: none;
+    }
+    .active-filters-bar .afb-pill:hover { border-color: rgba(248, 81, 73, 0.35); }
     .active-filters-bar .afb-clear {
       margin-left: auto;
       background: transparent;
-      border: none;
+      border: 1px solid transparent;
       color: var(--accent);
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
-      padding: 2px 6px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
-    .active-filters-bar .afb-clear:hover { text-decoration: underline; }
+    .active-filters-bar .afb-clear:hover,
+    .active-filters-bar .afb-clear:focus-visible {
+      background: rgba(248, 81, 73, 0.12);
+      border-color: rgba(248, 81, 73, 0.45);
+      color: var(--red);
+      text-decoration: none;
+      outline: none;
+    }
 
     /* ── Chart ───────────────────────────────────────────── */
     .chart-wrap {

@@ -4257,6 +4257,13 @@ function initScoringPage() {
         activeDiff = tier;
         renderProblems();
       });
+      // Row → chart: dim non-matching bars on hover (reverse of bar-flash)
+      row.addEventListener('mouseenter', () => {
+        if (typeof highlightDiffChartTier === 'function') highlightDiffChartTier(row.dataset.tier);
+      });
+      row.addEventListener('mouseleave', () => {
+        if (typeof highlightDiffChartTier === 'function') highlightDiffChartTier(null);
+      });
     });
     const poolEl = document.getElementById('diff-chart-pool-count');
     if (poolEl) poolEl.textContent = (d.pool_size || tierTotal).toLocaleString();
@@ -4270,6 +4277,8 @@ function initScoringPage() {
       { label: '20–25', min: 20, max: 25 }, { label: '25–30', min: 25, max: 31 },
     ];
     const binColors = ['rgba(248,81,73,0.85)','rgba(248,81,73,0.60)','rgba(210,153,34,0.85)','rgba(210,153,34,0.60)','rgba(63,185,80,0.60)','rgba(63,185,80,0.85)'];
+    // Dimmed twins (alpha 0.12) used when a different tier-row is hovered; same hue so identity stays legible
+    const binColorsDim = ['rgba(248,81,73,0.12)','rgba(248,81,73,0.12)','rgba(210,153,34,0.12)','rgba(210,153,34,0.12)','rgba(63,185,80,0.12)','rgba(63,185,80,0.12)'];
     const binCounts = diffBins.map(b => allProblems.filter(p => p.baseline_score != null && p.baseline_score >= b.min && p.baseline_score < b.max).length);
     // bin index → tier mapping (0,1 = hard; 2,3 = medium; 4,5 = easy)
     const binToTier = ['hard','hard','medium','medium','easy','easy'];
@@ -4277,6 +4286,13 @@ function initScoringPage() {
       document.querySelectorAll('.difficulty-table tr.tier-row-link').forEach(r => {
         r.classList.toggle('bar-flash', !!tier && r.dataset.tier === tier);
       });
+    };
+    // Row → chart highlight: dim bars whose tier !== hovered row's tier; null restores all originals
+    window.highlightDiffChartTier = (tier) => {
+      if (!diffChart) return;
+      const ds = diffChart.data.datasets[0];
+      ds.backgroundColor = binColors.map((c, i) => (!tier || binToTier[i] === tier) ? c : binColorsDim[i]);
+      diffChart.update('none');
     };
     const diffChartCanvas = document.getElementById('diff-chart');
     diffChartCanvas.addEventListener('mouseleave', () => flashTierRow(null));

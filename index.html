@@ -1418,6 +1418,39 @@
       opacity: 0; pointer-events: none; transition: opacity 0.18s ease;
     }
     .api-table td.api-path.api-path-copied .api-copy-flash { opacity: 1; }
+    /* Per-endpoint row flash — matches group-row :target flash (step 300) but triggered via JS class */
+    .api-table tr.api-row[id] { scroll-margin-top: 72px; }
+    .api-table tr.api-row[id]:target td,
+    .api-table tr.api-row.api-row-flash td {
+      background: rgba(88,166,255,0.14);
+      box-shadow: inset 3px 0 0 0 var(--accent);
+      transition: background 0.6s ease, box-shadow 0.6s ease;
+    }
+    .api-table tr.api-row-write[id]:target td,
+    .api-table tr.api-row-write.api-row-flash td {
+      background: rgba(63,185,80,0.18);
+      box-shadow: inset 3px 0 0 0 var(--green);
+    }
+    /* Inline prose endpoint links — mono pill that routes to the matching API Reference row */
+    .endpoint-link {
+      display: inline-flex; align-items: baseline; gap: 4px;
+      font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+      padding: 1px 7px; border-radius: 4px;
+      text-decoration: none; line-height: 1.55;
+      border: 1px solid var(--border);
+      background: var(--surface2); color: var(--accent);
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      cursor: pointer; white-space: nowrap;
+    }
+    .endpoint-link:hover { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.5); }
+    .endpoint-link::after {
+      content: '↗'; font-size: 9px; opacity: 0.6;
+      transform: translateY(-1px);
+      transition: opacity 0.15s ease;
+    }
+    .endpoint-link:hover::after { opacity: 1; }
+    .endpoint-link-post { color: var(--green); border-color: rgba(63,185,80,0.35); background: rgba(63,185,80,0.10); }
+    .endpoint-link-post:hover { background: rgba(63,185,80,0.20); border-color: rgba(63,185,80,0.55); }
     .mining-step-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -1965,7 +1998,7 @@
       </div>
       <div class="glossary-card">
         <div class="glossary-term">Commit-reveal</div>
-        <div class="glossary-def">Anti-copy mechanism. You register a hash of your agent via <code>POST /api/commit</code> before opening the PR — the timestamped hash proves authorship if a copycat later submits the same code. Reveal happens when the PR is opened.</div>
+        <div class="glossary-def">Anti-copy mechanism. You register a hash of your agent via <a class="endpoint-link endpoint-link-post" href="#/mining" data-endpoint-link="api-row-commit" title="Jump to POST /api/commit row in the Mining page's API Reference">POST /api/commit</a> before opening the PR — the timestamped hash proves authorship if a copycat later submits the same code. Reveal happens when the PR is opened.</div>
       </div>
     </div>
   </section>
@@ -2479,7 +2512,7 @@
             <tr class="api-group-row" id="api-submissions"><td colspan="3">Submissions <span class="api-group-count" title="Number of endpoints in this group">4 endpoints · 1 write</span></td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/leaderboard</td><td class="api-desc">Current ranked submissions with per-problem breakdown.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/agents/{handle}/history</td><td class="api-desc">Full submission history for one agent — all runs, scores, and progression.</td></tr>
-            <tr class="api-row api-row-write" title="Only write endpoint in the public API — registers your agent hash for commit-reveal"><td class="api-method"><span class="api-method-badge api-method-post">POST</span></td><td class="api-path">/api/commit</td><td class="api-desc">Register agent hash before opening PR — timestamps your authorship for <span class="term" title="Commit-reveal: anti-copy mechanism. Register a hash of your agent via POST /api/commit before opening the PR — the timestamped hash proves authorship if a copycat later submits the same code. Reveal happens when the PR opens.">commit-reveal</span> anti-copy.</td></tr>
+            <tr class="api-row api-row-write" id="api-row-commit" title="Only write endpoint in the public API — registers your agent hash for commit-reveal"><td class="api-method"><span class="api-method-badge api-method-post">POST</span></td><td class="api-path">/api/commit</td><td class="api-desc">Register agent hash before opening PR — timestamps your authorship for <span class="term" title="Commit-reveal: anti-copy mechanism. Register a hash of your agent via POST /api/commit before opening the PR — the timestamped hash proves authorship if a copycat later submits the same code. Reveal happens when the PR opens.">commit-reveal</span> anti-copy.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/commitments/{handle}</td><td class="api-desc">Retrieve pre-PR commitments for an agent — proves first-to-commit for a given hash.</td></tr>
 
             <tr class="api-group-row" id="api-docs"><td colspan="3">Docs &amp; System <span class="api-group-count" title="Number of endpoints in this group">3 endpoints</span></td></tr>
@@ -2982,6 +3015,25 @@ async function load() {
     document.getElementById('logo-home-btn').addEventListener('click', e => {
       e.preventDefault();
       setPage('home', true);
+    });
+
+    // Wire inline endpoint links — prose <a class="endpoint-link" data-endpoint-link="api-row-X">
+    // routes to Mining page, then scroll-and-flash the matching API Reference row.
+    document.querySelectorAll('a.endpoint-link[data-endpoint-link]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const targetId = a.dataset.endpointLink;
+        setPage('mining', true);
+        // Defer scroll until Mining page is laid out
+        setTimeout(() => {
+          const row = document.getElementById(targetId);
+          if (!row) return;
+          row.scrollIntoView({behavior:'smooth', block:'center'});
+          // Flash the row via class toggle (avoids hash manipulation that would break SPA routing)
+          row.classList.add('api-row-flash');
+          setTimeout(() => row.classList.remove('api-row-flash'), 1400);
+        }, 80);
+      });
     });
 
     // Wire problem search and sort (debounced — 1123 problems per render)

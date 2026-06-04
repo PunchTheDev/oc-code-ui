@@ -1757,6 +1757,76 @@
       .lb-ghost-preview-chip { animation: none; opacity: 0.85; }
     }
 
+    /* Leaderboard empty-state 1-2-3 CTA: a numbered stepper that answers
+       "How do I get on this board?" in one scan. Three SPA-link cards point at
+       the canonical Mining sections (Self-Onboarding URL · Quickstart · Submit).
+       Hover lifts the card, fades the arrow chevron in, and tints the border. */
+    .lb-cta-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    @media (max-width: 720px) {
+      .lb-cta-steps { grid-template-columns: 1fr; }
+    }
+    .lb-cta-step {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px 36px 12px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .lb-cta-step:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      background: rgba(88,166,255,0.06);
+    }
+    .lb-cta-step .lb-cta-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .lb-cta-step .lb-cta-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .lb-cta-step .lb-cta-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .lb-cta-step .lb-cta-desc code {
+      font-size: 11px;
+      background: rgba(88,166,255,0.08);
+      color: var(--accent);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .lb-cta-step .lb-cta-arrow {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      color: var(--accent);
+      font-size: 14px;
+      opacity: 0.4;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .lb-cta-step:hover .lb-cta-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+
     /* ── How it works ──────────────────────────────────────── */
     .how-steps {
       display: grid;
@@ -3652,8 +3722,40 @@ function renderLb() {
           <span style="color:var(--muted)">·</span>
           <span>first valid score &gt; <strong>${threshTxt}</strong> wins it</span>
         </div>
-        <div style="font-size:12px"><a class="link" href="#/mining" onclick="event.preventDefault(); setPage('mining', true)">Start mining →</a> &nbsp;·&nbsp; <a class="link" href="#/scoring" onclick="event.preventDefault(); setPage('scoring', true); setTimeout(()=>document.getElementById('s-anticopy')?.scrollIntoView({behavior:'smooth'}), 60)">How the crown_threshold decays as SOTA rises ↗</a> &nbsp;·&nbsp; <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">CONTRIBUTING.md ↗</a></div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px">How to get on this board</div>
+        <div class="lb-cta-steps">
+          <a class="lb-cta-step" href="#/mining" data-target="self-onboarding">
+            <span class="lb-cta-arrow">→</span>
+            <div class="lb-cta-num">Step 1 · Spec</div>
+            <div class="lb-cta-title">Self-Onboarding URL</div>
+            <div class="lb-cta-desc">One fetch of <code>/api/agents</code> returns the full benchmark spec — model whitelist, scoring formula, endpoint map.</div>
+          </a>
+          <a class="lb-cta-step" href="#/mining" data-target="qs-explainer">
+            <span class="lb-cta-arrow">→</span>
+            <div class="lb-cta-num">Step 2 · Build</div>
+            <div class="lb-cta-title">5-Step Quickstart</div>
+            <div class="lb-cta-desc">Clone, init, run, commit, submit. 5 shell commands, each line annotated with what every flag does.</div>
+          </a>
+          <a class="lb-cta-step" href="#/mining" data-target="api-submissions">
+            <span class="lb-cta-arrow">→</span>
+            <div class="lb-cta-num">Step 3 · Submit</div>
+            <div class="lb-cta-title">Commit &amp; Push</div>
+            <div class="lb-cta-desc">Post the commit hash, then open a PR — the lone write endpoint (<code>POST /api/commit</code>) lands you on the board.</div>
+          </a>
+        </div>
+        <div style="font-size:12px;margin-top:4px"><a class="link" href="#/scoring" onclick="event.preventDefault(); setPage('scoring', true); setTimeout(()=>document.getElementById('s-anticopy')?.scrollIntoView({behavior:'smooth'}), 60)">How the crown_threshold decays as SOTA rises ↗</a> &nbsp;·&nbsp; <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">CONTRIBUTING.md ↗</a></div>
       </div>`;
+      ctaEl.querySelectorAll('.lb-cta-step').forEach(card => {
+        card.addEventListener('click', e => {
+          e.preventDefault();
+          const targetId = card.dataset.target;
+          setPage('mining', true);
+          setTimeout(() => {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 80);
+        });
+      });
     } else {
       ctaEl.style.display = 'none';
     }

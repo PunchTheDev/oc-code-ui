@@ -1806,6 +1806,14 @@
       <a class="btn-hero-primary" href="#one-copy-paste" onclick="event.preventDefault(); document.getElementById('one-copy-paste')?.scrollIntoView({behavior:'smooth', block:'start'})">Jump to copy-paste ↓</a>
       <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
     </div>
+    <div class="hero-live-stats" style="margin-top:24px">
+      <div class="hero-live-stat"><span class="hero-dot"></span> Live</div>
+      <div class="hero-live-stat" title="Total problems in the curated benchmark pool"><strong id="hsm-pool">1123</strong> problems</div>
+      <div class="hero-live-stat" title="30 problems per weekly evaluation round (the shard). Rotates Sundays 02:00 UTC."><strong>30</strong> per eval</div>
+      <div class="hero-live-stat" title="Five curated, cheap, on-par OSS models — see Allowed Models below"><strong id="hsm-models">5</strong> curated models</div>
+      <div class="hero-live-stat" title="Your weighted_benchmark_score must exceed 1.0 to rank above the oracle baseline and earn TAO rewards">Beat <strong>1.0</strong> to win</div>
+      <div class="hero-live-stat" title="State of the Art — highest weighted_benchmark_score submitted so far">SOTA: <strong id="hsm-sota">—</strong></div>
+    </div>
   </div>
 
   <div class="container">
@@ -2247,11 +2255,14 @@ async function load() {
     const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     update('hs-pool', d.pool_size);
     update('hero-pool-size', d.pool_size);
+    update('hsm-pool', d.pool_size);
+    update('hsm-models', (d.allowed_models || []).length || 5);
     const realEntries = allLeaderboard.filter(r => r.rank !== null && r.weighted_benchmark_score != null);
     const sotaBenchmark = realEntries.length > 0
       ? Math.max(...realEntries.map(r => r.weighted_benchmark_score)).toFixed(3)
       : '—';
     update('hs-sota', sotaBenchmark);
+    update('hsm-sota', sotaBenchmark);
 
     // Stats row (home page)
     const models = d.allowed_models || [];

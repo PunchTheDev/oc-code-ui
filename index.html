@@ -1548,10 +1548,31 @@
       font-weight: 600;
       letter-spacing: 0.02em;
     }
+    button.mc-badge { line-height: inherit; appearance: none; -webkit-appearance: none; }
     .mc-badge-ctx { background: rgba(88,166,255,0.12); color: var(--accent); }
     .mc-badge-strength { background: rgba(188,140,255,0.18); color: var(--purple); }
-    .mc-badge-bestfor { background: rgba(46,160,67,0.18); color: var(--green); }
+    .mc-badge-bestfor { background: rgba(46,160,67,0.18); color: var(--green); border: 1px solid transparent; }
     .mc-badge-bestfor::before { content: "★ "; opacity: 0.85; }
+    /* Clickable variant: chip routes to Problems with a tier filter applied */
+    .mc-badge-bestfor.clickable {
+      cursor: pointer;
+      border-color: rgba(46,160,67,0.35);
+      transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+    }
+    .mc-badge-bestfor.clickable::after {
+      content: " ↗";
+      font-size: 9px;
+      opacity: 0.6;
+      transition: opacity 0.12s ease, transform 0.12s ease;
+      display: inline-block;
+    }
+    .mc-badge-bestfor.clickable:hover {
+      background: rgba(46,160,67,0.28);
+      border-color: var(--green);
+      transform: translateY(-1px);
+    }
+    .mc-badge-bestfor.clickable:hover::after { opacity: 1; transform: translateX(1px); }
+    .mc-badge-bestfor.clickable:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
     /* API Reference table — grouped + method-badged */
     .api-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .api-table th {
@@ -4530,9 +4551,9 @@ function initMiningPage() {
 
   const modelMeta = {
     'deepseek/deepseek-chat':           { label: 'DeepSeek V3',          cost: '~$0.27/$1.10 per M tokens', note: 'Default — strong general coding',  ctx: '128k ctx', strength: 'Coding + reasoning', bestFor: 'All-rounder default' },
-    'deepseek/deepseek-v4-flash':       { label: 'DeepSeek V4 Flash',    cost: '~$0.10/$0.20 per M tokens', note: 'Next-gen fast variant',            ctx: '128k ctx', strength: 'Fast inference',     bestFor: 'Easy tier · fast loops' },
+    'deepseek/deepseek-v4-flash':       { label: 'DeepSeek V4 Flash',    cost: '~$0.10/$0.20 per M tokens', note: 'Next-gen fast variant',            ctx: '128k ctx', strength: 'Fast inference',     bestFor: 'Easy tier · fast loops',   bestForFilter: { kind: 'diff', value: 'easy' } },
     'openai/gpt-4o-mini':               { label: 'GPT-4o-mini',          cost: '~$0.15/$0.60 per M tokens', note: 'OpenAI GPT-4o-class',              ctx: '128k ctx', strength: 'General-purpose',    bestFor: 'Polyglot baseline' },
-    'google/gemini-2.5-flash-lite':     { label: 'Gemini 2.5 Flash Lite',cost: '~$0.10/$0.40 per M tokens', note: 'Fastest + cheapest',               ctx: '1M ctx',   strength: 'Long-context',       bestFor: 'Hard tier · multi-file' },
+    'google/gemini-2.5-flash-lite':     { label: 'Gemini 2.5 Flash Lite',cost: '~$0.10/$0.40 per M tokens', note: 'Fastest + cheapest',               ctx: '1M ctx',   strength: 'Long-context',       bestFor: 'Hard tier · multi-file',   bestForFilter: { kind: 'diff', value: 'hard' } },
     'qwen/qwen-2.5-coder-32b-instruct': { label: 'Qwen 2.5 Coder 32B',   cost: '~$0.07/$0.07 per M tokens', note: 'Open-weight coding specialist',    ctx: '32k ctx',  strength: 'Coding specialist',  bestFor: 'Cheapest loops' },
   };
 
@@ -4548,10 +4569,32 @@ function initMiningPage() {
       <div class="mc-provider">${esc(provider)} · <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${esc(modelSlug)}</span></div>
       <div class="mc-cost" title="Cost per million tokens — input / output">${esc(meta.cost || '')}</div>
       ${meta.note ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(meta.note)}</div>` : ''}
-      ${(meta.ctx || meta.strength || meta.bestFor) ? `<div class="mc-badges">${meta.ctx ? `<span class="mc-badge mc-badge-ctx" title="Maximum context window">${esc(meta.ctx)}</span>` : ''}${meta.strength ? `<span class="mc-badge mc-badge-strength" title="What this model is best at">${esc(meta.strength)}</span>` : ''}${meta.bestFor ? `<span class="mc-badge mc-badge-bestfor" title="Best problem fit — when to reach for this model on benchmark tasks">${esc(meta.bestFor)}</span>` : ''}</div>` : ''}
+      ${(meta.ctx || meta.strength || meta.bestFor) ? `<div class="mc-badges">${meta.ctx ? `<span class="mc-badge mc-badge-ctx" title="Maximum context window">${esc(meta.ctx)}</span>` : ''}${meta.strength ? `<span class="mc-badge mc-badge-strength" title="What this model is best at">${esc(meta.strength)}</span>` : ''}${meta.bestFor ? (meta.bestForFilter ? `<button type="button" class="mc-badge mc-badge-bestfor clickable" data-filter-kind="${esc(meta.bestForFilter.kind)}" data-filter-value="${esc(meta.bestForFilter.value)}" title="Filter the Problems page to ${esc(meta.bestForFilter.value)} tier — where this model is recommended">${esc(meta.bestFor)}</button>` : `<span class="mc-badge mc-badge-bestfor" title="Best problem fit — when to reach for this model on benchmark tasks">${esc(meta.bestFor)}</span>`) : ''}</div>` : ''}
       ${i === 0 ? '<div style="font-size:10px;color:var(--accent);margin-top:6px">✓ recommended default</div>' : ''}
     `;
     grid.appendChild(card);
+  });
+
+  // Wire `★ Best for` chips that carry a bestForFilter → route to Problems page with that filter applied.
+  // Only the 2-of-5 chips whose value cleanly maps to a tier (easy/hard) become buttons; others stay plain spans.
+  grid.querySelectorAll('button.mc-badge-bestfor.clickable').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const kind = btn.dataset.filterKind;
+      const value = btn.dataset.filterValue;
+      setPage('problems', true);
+      if (kind === 'diff') {
+        document.querySelectorAll('.diff-chip').forEach(c => c.classList.toggle('active', (c.dataset.diff || '') === value));
+        activeDiff = value;
+      } else if (kind === 'lang') {
+        document.querySelectorAll('.lang-chip').forEach(c => c.classList.toggle('active', (c.dataset.cat || '') === value));
+        activeCat = value;
+      }
+      probPage = 1;
+      const pb = document.getElementById('problems-body');
+      if (pb) pb.dataset.init = '';
+      renderProblems();
+    });
   });
 }
 

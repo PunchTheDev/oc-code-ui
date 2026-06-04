@@ -25,6 +25,15 @@ STATIC_EXTS = {
 }
 
 
+# Map clean paths to their hash-router equivalents.
+SPA_ROUTES = {
+    "/problems":   "/#/problems",
+    "/leaderboard": "/#/leaderboard",
+    "/scoring":    "/#/scoring",
+    "/mining":     "/#/mining",
+}
+
+
 class SPAHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(SERVE_DIR), **kwargs)
@@ -33,6 +42,14 @@ class SPAHandler(SimpleHTTPRequestHandler):
         # Strip query string for filesystem lookup.
         path = self.path.split("?")[0].split("#")[0].rstrip("/") or "/"
         candidate = SERVE_DIR / path.lstrip("/")
+
+        # Redirect known SPA routes to their hash-based equivalents so that
+        # pasted-in URLs like /problems land on the correct page.
+        if path in SPA_ROUTES:
+            self.send_response(301)
+            self.send_header("Location", SPA_ROUTES[path])
+            self.end_headers()
+            return
 
         # Serve file directly if it exists.
         if candidate.is_file():

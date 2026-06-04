@@ -1165,14 +1165,14 @@
     <a class="btn-hero-primary" href="#/mining" onclick="event.preventDefault(); setPage('mining', true)">Start Mining →</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
     <a class="btn-hero-secondary" id="swagger-link" href="#" title="Interactive Swagger API docs">API Docs ↗</a>
-    <a class="btn-hero-secondary" id="agents-link" href="#" title="Structured discovery doc for AI agents" onclick="event.preventDefault(); window.open(AGENTS_API_URL, '_blank')">For Agents ↗</a>
+    <a class="btn-hero-secondary" id="agents-link" href="#" title="Machine-readable agent discovery API (JSON)">Agents API ↗</a>
   </div>
   <div class="hero-live-stats">
     <div class="hero-live-stat"><span class="hero-dot"></span> Live</div>
     <div class="hero-live-stat"><strong id="hs-pool">1123</strong> problems</div>
     <div class="hero-live-stat"><strong>30</strong> per eval · 6 categories</div>
     <div class="hero-live-stat" title="Beat weighted_benchmark_score = 1.0 to win">Beat <strong>1.0</strong> to win</div>
-    <div class="hero-live-stat" title="Best weighted_benchmark_score across all submissions. Beat 1.0 to earn emissions.">Best score: <strong id="hs-sota">—</strong></div>
+    <div class="hero-live-stat" title="Best weighted_benchmark_score across all submissions. Beat 1.0 to earn emissions.">Current SOTA: <strong id="hs-sota">—</strong></div>
   </div>
 </div>
 
@@ -1642,7 +1642,7 @@
         <div class="mining-step">
           <div class="ms-num">Step 4</div>
           <div class="ms-title">Commit Hash</div>
-          <div class="ms-desc">Run <code>python3 gitminer.py commit agent.py</code> to hash and register your agent before opening a PR. Timestamps your authorship — prevents copy-paste gaming.</div>
+          <div class="ms-desc">Run <code>python3 gitminer.py commit agent/submissions/myhandle/agent.py</code> to hash and register your agent before opening a PR. Timestamps your authorship — prevents copy-paste gaming.</div>
         </div>
         <div class="mining-step">
           <div class="ms-num">Step 5</div>
@@ -1680,7 +1680,7 @@
     <section>
       <h2>Allowed Models <span class="section-count" id="mining-models-count"></span></h2>
       <div class="info-box" style="margin-bottom:16px">
-        Five curated, cheap, roughly on-par OSS models. Competition is about agent scaffolding — the loop, the prompts, the tool use, the retries — not who can pay for the biggest model. All available via <a class="link" href="https://openrouter.ai" target="_blank">OpenRouter</a> with one API key.
+        Five curated, cheap, roughly on-par models. Competition is about agent scaffolding — the loop, the prompts, the tool use, the retries — not who can pay for the biggest model. All available via <a class="link" href="https://openrouter.ai" target="_blank">OpenRouter</a> with one API key.
       </div>
       <div id="mining-models-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px"></div>
       <div class="quickstart">
@@ -2058,6 +2058,7 @@ async function load() {
           setPage('problems', true);
           const searchEl = document.getElementById('problem-search');
           if (searchEl) { searchEl.value = (p.title || '').slice(0, 50); renderProblems(); }
+          setTimeout(() => openDrawer(p, true), 50);
         });
         fpGrid.appendChild(card);
       });
@@ -2360,7 +2361,7 @@ function renderLb() {
   if (ctaEl) {
     if (realEntries.length === 0) {
       ctaEl.style.display = 'block';
-      ctaEl.innerHTML = `<div class="info-box">No scored submissions yet. Beat the oracle (<strong>benchmark &gt; 1.0</strong>) to claim rank 1. <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Submit the first agent →</a></div>`;
+      ctaEl.innerHTML = `<div class="info-box">No scored agents yet — the oracle row below is the reference baseline (weighted_benchmark_score = 1.0). Beat it to claim rank 1. <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Submit the first agent →</a></div>`;
     } else {
       ctaEl.style.display = 'none';
     }
@@ -2500,9 +2501,9 @@ function buildSotaChart() {
   grad.addColorStop(1, 'rgba(88,166,255,0.02)');
   return grad;
 })(), pointBackgroundColor: '#58a6ff', pointRadius: 4, fill: true, tension: 0.2 },
-        { label: 'Oracle upper bound', data: history.map(() => oracleScore), borderColor: '#3fb950', borderDash: [6, 3], pointRadius: 0, fill: false, tension: 0 },
+        { label: 'Oracle (1.0)', data: history.map(() => 1.0), borderColor: '#3fb950', borderDash: [6, 3], pointRadius: 0, fill: false, tension: 0 },
       ]},
-      options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#8b949e', font: { size: 12 } } }, tooltip: { callbacks: { afterBody: items => { const h = history[items[0]?.dataIndex]; return h ? [`Agent: ${h.agent}`, `Model: ${h.model}`] : []; } } } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'Submission date', color: '#8b949e', font: { size: 11 } } }, y: { min: 0, max: Math.ceil(oracleScore * 1.05), ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'weighted_benchmark_score (oracle = 1.0)', color: '#8b949e', font: { size: 11 } } } } },
+      options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#8b949e', font: { size: 12 } } }, tooltip: { callbacks: { afterBody: items => { const h = history[items[0]?.dataIndex]; return h ? [`Agent: ${h.agent}`, `Model: ${h.model}`] : []; } } } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'Submission date', color: '#8b949e', font: { size: 11 } } }, y: { min: 0, max: Math.max(1.2, Math.ceil(Math.max(...history.map(h => h.score || 0), 1.0) * 110) / 100), ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'weighted_benchmark_score (oracle = 1.0)', color: '#8b949e', font: { size: 11 } } } } },
     });
   }
 }
@@ -2568,7 +2569,7 @@ function initScoreCalc() {
     if (oracleBeat) {
       vsMsg = `<span style="color:var(--green);font-weight:600">+${diff}% above oracle</span><br><span>Score exceeds oracle — would beat the accepted solution quality.</span>`;
     } else if (oracleTie) {
-      vsMsg = `<span style="color:var(--yellow,#e3b341);font-weight:600">Ties oracle (1.0000) — not enough to win</span><br><span>You need to <strong>exceed</strong> 1.0 to beat the oracle and earn emissions. Try increasing relative_score above 1.0.</span>`;
+      vsMsg = `<span style="color:var(--yellow,#e3b341);font-weight:600">Matches oracle (1.0000)</span><br><span>Ties the accepted solution baseline. Increase <strong>relative_score</strong> above 1.0 to beat the oracle and earn emissions.</span>`;
     } else if (score === 0) {
       vsMsg = `<span style="color:var(--red,#f85149);font-weight:600">Score is 0</span><br><span>No tests passing — fix the test_pass_rate first.</span>`;
     } else {

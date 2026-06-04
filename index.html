@@ -1967,6 +1967,16 @@
       opacity: 1;
       transform: translateX(2px);
     }
+    /* Arrival flash on the destination element after a leaderboard CTA jump —
+       1.2s accent ring fades out so the user's eye lands on what just opened. */
+    .lb-cta-arrived {
+      animation: lbCtaArrive 1.2s ease-out 1;
+    }
+    @keyframes lbCtaArrive {
+      0%   { box-shadow: 0 0 0 0   rgba(88,166,255,0.55); }
+      30%  { box-shadow: 0 0 0 4px rgba(88,166,255,0.28); }
+      100% { box-shadow: 0 0 0 0   rgba(88,166,255,0);    }
+    }
 
     /* ── How it works ──────────────────────────────────────── */
     .how-steps {
@@ -3920,7 +3930,20 @@ function renderLb() {
           setPage('mining', true);
           setTimeout(() => {
             const el = document.getElementById(targetId);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (!el) return;
+            // Auto-expand <details> when hash-routed in via lb-cta-step — landing on
+            // a collapsed section makes the CTA feel broken ("I clicked, but where's
+            // the quickstart?"). Open self + any ancestor <details> for nested cases.
+            if (el.tagName === 'DETAILS') el.open = true;
+            let p = el.parentElement;
+            while (p) {
+              if (p.tagName === 'DETAILS') p.open = true;
+              p = p.parentElement;
+            }
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Brief flash so the user's eye lands on what just opened
+            el.classList.add('lb-cta-arrived');
+            setTimeout(() => el.classList.remove('lb-cta-arrived'), 1200);
           }, 80);
         });
       });

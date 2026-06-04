@@ -351,6 +351,11 @@
     .glossary-seealso-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); opacity: 0.7; margin-right: 2px; }
     .glossary-seealso a { font-family: var(--mono); font-size: 11px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 2px 7px; text-decoration: none; transition: color 0.15s, border-color 0.15s, background 0.15s; }
     .glossary-seealso a:hover { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,0.08); }
+    /* Glossary → Factor-Details metric-card link (one per pair, green to distinguish from blue see-also chips) */
+    .glossary-mc-link { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .glossary-mc-link-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); opacity: 0.7; margin-right: 2px; }
+    .glossary-mc-link a { font-family: var(--mono); font-size: 11px; color: var(--green); background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 2px 7px; text-decoration: none; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+    .glossary-mc-link a:hover { color: var(--green); border-color: var(--green); background: rgba(63,185,80,0.08); }
 
     /* ── Language / category badges ─────────────────────── */
     .lang-badge {
@@ -1219,13 +1224,21 @@
     /* Metric-card target highlight when arrived via formula anchor */
     .metric-card { transition: box-shadow 0.6s, border-color 0.6s; scroll-margin-top: 72px; }
     .metric-card:target { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88,166,255,0.18); }
+    .metric-card.mc-flash { animation: mcFlash 1.2s ease-out; }
+    @keyframes mcFlash {
+      0%   { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88,166,255,0.32); }
+      100% { border-color: var(--border); box-shadow: 0 0 0 0 rgba(88,166,255,0); }
+    }
     .metric-card .mc-backlink {
       float: right; font-size: 10px; color: var(--muted); text-decoration: none;
       letter-spacing: 0.04em; text-transform: uppercase;
       padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px;
       transition: color 0.15s, border-color 0.15s;
+      margin-left: 6px;
     }
     .metric-card .mc-backlink:hover { color: var(--accent); border-color: var(--accent); }
+    .metric-card .mc-backlink.mc-to-gl { color: var(--green); }
+    .metric-card .mc-backlink.mc-to-gl:hover { color: var(--green); border-color: var(--green); }
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -2415,11 +2428,13 @@
         <div class="glossary-term">tqf</div>
         <div class="glossary-def">Short for <code>test_quality_factor</code>. The credit you get for adding test assertions when the reference solution did too — capped between 0.85 and 1.0. See Factor Details.</div>
         <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-anti-gaming">Anti-Gaming</a><a href="#gl-structural-match">Structural Match</a></div>
+        <div class="glossary-mc-link"><span class="glossary-mc-link-label">Factor detail</span><a href="#mc-test-quality" data-mc-target="mc-test-quality" title="Jump to the Factor Details card with math, range, and edge cases">★ Test Quality card ↗</a></div>
       </div>
       <div class="glossary-card" id="gl-anti-gaming">
         <div class="glossary-term">Anti-Gaming</div>
         <div class="glossary-def">The <code>anti_gaming_multiplier</code> — a graduated penalty for removing test assertions to inflate pass rate. ≤3 removed = no penalty; floor of 0.5 above 8.</div>
         <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-tqf">tqf</a><a href="#gl-structural-match">Structural Match</a></div>
+        <div class="glossary-mc-link"><span class="glossary-mc-link-label">Factor detail</span><a href="#mc-anti-gaming" data-mc-target="mc-anti-gaming" title="Jump to the Factor Details card with math, range, and edge cases">★ Anti-Gaming card ↗</a></div>
       </div>
       <div class="glossary-card" id="gl-gain">
         <div class="glossary-term">Gain (crown bonus)</div>
@@ -2435,6 +2450,7 @@
         <div class="glossary-term">Structural Match</div>
         <div class="glossary-def">Internal name <code>relative_score</code>. Your weighted AST-node count ÷ the oracle's. Functions ×3, classes ×3, branches ×2. Only matters after correctness gates pass.</div>
         <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-oracle">Oracle</a><a href="#gl-anti-gaming">Anti-Gaming</a></div>
+        <div class="glossary-mc-link"><span class="glossary-mc-link-label">Factor detail</span><a href="#mc-relative-score" data-mc-target="mc-relative-score" title="Jump to the Factor Details card with math, range, and edge cases">★ Structural Match card ↗</a></div>
       </div>
       <div class="glossary-card" id="gl-commit-reveal">
         <div class="glossary-term">Commit-reveal</div>
@@ -2445,11 +2461,13 @@
         <div class="glossary-term">test_pass_rate</div>
         <div class="glossary-def">The fraction of unit tests in the target repo that pass on your patch — the primary <strong>correctness gate</strong>. Ranges 0.0–1.0. If your patch breaks tests this collapses toward 0 and zeroes out the whole <code>benchmark_score</code> regardless of how good your other factors look. Same gate the oracle's accepted PR must satisfy.</div>
         <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-anti-gaming">Anti-Gaming</a><a href="#gl-tqf">tqf</a></div>
+        <div class="glossary-mc-link"><span class="glossary-mc-link-label">Factor detail</span><a href="#mc-test-pass-rate" data-mc-target="mc-test-pass-rate" title="Jump to the Factor Details card with math, range, and edge cases">★ Test Pass Rate card ↗</a></div>
       </div>
       <div class="glossary-card" id="gl-efficiency">
         <div class="glossary-term">efficiency_factor</div>
         <div class="glossary-def">A cost multiplier on <code>benchmark_score</code> that decays as your agent burns more output tokens. <strong>Free up to 10k tokens</strong>; linearly decays from 1.0 down to <strong>0.85</strong> at the 50k cap. Encourages concise patches — paying for more tokens shouldn't be a path to winning when a shorter patch would have worked.</div>
         <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-curated-models">Curated models</a><a href="#gl-tao">TAO</a></div>
+        <div class="glossary-mc-link"><span class="glossary-mc-link-label">Factor detail</span><a href="#mc-efficiency" data-mc-target="mc-efficiency" title="Jump to the Factor Details card with math, range, and edge cases">★ Token Efficiency card ↗</a></div>
       </div>
     </div>
   </section>
@@ -2583,6 +2601,7 @@
     <div class="metric-grid">
       <div class="metric-card" id="mc-test-pass-rate">
         <a class="mc-backlink" href="#s-formula" onclick="event.preventDefault(); document.getElementById('s-formula')?.scrollIntoView({behavior:'smooth',block:'start'});">↑ Formula</a>
+        <a class="mc-backlink mc-to-gl" href="#gl-test-pass-rate" data-gl-target="gl-test-pass-rate" title="Jump to the glossary card defining test_pass_rate">↓ Glossary</a>
         <div class="metric-name">Test Pass Rate</div>
         <div class="metric-var">test_pass_rate</div>
         <div class="metric-range">0.0 – 1.0</div>
@@ -2591,6 +2610,7 @@
       </div>
       <div class="metric-card" id="mc-relative-score">
         <a class="mc-backlink" href="#s-formula" onclick="event.preventDefault(); document.getElementById('s-formula')?.scrollIntoView({behavior:'smooth',block:'start'});">↑ Formula</a>
+        <a class="mc-backlink mc-to-gl" href="#gl-structural-match" data-gl-target="gl-structural-match" title="Jump to the glossary card defining Structural Match (relative_score)">↓ Glossary</a>
         <div class="metric-name">Structural Match</div>
         <div class="metric-var">relative_score</div>
         <div class="metric-range">0.0 – 2.0</div>
@@ -2599,6 +2619,7 @@
       </div>
       <div class="metric-card" id="mc-anti-gaming">
         <a class="mc-backlink" href="#s-formula" onclick="event.preventDefault(); document.getElementById('s-formula')?.scrollIntoView({behavior:'smooth',block:'start'});">↑ Formula</a>
+        <a class="mc-backlink mc-to-gl" href="#gl-anti-gaming" data-gl-target="gl-anti-gaming" title="Jump to the glossary card defining Anti-Gaming">↓ Glossary</a>
         <div class="metric-name">Anti-Gaming</div>
         <div class="metric-var">anti_gaming_multiplier</div>
         <div class="metric-range">0.5 – 1.0</div>
@@ -2640,6 +2661,7 @@
       </div>
       <div class="metric-card" id="mc-test-quality">
         <a class="mc-backlink" href="#s-formula" onclick="event.preventDefault(); document.getElementById('s-formula')?.scrollIntoView({behavior:'smooth',block:'start'});">↑ Formula</a>
+        <a class="mc-backlink mc-to-gl" href="#gl-tqf" data-gl-target="gl-tqf" title="Jump to the glossary card defining tqf (test_quality_factor)">↓ Glossary</a>
         <div class="metric-name">Test Quality</div>
         <div class="metric-var">test_quality_factor</div>
         <div class="metric-range">0.85 – 1.0</div>
@@ -2648,6 +2670,7 @@
       </div>
       <div class="metric-card" id="mc-efficiency">
         <a class="mc-backlink" href="#s-formula" onclick="event.preventDefault(); document.getElementById('s-formula')?.scrollIntoView({behavior:'smooth',block:'start'});">↑ Formula</a>
+        <a class="mc-backlink mc-to-gl" href="#gl-efficiency" data-gl-target="gl-efficiency" title="Jump to the glossary card defining efficiency_factor">↓ Glossary</a>
         <div class="metric-name">Token Efficiency</div>
         <div class="metric-var">efficiency_factor</div>
         <div class="metric-range">0.85 – 1.0</div>
@@ -4579,6 +4602,27 @@ function initScoringPage() {
       card.classList.remove('gl-flash');
       void card.offsetWidth;
       card.classList.add('gl-flash');
+    });
+  }
+  // Bidirectional bridge: metric-card ↓ Glossary  AND  glossary-card → Factor Details
+  // Both stay on the Scoring page, both use smooth-scroll + class-based flash for SPA reliability.
+  if (!window._mcGlBridgeWired) {
+    window._mcGlBridgeWired = true;
+    document.addEventListener('click', (ev) => {
+      const toGl = ev.target.closest('a.mc-to-gl[data-gl-target]');
+      const toMc = ev.target.closest('a.glossary-mc-link a[data-mc-target], a[data-mc-target]');
+      const a = toGl || toMc;
+      if (!a) return;
+      const id = a.getAttribute('data-gl-target') || a.getAttribute('data-mc-target');
+      if (!id) return;
+      ev.preventDefault();
+      const card = document.getElementById(id);
+      if (!card) return;
+      const flashClass = id.startsWith('gl-') ? 'gl-flash' : 'mc-flash';
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.remove(flashClass);
+      void card.offsetWidth;
+      card.classList.add(flashClass);
     });
   }
   const d = globalData;

@@ -3094,10 +3094,18 @@ function openDrawer(p, pushHash = true) {
   if (p.test_cmd && p.test_cmd.length > 0) {
     const testSection = document.createElement('div');
     testSection.className = 'drawer-section';
+    const cmdStr = p.test_cmd.join(' ');
     testSection.innerHTML = `
-      <div class="drawer-section-title" style="display:flex;align-items:center;justify-content:space-between">Eval Test Command <button class="copy-btn" style="font-size:10px;padding:2px 8px" onclick="navigator.clipboard.writeText(${JSON.stringify(p.test_cmd.join(' '))}).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1200)})">Copy</button></div>
-      <div class="test-cmd">${esc(p.test_cmd.join(' '))}</div>
+      <div class="drawer-section-title" style="display:flex;align-items:center;justify-content:space-between">Eval Test Command <button class="copy-btn test-copy-btn" style="font-size:10px;padding:2px 8px">Copy</button></div>
+      <div class="test-cmd">${esc(cmdStr)}</div>
     `;
+    const copyBtn = testSection.querySelector('.test-copy-btn');
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(cmdStr).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200);
+      });
+    });
     body.appendChild(testSection);
   }
 

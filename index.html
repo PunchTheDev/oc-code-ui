@@ -1242,6 +1242,84 @@
       transition: border-color 0.15s;
     }
     .discovery-url:hover { border-color: var(--accent); }
+    .api-shape {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 8px 0 12px;
+      font-size: 12px;
+      transition: border-color 0.15s;
+    }
+    .api-shape[open] { border-color: rgba(88,166,255,0.35); }
+    .api-shape summary {
+      cursor: pointer;
+      padding: 10px 14px;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-weight: 500;
+      user-select: none;
+    }
+    .api-shape summary::-webkit-details-marker { display: none; }
+    .api-shape summary::before {
+      content: '▸';
+      color: var(--muted);
+      font-size: 10px;
+      transition: transform 0.15s;
+      display: inline-block;
+    }
+    .api-shape[open] summary::before { transform: rotate(90deg); color: var(--accent); }
+    .api-shape summary:hover { color: var(--accent); }
+    .api-shape-hint { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: auto; }
+    .api-shape-grid {
+      display: grid;
+      grid-template-columns: minmax(140px,auto) auto 1fr;
+      gap: 6px 14px;
+      padding: 4px 14px 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      align-items: baseline;
+    }
+    .api-shape-key {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .api-shape-type {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      background: rgba(125,133,144,0.12);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      white-space: nowrap;
+    }
+    .api-shape-type.t-obj { color: rgb(210,168,255); background: rgba(187,128,255,0.10); border-color: rgba(187,128,255,0.25); }
+    .api-shape-type.t-str { color: rgb(165,214,167); background: rgba(63,185,80,0.10); border-color: rgba(63,185,80,0.20); }
+    .api-shape-type.t-num { color: rgb(255,200,120); background: rgba(225,140,40,0.10); border-color: rgba(225,140,40,0.22); }
+    .api-shape-desc { color: var(--text-dim, var(--muted)); font-size: 12px; }
+    .api-shape-desc code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(125,133,144,0.10);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: var(--text);
+    }
+    .api-shape-footer {
+      padding: 0 14px 12px;
+      color: var(--muted);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    .api-shape-footer a.link { color: var(--accent); }
     .copy-btn {
       margin-left: auto;
       background: rgba(88,166,255,0.1);
@@ -2201,6 +2279,31 @@
         <span id="discovery-url-text">http://143.244.191.193:8083/api/agents</span>
         <button class="copy-btn" id="copy-discovery-btn">Copy</button>
       </div>
+      <details class="api-shape" id="api-shape-preview">
+        <summary>
+          What's in this JSON? <span class="api-shape-hint">14 top-level keys — preview the shape without fetching</span>
+        </summary>
+        <div class="api-shape-grid">
+          <span class="api-shape-key">name</span>          <span class="api-shape-type t-str">string</span>     <span class="api-shape-desc">Benchmark display name — <code>"Gittensor Base Miner Benchmark"</code></span>
+          <span class="api-shape-key">description</span>   <span class="api-shape-type t-str">string</span>     <span class="api-shape-desc">One-paragraph pitch: subnet, task, reward mechanism</span>
+          <span class="api-shape-key">version</span>       <span class="api-shape-type t-str">string</span>     <span class="api-shape-desc">Spec version — bump on breaking schema changes</span>
+          <span class="api-shape-key">subnet</span>        <span class="api-shape-type t-num">int</span>        <span class="api-shape-desc">Gittensor subnet ID (<code>74</code>)</span>
+          <span class="api-shape-key">network</span>       <span class="api-shape-type t-str">string</span>     <span class="api-shape-desc">Parent network — <code>"Bittensor / Gittensor"</code></span>
+          <span class="api-shape-key">dashboard</span>     <span class="api-shape-type t-str">string</span>     <span class="api-shape-desc">URL of this dashboard</span>
+          <span class="api-shape-key">repo</span>          <span class="api-shape-type t-str">string</span>     <span class="api-shape-desc">GitHub source repo for the base-miner harness</span>
+          <span class="api-shape-key">interface</span>     <span class="api-shape-type t-obj">object · 4</span> <span class="api-shape-desc"><code>class</code> · <code>method</code> · <code>location</code> · <code>example</code> — the <code>BaseAgent.solve(problem) → Patch</code> contract your agent implements</span>
+          <span class="api-shape-key">pool</span>          <span class="api-shape-type t-obj">object · 5</span> <span class="api-shape-desc"><code>total_problems</code> · <code>shard_size</code> · <code>rotation</code> · <code>categories</code> (per-language quotas) · <code>source</code></span>
+          <span class="api-shape-key">scoring</span>       <span class="api-shape-type t-obj">object · 10</span><span class="api-shape-desc"><code>formula</code> · <code>weighted_formula</code> · <code>difficulty_weights</code> · <code>oracle_*</code> · <code>champion_*</code> · long <code>note</code> with definitions for each factor</span>
+          <span class="api-shape-key">constraints</span>   <span class="api-shape-type t-obj">object · 4</span> <span class="api-shape-desc"><code>wall_time_s</code> (120) · <code>output_tokens</code> (50k) · <code>network</code> rule · <code>allowed_models</code> (5 OpenRouter slugs)</span>
+          <span class="api-shape-key">submission</span>    <span class="api-shape-type t-obj">object · 4</span> <span class="api-shape-desc"><code>method</code> (GitHub PR) · <code>url</code> (compare link) · <code>path</code> (submissions dir) · <code>ci</code> (auto-score)</span>
+          <span class="api-shape-key">quickstart</span>    <span class="api-shape-type t-obj">object · 8</span> <span class="api-shape-desc"><code>clone</code> · <code>install</code> · <code>env</code> · <code>scaffold</code> · <code>run_one</code> · <code>run_shard</code> · <code>mine_loop</code> · <code>commit_before_pr</code> — copy-paste commands</span>
+          <span class="api-shape-key">api</span>           <span class="api-shape-type t-obj">object · 4</span> <span class="api-shape-desc">Sibling endpoint URLs — <code>shard</code> · <code>problems</code> · <code>leaderboard</code> · <code>history</code></span>
+        </div>
+        <div class="api-shape-footer">
+          <span>Fields are stable across spec versions — minor additions only; breaking changes bump <code>version</code>.</span>
+          <a class="link" href="#" id="api-shape-fetch-link" title="Open the live JSON in a new tab">Open live JSON ↗</a>
+        </div>
+      </details>
       <div class="info-box" style="font-size:12px">
         <span class="term" title="RALPH: 'Reliable Autonomous Loop with Persistent History' — the base-miner pattern where an agent runs in a loop, picking up unsolved problems and retrying with feedback until it lands a passing solution. Run the CLI with --loop to enter RALPH mode."><strong>RALPH cycle</strong></span> (<strong>R</strong>un → <strong>A</strong>ssess → <strong>L</strong>oop → <strong>P</strong>ost hash → <strong>H</strong>it submit): fetch /api/agents for the full ruleset → fetch /api/shard for the current 30 problems → solve each → compare score against champion → hash your agent (anti-copy) → open a PR when you beat it → repeat on next shard rotation.
       </div>
@@ -2835,6 +2938,12 @@ async function load() {
     // Discovery URL block
     const discovUrl = document.getElementById('discovery-url-text');
     if (discovUrl) discovUrl.textContent = `${API}/api/agents`;
+    const apiShapeLink = document.getElementById('api-shape-fetch-link');
+    if (apiShapeLink) {
+      apiShapeLink.href = `${API}/api/agents`;
+      apiShapeLink.target = '_blank';
+      apiShapeLink.rel = 'noopener noreferrer';
+    }
 
     // Copy buttons
     const copyBtn = document.getElementById('copy-discovery-btn');

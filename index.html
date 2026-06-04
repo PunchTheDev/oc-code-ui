@@ -644,6 +644,19 @@
     .repo-rank.rank-3 { color: #c08c5d; background: rgba(192,140,93,0.15); border-color: rgba(192,140,93,0.40); }
     .repo-row[data-rank] .repo-name a { font-weight: 600; }
     .repo-row[data-rank] .repo-count { color: var(--text); font-weight: 600; }
+    /* Long-tail divider — visually separates ranked top-3 from the flat tail */
+    .repo-longtail-divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 10px 0 4px 0; padding: 0 12px 0 10px;
+      font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .repo-longtail-divider::before,
+    .repo-longtail-divider::after {
+      content: ""; flex: 1; height: 1px; background: var(--border);
+    }
+    .repo-longtail-divider .ld-label { font-family: var(--mono); white-space: nowrap; }
+    .repo-longtail-divider .ld-label strong { color: var(--text); }
     .repo-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .repo-bar-fill { height: 100%; background: linear-gradient(90deg, #1f6feb, #58a6ff); border-radius: 3px; transition: width 0.6s; }
     .repo-count { color: var(--muted); font-size: 12px; min-width: 30px; text-align: right; font-family: var(--mono); }
@@ -4454,7 +4467,18 @@ function initScoringPage() {
     rb.parentNode.insertBefore(cap, rb);
   }
 
-  Object.entries(repos).sort((a, b) => b[1] - a[1]).forEach(([repo, count], idx) => {
+  const sortedRepos = Object.entries(repos).sort((a, b) => b[1] - a[1]);
+  const tailCount = Math.max(0, sortedRepos.length - 3);
+  const tailProblems = sortedRepos.slice(3).reduce((s, [, c]) => s + c, 0);
+  const tailPct = totalProblems > 0 ? Math.round((tailProblems / totalProblems) * 100) : 0;
+  sortedRepos.forEach(([repo, count], idx) => {
+    if (idx === 3 && tailCount > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'repo-longtail-divider';
+      sep.setAttribute('role', 'separator');
+      sep.innerHTML = `<span class="ld-label">Long tail · <strong>${tailCount}</strong> repos · <strong>${tailProblems}</strong> problems (${tailPct}% of pool)</span>`;
+      rb.appendChild(sep);
+    }
     const pct = (count / maxCount * 100).toFixed(0);
     const poolPct = totalProblems > 0 ? ((count / totalProblems) * 100).toFixed(0) : 0;
     const lang = repoLang[repo] || 'other';

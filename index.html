@@ -2863,6 +2863,37 @@ function renderProblems() {
       ? `${allProblems.length} problems`
       : `${visible.length} of ${allProblems.length} shown`;
 
+  // Reactive chip counts — each chip shows what you'd get IF clicked (other filters preserved)
+  const countMatching = (catOverride, diffOverride) => {
+    let n = 0;
+    for (const p of allProblems) {
+      if (q && !((p.title || '').toLowerCase().includes(q)) && !(p.repo.toLowerCase().includes(q))) continue;
+      if (catOverride && probCat(p) !== catOverride) continue;
+      if (diffOverride && p.difficulty !== diffOverride) continue;
+      if (activeShardOnly && !shardProblemIds.has(p.id)) continue;
+      n++;
+    }
+    return n;
+  };
+  const catLabelsLive = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', go: 'Go', jvm: 'JVM (Java/Kotlin)', ruby: 'Ruby' };
+  document.querySelectorAll('.lang-chip').forEach(chip => {
+    const cat = chip.dataset.cat;
+    if (cat === undefined) return;
+    const count = countMatching(cat || null, activeDiff || null);
+    const label = !cat ? `All (${count})` : `${catLabelsLive[cat] || cat} (${count})`;
+    [...chip.childNodes].forEach(n => { if (n.nodeType === Node.TEXT_NODE) n.remove(); });
+    chip.appendChild(document.createTextNode(label));
+  });
+  const diffLabelsLive = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+  document.querySelectorAll('.diff-chip').forEach(chip => {
+    const diff = chip.dataset.diff;
+    if (diff === undefined) return;
+    const count = countMatching(activeCat || null, diff || null);
+    const label = !diff ? `All tiers (${count})` : `${diffLabelsLive[diff] || diff} (${count})`;
+    [...chip.childNodes].forEach(n => { if (n.nodeType === Node.TEXT_NODE) n.remove(); });
+    chip.appendChild(document.createTextNode(label));
+  });
+
   renderActiveFiltersBar(visible.length);
 
   if (visible.length === 0) {

@@ -3346,6 +3346,33 @@ function setPage(name, pushHistory = false) {
   }
 }
 
+// Glossary deep-link: pasting …/#gl-tqf into a fresh tab (or hashchange to one)
+// switches to Scoring, scrolls/flashes the matching card, and surfaces the
+// transient ← Formula breadcrumb (~6s) the same as an mc-* → gl-* arrival.
+function handleGlDeepLink(id) {
+  if (!/^gl-[a-z0-9-]+$/i.test(id)) return false;
+  setPage('scoring', false);
+  const attempt = (tries) => {
+    const card = document.getElementById(id);
+    if (!card) {
+      if (tries > 0) setTimeout(() => attempt(tries - 1), 80);
+      return;
+    }
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.remove('gl-flash');
+    void card.offsetWidth;
+    card.classList.add('gl-flash');
+    const bc = card.querySelector('.gl-breadcrumb');
+    if (bc) {
+      if (bc._hideT) { clearTimeout(bc._hideT); bc._hideT = null; }
+      bc.classList.add('show');
+      bc._hideT = setTimeout(() => { bc.classList.remove('show'); bc._hideT = null; }, 6000);
+    }
+  };
+  setTimeout(() => attempt(8), 80);
+  return true;
+}
+
 function router() {
   const h = window.location.hash;
   // Deep link: problem drawer
@@ -3356,6 +3383,9 @@ function router() {
     if (target) openDrawer(target, false);
     return;
   }
+  // Deep link: glossary card (#gl-tqf, #gl-anti-gaming, etc.)
+  const glMatch = h.match(/^#(gl-[a-z0-9-]+)$/i);
+  if (glMatch && handleGlDeepLink(glMatch[1])) return;
   const pg = currentPage() || 'home';
   setPage(pg);
 }
@@ -3854,11 +3884,13 @@ async function load() {
         const pid = decodeURIComponent(probMatch[1]);
         const target = allProblems.find(p => p.id === pid);
         if (target) openDrawer(target, false);
-      } else {
-        closeDrawer();
-        const pg = currentPage() || 'home';
-        setPage(pg);
+        return;
       }
+      const glMatch = h.match(/^#(gl-[a-z0-9-]+)$/i);
+      if (glMatch && handleGlDeepLink(glMatch[1])) return;
+      closeDrawer();
+      const pg = currentPage() || 'home';
+      setPage(pg);
     });
 
     // Route to current page

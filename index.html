@@ -1320,7 +1320,7 @@
     <h2>Problem Sampling</h2>
     <div class="info-box" style="margin-bottom:16px">
       Each eval round samples <strong>30 problems</strong> randomly within language quotas:
-      <strong>11 Python · 7 Rust · 5 TypeScript · 3 Go · 2 JVM · 2 Ruby</strong>.
+      <strong>10 Python · 7 Rust · 5 TypeScript · 4 Go · 2 JVM · 2 Ruby</strong>.
       Shard rotates weekly on a fixed epoch (2024-01-01, 7-day cycles).
     </div>
     <div class="info-box" style="margin-bottom:16px">
@@ -1636,6 +1636,14 @@ function currentPage() {
   return PAGES.includes(pg) ? pg : 'home';
 }
 
+const PAGE_TITLES = {
+  home: 'Gittensor Base Miner',
+  problems: 'Problems — Gittensor Base Miner',
+  leaderboard: 'Leaderboard — Gittensor Base Miner',
+  scoring: 'Scoring — Gittensor Base Miner',
+  mining: 'Start Mining — Gittensor Base Miner',
+};
+
 function setPage(name, pushHistory = false) {
   PAGES.forEach(p => {
     document.getElementById(`page-${p}`).classList.toggle('active', p === name);
@@ -1643,6 +1651,7 @@ function setPage(name, pushHistory = false) {
   document.querySelectorAll('.nav-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.page === name);
   });
+  document.title = PAGE_TITLES[name] || 'Gittensor Base Miner';
   if (pushHistory) {
     history.pushState(null, '', `#/${name}`);
   }
@@ -1823,6 +1832,8 @@ async function load() {
     if (swaggerLink) { swaggerLink.href = `${API}/docs`; swaggerLink.target = '_blank'; }
     const swaggerDocsLink = document.getElementById('swagger-docs-link');
     if (swaggerDocsLink) { swaggerDocsLink.href = `${API}/docs`; }
+    const agentsLink = document.getElementById('agents-link');
+    if (agentsLink) { agentsLink.href = `${API}/api/agents`; }
 
     // Discovery URL block
     const discovUrl = document.getElementById('discovery-url-text');
@@ -2246,7 +2257,7 @@ function initMiningPage() {
 
   const modelMeta = {
     'deepseek/deepseek-chat': { label: 'DeepSeek V3', cost: '~$0.27/$1.10 per M tokens', note: 'Default — strong general coding' },
-    'deepseek/deepseek-v4-flash': { label: 'DeepSeek V4 Flash', cost: 'Low cost', note: 'Next-gen fast variant' },
+    'deepseek/deepseek-v4-flash': { label: 'DeepSeek V4 Flash', cost: '~$0.10/$0.20 per M tokens', note: 'Next-gen fast variant' },
     'openai/gpt-4o-mini': { label: 'GPT-4o-mini', cost: '$0.15/$0.60 per M tokens', note: 'OpenAI GPT-4o-class' },
     'google/gemini-2.5-flash-lite': { label: 'Gemini 2.5 Flash Lite', cost: '~$0.10/$0.40 per M tokens', note: 'Fastest + cheapest' },
     'qwen/qwen-2.5-coder-32b-instruct': { label: 'Qwen 2.5 Coder 32B', cost: 'Free tier available', note: 'Open-weight coding specialist' },

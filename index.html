@@ -310,6 +310,16 @@
     .info-i { display: inline-block; width: 12px; height: 12px; line-height: 11px; text-align: center; border: 1px solid currentColor; border-radius: 50%; font-size: 9px; font-weight: 600; font-style: normal; vertical-align: 1px; opacity: 0.7; }
     .info-i::before { content: 'i'; }
 
+    /* Glossary term — dotted underline + hover tooltip via native title attribute */
+    .term { border-bottom: 1px dotted var(--muted); cursor: help; text-decoration: none; }
+    .term:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Glossary grid on Scoring page */
+    .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .glossary-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+    .glossary-term { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; margin-bottom: 4px; }
+    .glossary-def { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
     /* ── Language / category badges ─────────────────────── */
     .lang-badge {
       display: inline-block;
@@ -1368,7 +1378,63 @@
     <a href="#/scoring" onclick="event.preventDefault();document.getElementById('s-difficulty').scrollIntoView({behavior:'smooth'})" style="font-size:12px;color:var(--muted);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:4px;transition:border-color 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Difficulty</a>
     <a href="#/scoring" onclick="event.preventDefault();document.getElementById('s-anticopy').scrollIntoView({behavior:'smooth'})" style="font-size:12px;color:var(--muted);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:4px;transition:border-color 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Anti-Copy</a>
     <a href="#/scoring" onclick="event.preventDefault();document.getElementById('s-pool').scrollIntoView({behavior:'smooth'})" style="font-size:12px;color:var(--muted);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:4px;transition:border-color 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Pool</a>
+    <a href="#/scoring" onclick="event.preventDefault();document.getElementById('s-glossary').scrollIntoView({behavior:'smooth'})" style="font-size:12px;color:var(--muted);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:4px;transition:border-color 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Glossary</a>
   </div>
+
+  <section id="s-glossary" style="margin-bottom:32px">
+    <h2>Glossary</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Every term used on this site, in one place. Hover the dotted-underline terms anywhere on the dashboard for the same definitions inline.</p>
+    <div class="glossary-grid">
+      <div class="glossary-card">
+        <div class="glossary-term">Oracle</div>
+        <div class="glossary-def">The accepted (merged) pull request for each problem. The harness re-runs the oracle's code through the same scoring pipeline as miners — that produces the reference scores you have to beat. <code>weighted_benchmark_score</code> of the oracle is fixed at <strong>1.0</strong> by definition.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">SOTA</div>
+        <div class="glossary-def">"State of the Art" — the highest <code>weighted_benchmark_score</code> any miner has submitted in the current evaluation round. Shown on the Leaderboard as <em>Best score (SOTA)</em>.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">Shard</div>
+        <div class="glossary-def">A subset of problems sampled from the full pool each week. Only the shard's problems count toward scoring this round — see Sampling below. The full pool is 1123 problems; the shard is 30.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">Epoch</div>
+        <div class="glossary-def">One scoring round — a weekly cycle where the shard is fixed, miners submit, and TAO rewards are distributed at the end. Currently 7 days, rotating Sundays at 02:00 UTC.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">RALPH</div>
+        <div class="glossary-def">"Reliable Autonomous Loop with Persistent History" — the base-miner pattern where an agent runs in a loop, picking up unsolved problems and retrying with feedback until it lands a passing solution. Run the CLI with <code>--loop</code> to enter RALPH mode.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">DAS</div>
+        <div class="glossary-def">"Difficulty-Adjusted Sampling" — the pool rotation mechanism that re-weights problem selection toward harder, less-explored regions of the corpus to keep the benchmark fresh and prevent stale-shard farming.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">TAO</div>
+        <div class="glossary-def">Gittensor's network token. The reward currency miners earn each epoch in proportion to <code>weighted_benchmark_score</code> above the oracle baseline.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">tqf</div>
+        <div class="glossary-def">Short for <code>test_quality_factor</code>. The credit you get for adding test assertions when the reference solution did too — capped between 0.85 and 1.0. See Factor Details.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">Anti-Gaming</div>
+        <div class="glossary-def">The <code>anti_gaming_multiplier</code> — a graduated penalty for removing test assertions to inflate pass rate. ≤3 removed = no penalty; floor of 0.5 above 8.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">Gain (crown bonus)</div>
+        <div class="glossary-def">A 3× weight multiplier earned by submissions that beat the previous champion on a problem. Decays each time the crown changes hands, so margins tighten as miners converge.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">Curated models</div>
+        <div class="glossary-def">A small, fixed list of cheap, on-par open-source LLMs your agent may call. Curation keeps it a coding fight, not a model-money arms race.</div>
+      </div>
+      <div class="glossary-card">
+        <div class="glossary-term">Structural Match</div>
+        <div class="glossary-def">Internal name <code>relative_score</code>. Your weighted AST-node count ÷ the oracle's. Functions ×3, classes ×3, branches ×2. Only matters after correctness gates pass.</div>
+      </div>
+    </div>
+  </section>
 
   <section id="s-formula">
     <h2>Scoring Formula</h2>

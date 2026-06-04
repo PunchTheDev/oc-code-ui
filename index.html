@@ -1698,6 +1698,19 @@
     .mining-step.phase-setup  { border-top-color: var(--accent); }
     .mining-step.phase-build  { border-top-color: var(--purple); }
     .mining-step.phase-submit { border-top-color: #f7b955; }
+    .mining-step { transition: transform 0.15s, box-shadow 0.15s, background 0.15s; }
+    .mining-step.is-peer-hover { transform: translateY(-2px); }
+    .mining-step.phase-setup.is-peer-hover  { box-shadow: 0 0 0 2px rgba(88,166,255,0.45); background: rgba(88,166,255,0.05); }
+    .mining-step.phase-build.is-peer-hover  { box-shadow: 0 0 0 2px rgba(187,128,255,0.45); background: rgba(187,128,255,0.05); }
+    .mining-step.phase-submit.is-peer-hover { box-shadow: 0 0 0 2px rgba(247,185,85,0.50); background: rgba(247,185,85,0.05); }
+    .qs-explain-grid .qs-step-header { transition: background 0.15s, padding-left 0.15s, border-left-color 0.15s; border-left: 2px solid transparent; padding-left: 8px; margin-left: -10px; }
+    .qs-explain-grid .qs-step-header.is-peer-hover { background: rgba(88,166,255,0.06); border-left-color: var(--accent); }
+    .qs-explain-grid .qs-step-header[data-step="3"].is-peer-hover { background: rgba(187,128,255,0.06); border-left-color: var(--purple); }
+    .qs-explain-grid .qs-step-header[data-step="4"].is-peer-hover,
+    .qs-explain-grid .qs-step-header[data-step="5"].is-peer-hover { background: rgba(247,185,85,0.06); border-left-color: #f7b955; }
+    @media (prefers-reduced-motion: reduce) {
+      .mining-step.is-peer-hover { transform: none; }
+    }
     .mining-step .ms-phase {
       font-size: 9px; font-weight: 700; letter-spacing: 0.10em;
       text-transform: uppercase; opacity: 0.85; margin-bottom: 4px;
@@ -2723,7 +2736,7 @@
     <section>
       <h2>5-Step Quickstart</h2>
       <div class="mining-step-grid">
-        <div class="mining-step phase-setup">
+        <div class="mining-step phase-setup" data-step="1">
           <div class="ms-phase">Setup</div>
           <div class="ms-num">Step 1</div>
           <div class="ms-title">Clone &amp; Install</div>
@@ -2733,7 +2746,7 @@
             <span class="ms-chip ms-chip-out" title="What you'll have after this step">→ repo cloned</span>
           </div>
         </div>
-        <div class="mining-step phase-setup">
+        <div class="mining-step phase-setup" data-step="2">
           <div class="ms-phase">Setup</div>
           <div class="ms-num">Step 2</div>
           <div class="ms-title">Init Your Agent</div>
@@ -2743,7 +2756,7 @@
             <span class="ms-chip ms-chip-out" title="What you'll have after this step">→ agent/ scaffolded</span>
           </div>
         </div>
-        <div class="mining-step phase-build">
+        <div class="mining-step phase-build" data-step="3">
           <div class="ms-phase">Build</div>
           <div class="ms-num">Step 3</div>
           <div class="ms-title">Test Locally</div>
@@ -2753,7 +2766,7 @@
             <span class="ms-chip ms-chip-out" title="What you'll have after this step">→ benchmark_score</span>
           </div>
         </div>
-        <div class="mining-step phase-submit">
+        <div class="mining-step phase-submit" data-step="4">
           <div class="ms-phase">Submit</div>
           <div class="ms-num">Step 4</div>
           <div class="ms-title">Register Hash</div>
@@ -2763,7 +2776,7 @@
             <span class="ms-chip ms-chip-out" title="What you'll have after this step">→ sha256 logged</span>
           </div>
         </div>
-        <div class="mining-step phase-submit">
+        <div class="mining-step phase-submit" data-step="5">
           <div class="ms-phase">Submit</div>
           <div class="ms-num">Step 5</div>
           <div class="ms-title">Submit a PR</div>
@@ -2807,7 +2820,7 @@
         </summary>
         <div class="qs-explain-grid">
 
-          <div class="qs-step-header">
+          <div class="qs-step-header" data-step="1">
             <span class="qs-step-num qs-setup">Step 1 · Setup</span>
             <span class="qs-step-title">Clone &amp; install</span>
             <span class="qs-step-goal">→ repo cloned, deps installed</span>
@@ -2819,7 +2832,7 @@
           <div><span class="qs-tok qs-tok-op">&amp;&amp;</span> <span class="qs-tok">pip install -r requirements.txt</span></div>
           <div class="qs-explain-desc">Install Python deps: <code>openai</code>, <code>requests</code>, <code>pytest</code>, <code>unidiff</code>, etc. Python <strong>3.11+</strong> required.</div>
 
-          <div class="qs-step-header">
+          <div class="qs-step-header" data-step="2">
             <span class="qs-step-num qs-setup">Step 2 · Setup</span>
             <span class="qs-step-title">Set key &amp; scaffold agent</span>
             <span class="qs-step-goal">→ <code>agent/submissions/&lt;handle&gt;/</code> created</span>
@@ -2829,7 +2842,7 @@
           <div><span class="qs-tok qs-tok-cmd">gitminer.py init</span> <span class="qs-tok">&lt;handle&gt;</span></div>
           <div class="qs-explain-desc">Scaffolds <code>agent/submissions/&lt;handle&gt;/</code> from the example template: copies <code>agent.py</code>, writes <code>meta.json</code> with the correct sha256, and registers your handle.</div>
 
-          <div class="qs-step-header">
+          <div class="qs-step-header" data-step="3">
             <span class="qs-step-num qs-build">Step 3 · Build</span>
             <span class="qs-step-title">Score one problem, then loop the shard</span>
             <span class="qs-step-goal">→ <code>benchmark_score</code> printed</span>
@@ -2847,7 +2860,7 @@
           <div><span class="qs-tok qs-tok-cmd">gitminer.py mine</span> <span class="qs-tok qs-tok-flag">--agent</span> <span class="qs-tok">&lt;path&gt;</span></div>
           <div class="qs-explain-desc">Runs your agent continuously over the current rotating 30-problem shard. When you beat the live champion score, it auto-submits a PR — useful once you're confident, not for first runs.</div>
 
-          <div class="qs-step-header">
+          <div class="qs-step-header" data-step="4">
             <span class="qs-step-num qs-submit">Step 4 · Submit</span>
             <span class="qs-step-title">Register hash (commit-reveal anti-copy)</span>
             <span class="qs-step-goal">→ sha256 logged server-side</span>
@@ -2855,7 +2868,7 @@
           <div><span class="qs-tok qs-tok-cmd">gitminer.py commit</span> <span class="qs-tok">&lt;path&gt;</span></div>
           <div class="qs-explain-desc">POSTs your agent's sha256 + timestamp to the API server <em>before</em> you reveal the code via PR. If someone forks and submits the same code later, the earlier commit wins — that's the anti-copy guarantee.</div>
 
-          <div class="qs-step-header">
+          <div class="qs-step-header" data-step="5">
             <span class="qs-step-num qs-submit">Step 5 · Submit</span>
             <span class="qs-step-title">Open the PR</span>
             <span class="qs-step-goal">→ PR opened on GitHub</span>
@@ -4615,6 +4628,28 @@ function initMiningPage() {
       if (pb) pb.dataset.init = '';
       renderProblems();
     });
+  });
+
+  // Bidirectional hover wiring: mining-step card ↔ qs-step-header in the explainer.
+  // Hovering either highlights the matching counterpart by data-step (1–5). If the
+  // <details id="qs-explainer"> is collapsed, the header-side highlight is invisible
+  // but harmless — the affordance surfaces the moment the user expands the explainer.
+  const cards = document.querySelectorAll('.mining-step[data-step]');
+  const headers = document.querySelectorAll('#qs-explainer .qs-step-header[data-step]');
+  const setPeer = (selector, step, on) => {
+    document.querySelectorAll(selector).forEach(el => {
+      el.classList.toggle('is-peer-hover', on && el.dataset.step === step);
+    });
+  };
+  cards.forEach(card => {
+    const step = card.dataset.step;
+    card.addEventListener('mouseenter', () => setPeer('#qs-explainer .qs-step-header[data-step]', step, true));
+    card.addEventListener('mouseleave', () => setPeer('#qs-explainer .qs-step-header[data-step]', step, false));
+  });
+  headers.forEach(header => {
+    const step = header.dataset.step;
+    header.addEventListener('mouseenter', () => setPeer('.mining-step[data-step]', step, true));
+    header.addEventListener('mouseleave', () => setPeer('.mining-step[data-step]', step, false));
   });
 }
 

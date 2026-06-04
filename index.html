@@ -2753,6 +2753,7 @@ function openSubmissionDrawer(row, allProblems) {
       <th title="Test quality factor: 0.85 + 0.15×coverage_ratio (1.0 = matched reference assertions)">TQF</th>
       <th title="Efficiency factor: 1.0 at ≤10k output tokens, linear decay to 0.85 at 50k budget. Hover for token count.">Eff</th>
       <th title="Gittensor native score (0–30)">Score</th>
+      <th title="Toggle reference diff inline">Ref</th>
     </tr></thead>
     <tbody id="sub-breakdown-body"></tbody>
   `;
@@ -2761,6 +2762,7 @@ function openSubmissionDrawer(row, allProblems) {
   body.appendChild(section);
 
   const tbody = table.querySelector('tbody');
+  const diffCache = {};
   sorted.forEach(item => {
     const prob = probMap[item.problem_id] || {};
     const benchScore = item.benchmark_score != null ? item.benchmark_score.toFixed(4) : '—';
@@ -2813,11 +2815,50 @@ function openSubmissionDrawer(row, allProblems) {
       <td style="font-size:12px">${tqfCell}</td>
       <td style="font-size:12px">${efCell}</td>
       <td class="muted" style="font-size:12px">${rawScore}</td>
+      <td style="font-size:11px">
+        <button class="ref-diff-btn link" data-pid="${esc(item.problem_id)}" title="Toggle reference diff for this problem" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:0;font-size:11px">ref diff ▶</button>
+      </td>
     `;
+    // Inline ref diff expand row
+    const diffTr = document.createElement('tr');
+    diffTr.className = 'ref-diff-expand';
+    diffTr.style.display = 'none';
+    const diffTd = document.createElement('td');
+    diffTd.colSpan = 8;
+    diffTd.style.cssText = 'padding:0 8px 12px;background:var(--surface2)';
+    diffTr.appendChild(diffTd);
+
+    tr.querySelector('.ref-diff-btn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      const open = diffTr.style.display !== 'none';
+      if (open) {
+        diffTr.style.display = 'none';
+        btn.textContent = 'ref diff ▶';
+        return;
+      }
+      diffTr.style.display = '';
+      btn.textContent = 'ref diff ▼';
+      if (diffCache[item.problem_id]) {
+        diffTd.innerHTML = renderDiff(diffCache[item.problem_id]);
+        return;
+      }
+      diffTd.innerHTML = '<div class="diff-loading" style="padding:8px 0">Loading reference diff…</div>';
+      try {
+        const res = await fetch(`${API}/api/problems/${encodeURIComponent(item.problem_id)}/diff`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const raw = await res.text();
+        diffCache[item.problem_id] = raw;
+        diffTd.innerHTML = renderDiff(raw);
+      } catch (err) {
+        diffTd.innerHTML = `<div class="diff-error" style="padding:8px 0">Failed to load diff: ${esc(err.message)}</div>`;
+      }
+    });
     tr.querySelector('td').addEventListener('click', () => {
       if (prob.id) { closeSubDrawer(); openDrawer(prob); }
     });
     tbody.appendChild(tr);
+    tbody.appendChild(diffTr);
   });
 
   // History section — async-loaded

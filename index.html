@@ -1209,6 +1209,55 @@
     .calc-row-readonly .crr-hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
     .tier-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .tier-btn.active { background: rgba(88,166,255,0.12); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    /* Win/miss verdict chip — surfaces the binary "are you winning?" state above the small print */
+    .calc-verdict {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 12px; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface2);
+      font-size: 12px; line-height: 1.4;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .calc-verdict .cv-icon {
+      width: 22px; height: 22px; flex: 0 0 22px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .calc-verdict .cv-state {
+      font-family: var(--mono); font-size: 11px; font-weight: 800;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .calc-verdict .cv-delta { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+    .calc-verdict .cv-hint { color: var(--muted); font-size: 11px; }
+    .calc-verdict.cv-win {
+      background: rgba(63,185,80,0.08); border-color: rgba(63,185,80,0.40);
+    }
+    .calc-verdict.cv-win .cv-icon { background: var(--green); color: #0b1216; }
+    .calc-verdict.cv-win .cv-state { color: var(--green); }
+    .calc-verdict.cv-win .cv-delta { color: var(--green); }
+    .calc-verdict.cv-miss {
+      background: rgba(248,81,73,0.06); border-color: rgba(248,81,73,0.35);
+    }
+    .calc-verdict.cv-miss .cv-icon { background: rgba(248,81,73,0.85); color: #1a0a08; }
+    .calc-verdict.cv-miss .cv-state { color: var(--red, #f85149); }
+    .calc-verdict.cv-miss .cv-delta { color: var(--red, #f85149); }
+    .calc-verdict.cv-tie {
+      background: rgba(210,153,34,0.06); border-color: rgba(210,153,34,0.35);
+    }
+    .calc-verdict.cv-tie .cv-icon { background: var(--yellow, #e3b341); color: #1a1408; }
+    .calc-verdict.cv-tie .cv-state { color: var(--yellow, #e3b341); }
+    .calc-verdict.cv-tie .cv-delta { color: var(--yellow, #e3b341); }
+    .calc-verdict.cv-flip { animation: cvFlipPulse 0.5s ease; }
+    @keyframes cvFlipPulse {
+      0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(88,166,255,0); }
+      40%  { transform: scale(1.02); box-shadow: 0 0 0 4px rgba(88,166,255,0.22); }
+      100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(88,166,255,0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .calc-verdict.cv-flip { animation: none; }
+    }
 
     /* ── Mining page ───────────────────────────────────────── */
     .mining-hero {
@@ -2285,7 +2334,12 @@
             <span style="font-size:12px;color:var(--muted)" title="benchmark_score × difficulty weight. Used for the pool-level weighted average — NOT the win condition. Win condition is benchmark_score > 1.0.">pool contrib (×difficulty) <span class="info-i"></span></span>
             <span id="calc-weighted" style="font-size:16px;font-weight:700;color:var(--muted);font-family:var(--mono)">2.000</span>
           </div>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px;opacity:0.6">Win condition: benchmark_score &gt; 1.0 (before weighting)</div>
+          <div id="calc-verdict" class="calc-verdict" role="status" aria-live="polite" title="Win condition: benchmark_score > 1.0 (before weighting). Tier difficulty multiplies your pool contribution but does NOT change the win bar.">
+            <span class="cv-icon" id="calc-verdict-icon">—</span>
+            <span class="cv-state" id="calc-verdict-state">—</span>
+            <span class="cv-delta" id="calc-verdict-delta"></span>
+            <span class="cv-hint" id="calc-verdict-hint">Win condition: benchmark_score &gt; 1.0 (before weighting)</span>
+          </div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
           <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px">vs Oracle</div>
@@ -3984,6 +4038,53 @@ function initScoreCalc() {
     resultEl.style.color = score >= 1.0 ? 'var(--green)' : score >= 0.5 ? 'var(--accent)' : 'var(--red,#f85149)';
 
     document.getElementById('calc-weighted').textContent = `${weighted.toFixed(4)} (×${tierWeight})`;
+
+    // ── Win/miss verdict chip ───────────────────────────────
+    // Binary state ABOVE the small print so first-timers see the win bar instantly.
+    const verdictEl = document.getElementById('calc-verdict');
+    if (verdictEl) {
+      const iconEl  = document.getElementById('calc-verdict-icon');
+      const stateEl = document.getElementById('calc-verdict-state');
+      const deltaEl = document.getElementById('calc-verdict-delta');
+      const hintEl  = document.getElementById('calc-verdict-hint');
+      const margin = score - 1.0;
+      let newClass, icon, state, delta, hint;
+      if (score > 1.0) {
+        newClass = 'cv-win';
+        icon = '✓';
+        state = 'WIN';
+        delta = `+${margin.toFixed(4)} above oracle`;
+        hint = 'Beats benchmark_score > 1.0 — TAO-eligible';
+      } else if (score === 1.0) {
+        newClass = 'cv-tie';
+        icon = '=';
+        state = 'TIE';
+        delta = '±0.0000 at oracle';
+        hint = 'Matches oracle — push above 1.0 to claim TAO';
+      } else {
+        newClass = 'cv-miss';
+        icon = '✕';
+        state = 'MISS';
+        delta = `${margin.toFixed(4)} below oracle`;
+        hint = `Win condition: benchmark_score > 1.0 (need ${(1.0 - score).toFixed(4)} more)`;
+      }
+      const prev = verdictEl.dataset.state || '';
+      if (prev !== newClass) {
+        verdictEl.classList.remove('cv-win', 'cv-miss', 'cv-tie', 'cv-flip');
+        verdictEl.classList.add(newClass);
+        // Trigger flip pulse only on state change, not on first paint
+        if (prev) {
+          void verdictEl.offsetWidth; // reflow so the animation restarts
+          verdictEl.classList.add('cv-flip');
+          setTimeout(() => verdictEl.classList.remove('cv-flip'), 520);
+        }
+        verdictEl.dataset.state = newClass;
+      }
+      iconEl.textContent  = icon;
+      stateEl.textContent = state;
+      deltaEl.textContent = delta;
+      hintEl.textContent  = hint;
+    }
 
     const oracleBeat = score > 1.0;
     const oracleTie = score === 1.0;

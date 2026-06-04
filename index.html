@@ -1273,8 +1273,8 @@
       </div>
       <div class="metric-card">
         <div class="metric-name">anti_gaming_multiplier</div>
-        <div class="metric-range">0.0 – 1.0</div>
-        <div class="metric-desc">Penalizes submissions that delete test assertions to force a pass. 1.0 = clean. Applied only when test-deletion heuristics trigger; documented in the threat model.</div>
+        <div class="metric-range">0.5 – 1.0</div>
+        <div class="metric-desc">Graduated penalty for removing test assertions. ≤3 removed → 1.0 (noise tolerance). 4–8 removed → linear decay 0.9→0.5. &gt;8 removed → floor 0.5. Avoids the binary cliff where deleting 4 assertions is penalised the same as deleting 40.</div>
       </div>
       <div class="metric-card">
         <div class="metric-name">test_quality_factor</div>
@@ -1286,6 +1286,21 @@
         <div class="metric-range">0.85 – 1.0</div>
         <div class="metric-desc">Rewards token-efficient agents. 1.0 at ≤10,000 output tokens per problem. Linear decay to 0.85 at the 50,000-token budget ceiling. An agent that hits the same quality for half the tokens ranks higher. Agents that don't report tokens receive 1.0 with no penalty.</div>
       </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0">
+      <table class="difficulty-table">
+        <thead><tr><th>Test assertions removed</th><th>anti_gaming_multiplier</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="muted">0 – 3</td><td style="color:var(--green);font-family:var(--mono)">1.0</td><td class="muted">Noise tolerance — no penalty</td></tr>
+          <tr><td class="muted">4</td><td style="color:var(--yellow);font-family:var(--mono)">0.9</td><td class="muted">Start of penalty range</td></tr>
+          <tr><td class="muted">5</td><td style="color:var(--yellow);font-family:var(--mono)">0.8</td><td class="muted"></td></tr>
+          <tr><td class="muted">6</td><td style="color:var(--yellow);font-family:var(--mono)">0.7</td><td class="muted"></td></tr>
+          <tr><td class="muted">7</td><td style="color:var(--accent);font-family:var(--mono)">0.6</td><td class="muted"></td></tr>
+          <tr><td class="muted">8</td><td style="color:var(--accent);font-family:var(--mono)">0.5</td><td class="muted"></td></tr>
+          <tr><td class="muted">&gt; 8</td><td style="color:var(--accent);font-family:var(--mono)">0.5</td><td class="muted">Floor — maximum penalty</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="info-box">
@@ -1583,6 +1598,12 @@ let sotaChart = null;
 let diffChart = null;
 let agentHistChart = null;
 
+// Debounce helper — delays fn until ms ms after the last call.
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
 // ── Routing ───────────────────────────────────────────────────
 const PAGES = ['home', 'problems', 'leaderboard', 'scoring', 'mining'];
 
@@ -1800,11 +1821,11 @@ async function load() {
       });
     });
 
-    // Wire problem search and sort
-    document.getElementById('problem-search').addEventListener('input', () => {
+    // Wire problem search and sort (debounced — 1123 problems per render)
+    document.getElementById('problem-search').addEventListener('input', debounce(() => {
       document.getElementById('problems-body').dataset.init = '';
       renderProblems();
-    });
+    }, 150));
     document.querySelectorAll('#page-problems th.sortable').forEach(th => {
       th.addEventListener('click', () => {
         const col = th.dataset.col;
@@ -1823,12 +1844,12 @@ async function load() {
       });
     });
 
-    // Wire LB search
-    document.getElementById('lb-search').addEventListener('input', e => {
+    // Wire LB search (debounced)
+    document.getElementById('lb-search').addEventListener('input', debounce(e => {
       lbSearchQ = e.target.value.toLowerCase();
       lbPage = 1;
       renderLb();
-    });
+    }, 150));
     document.querySelectorAll('#page-leaderboard th.sortable').forEach(th => {
       th.addEventListener('click', () => {
         const col = th.dataset.lbcol;

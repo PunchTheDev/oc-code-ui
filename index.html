@@ -1418,7 +1418,7 @@
       <div class="metric-card">
         <div class="metric-name">anti_gaming_multiplier</div>
         <div class="metric-range">0.5 – 1.0</div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Penalizes: deleting test assertions to inflate pass rate</div>
+        <div style="font-size:11px;font-weight:700;color:var(--red,#f85149);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Penalizes: deleting test assertions to inflate pass rate</div>
         <div class="metric-desc">Graduated penalty for removing test assertions. ≤3 removed → 1.0 (noise tolerance). 4–8 removed → linear decay 0.9→0.5. &gt;8 removed → floor 0.5. Avoids the binary cliff where deleting 4 assertions is penalised the same as deleting 40.</div>
       </div>
       <div class="metric-card">
@@ -1993,6 +1993,7 @@ async function load() {
         const gradient = catGradients[cat] || `linear-gradient(90deg,#1f6feb,#58a6ff)`;
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;gap:12px;font-size:13px';
+        row.title = `${count} of ${total} benchmark problems are ${catFull[cat] || cat} — ${poolPct}% of the pool`;
         row.innerHTML = `
           <span style="width:90px;color:${color};font-weight:600;font-size:12px">${catFull[cat] || cat}</span>
           <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
@@ -2033,7 +2034,10 @@ async function load() {
           <div style="font-size:13px;font-weight:600;line-height:1.45;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.title||`Problem ${p.id}`)}</div>
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px">
             <span style="color:${catColors2[p.category]||'#8b949e'};font-weight:600;font-family:var(--mono)">${esc(p.category||'')}</span>
-            <span style="color:var(--muted)" title="Raw benchmark_score for the accepted solution on this problem (0–30 scale)">ref score <strong style="color:var(--text)">${(p.baseline_score||0).toFixed(1)}</strong>/30</span>
+            <span style="color:var(--muted);text-align:right">
+              <span style="font-size:10px;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.04em">oracle ref</span>
+              <strong style="color:var(--text);font-family:var(--mono)">${(p.baseline_score||0).toFixed(1)}</strong><span style="font-size:10px"> / 30</span>
+            </span>
           </div>
         `;
         card.addEventListener('mouseenter', () => { card.style.borderColor = 'var(--accent)'; card.style.boxShadow = '0 0 0 1px var(--accent)'; });

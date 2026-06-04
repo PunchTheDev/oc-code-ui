@@ -704,18 +704,50 @@
     .score-chip .chip-value { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); }
 
     /* ── Issue body markdown ─────────────────────────────── */
+    .issue-body-wrap { position: relative; }
     .issue-body {
       font-size: 13px;
       color: var(--text);
       line-height: 1.65;
       word-break: break-word;
-      max-height: 340px;
-      overflow-y: auto;
+      max-height: 180px;
+      overflow: hidden;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 14px 16px;
+      transition: max-height 0.2s ease;
     }
+    .issue-body-wrap.expanded .issue-body {
+      max-height: 520px;
+      overflow-y: auto;
+    }
+    .issue-body-fade {
+      position: absolute;
+      left: 1px; right: 1px; bottom: 1px;
+      height: 60px;
+      pointer-events: none;
+      background: linear-gradient(to bottom, transparent, var(--bg));
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+    .issue-body-wrap.expanded .issue-body-fade,
+    .issue-body-wrap.fits .issue-body-fade { display: none; }
+    .issue-body-toggle {
+      display: block;
+      margin: 8px auto 0;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 11px;
+      font-family: inherit;
+      padding: 4px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .issue-body-toggle:hover { border-color: var(--accent); background: rgba(88,166,255,0.06); }
+    .issue-body-wrap.fits .issue-body-toggle { display: none; }
     .issue-body h1, .issue-body h2, .issue-body h3 {
       font-size: 13px; font-weight: 600; color: var(--text);
       margin: 14px 0 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
@@ -3319,9 +3351,25 @@ function openDrawer(p, pushHash = true) {
     issueSection.className = 'drawer-section';
     issueSection.innerHTML = `
       <div class="drawer-section-title">Issue Description</div>
-      <div class="issue-body">${renderMarkdown(p.issue_body)}</div>
+      <div class="issue-body-wrap">
+        <div class="issue-body">${renderMarkdown(p.issue_body)}</div>
+        <div class="issue-body-fade"></div>
+        <button class="issue-body-toggle" type="button">Show more ▾</button>
+      </div>
     `;
     body.appendChild(issueSection);
+    const wrap = issueSection.querySelector('.issue-body-wrap');
+    const inner = wrap.querySelector('.issue-body');
+    const toggle = wrap.querySelector('.issue-body-toggle');
+    requestAnimationFrame(() => {
+      if (inner.scrollHeight <= inner.clientHeight + 2) {
+        wrap.classList.add('fits');
+      }
+    });
+    toggle.addEventListener('click', () => {
+      const expanded = wrap.classList.toggle('expanded');
+      toggle.textContent = expanded ? 'Show less ▴' : 'Show more ▾';
+    });
   }
 
   if (p.test_cmd && p.test_cmd.length > 0) {

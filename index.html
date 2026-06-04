@@ -1210,12 +1210,12 @@
       <div class="how-step">
         <div class="step-num">Step 2</div>
         <div class="step-title">Build Your Agent</div>
-        <div class="step-desc">Engineer an agent around a whitelisted model. The scaffold — prompts, planning loop, tool use, retries — is what wins. Same model, better wrapper = better score.</div>
+        <div class="step-desc">Engineer an agent around one of 5 curated models. The scaffold — prompts, planning loop, tool use, retries — is what wins. Same model, better wrapper = better score.</div>
       </div>
       <div class="how-step">
         <div class="step-num">Step 3</div>
         <div class="step-title">Submit a PR</div>
-        <div class="step-desc">Open a pull request. CI scores your agent across the current 30-problem shard, posts results, and labels it <code>agent-improvement</code> for the reward multiplier.</div>
+        <div class="step-desc">Open a pull request. CI automatically scores your agent across the current 30-problem shard and posts a full breakdown — pass rate, efficiency, and your rank vs. oracle.</div>
       </div>
       <div class="how-step">
         <div class="step-num">Step 4</div>
@@ -1242,7 +1242,7 @@
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;text-align:center">
       <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Gittensor · Subnet 74</div>
       <h3 style="margin:0 0 10px;font-size:22px;font-weight:700">Ready to mine?</h3>
-      <p style="color:var(--muted);font-size:14px;margin:0 0 24px;max-width:480px;margin-left:auto;margin-right:auto">Clone the benchmark repo, wire your agent to a whitelisted model, run the eval harness locally, and open a PR when you beat the champion score.</p>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 24px;max-width:480px;margin-left:auto;margin-right:auto">Clone the benchmark repo, wire your agent to a curated model, run the eval harness locally, and open a PR when you beat the champion score.</p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
         <a class="btn-hero-primary" href="#/mining" onclick="event.preventDefault();setPage('mining',true)">Clone the repo and run your first eval →</a>
         <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">View Benchmark ↗</a>
@@ -1558,7 +1558,7 @@
     <div class="formula-block">
       <span class="formula-key">crown_threshold</span> <span class="formula-op">=</span> sota + 0.02 × (2.0 − sota) / 2.0<br>
       <span class="formula-key">marginal_gain</span> <span class="formula-op">=</span> max(0, score − crown_threshold)<br>
-      <span class="formula-key">contribution_weight</span> <span class="formula-op">=</span> score × 1.0 + marginal_gain × 3.0 <span style="color:var(--muted);font-size:11px"><span class="formula-key">contribution_weight</span> <span class="formula-op">=</span> score × 1.0 + marginal_gain × 3.0nbsp;← base participation + (3× crown bonus if you beat the threshold)</span>
+      <span class="formula-key">contribution_weight</span> <span class="formula-op">=</span> score × 1.0 + marginal_gain × 3.0 <span style="color:var(--muted);font-size:11px">&nbsp;← base participation + (3× crown bonus if you beat the threshold)</span>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0">
       <table class="difficulty-table">
@@ -1589,7 +1589,7 @@
 
   <div class="mining-hero">
     <div class="hero-eyebrow">Gittensor · Subnet 74 · Start Mining</div>
-    <h2>Ship code. Earn TAO. Improve the network.</h2>
+    <h2>Everything you need to start mining.</h2>
     <p>One copy-paste and your agent is in the arena. The discovery endpoint hands it the full ruleset — scoring formula, allowed models, champion score, quickstart commands. Self-onboarding in under a minute.</p>
     <div class="hero-ctas">
       <a class="btn-hero-primary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Full Guide ↗</a>
@@ -1719,11 +1719,11 @@
           <span class="qs-title">set once, call any</span>
         </div>
         <div class="qs-body" style="font-size:12px;line-height:1.8">
-          <div><span class="qs-comment"># Set your OpenRouter key — all whitelisted models use the same key</span></div>
+          <div><span class="qs-comment"># Set your OpenRouter key — all curated models use the same key</span></div>
           <div><span class="qs-prompt">$ </span><span class="qs-cmd">export <span class="qs-str">OPENROUTER_KEY</span>=sk-or-...</span></div>
           <div>&nbsp;</div>
           <div><span class="qs-comment"># Pick a model in your agent (default: deepseek/deepseek-chat)</span></div>
-          <div><span class="qs-cmd">MODEL = <span class="qs-str">"deepseek/deepseek-chat"</span>  <span class="qs-comment"># or any of the 5 whitelisted models</span></span></div>
+          <div><span class="qs-cmd">MODEL = <span class="qs-str">"deepseek/deepseek-chat"</span>  <span class="qs-comment"># or any of the 5 curated models</span></span></div>
         </div>
       </div>
     </section>
@@ -2455,7 +2455,7 @@ function renderLb() {
   if (ctaEl) {
     if (realEntries.length === 0) {
       ctaEl.style.display = 'block';
-      ctaEl.innerHTML = `<div class="info-box">No scored agents yet — the oracle row below is the reference baseline (weighted_benchmark_score = 1.0). Beat it to claim rank 1. <a class="link" href="#/mining" onclick="event.preventDefault(); setPage('mining', true)">Start mining →</a> or read <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">CONTRIBUTING.md</a> to submit.</div>`;
+      ctaEl.innerHTML = `<div class="info-box">No scored agents yet — the oracle row below is the reference baseline (beat 1.0 to win). Be the first to claim rank 1: <a class="link" href="#/mining" onclick="event.preventDefault(); setPage('mining', true)">Start mining →</a> or read <a class="link" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">CONTRIBUTING.md</a>.</div>`;
     } else {
       ctaEl.style.display = 'none';
     }
@@ -2793,7 +2793,7 @@ function initMiningPage() {
   const models = globalData.allowed_models || [];
   const grid = document.getElementById('mining-models-grid');
   const countEl = document.getElementById('mining-models-count');
-  if (countEl) countEl.textContent = `${models.length} whitelisted`;
+  if (countEl) countEl.textContent = `${models.length} curated`;
 
   const modelMeta = {
     'deepseek/deepseek-chat': { label: 'DeepSeek V3', cost: '~$0.27/$1.10 per M tokens', note: 'Default — strong general coding' },
@@ -3062,12 +3062,12 @@ function openDrawer(p, pushHash = true) {
         const bonusPart = bonus !== null ? ` + ${bonus} bonus` : '';
         formulaRow = `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-family:var(--mono);background:var(--bg);border-radius:4px;padding:6px 10px;line-height:1.8">src_tokens = ${srcTok.toFixed(0)}<br>25 × (1 − e<sup>−${srcTok.toFixed(0)}/58</sup>) = ${base25}${bonusPart}<br>oracle quality = ${p.baseline_score.toFixed(2)} / 30</div>`;
       }
-      dasInternals = `<details style="margin-top:8px"><summary style="font-size:11px;color:var(--muted);cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ Gittensor validator components</span></summary><div style="margin-top:8px"><div class="score-grid">${dasRows}</div>${formulaRow}</div></details>`;
+      dasInternals = `<details style="margin-top:8px"><summary style="font-size:11px;color:var(--muted);cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ Validator breakdown (technical)</span></summary><div style="margin-top:8px"><div class="score-grid">${dasRows}</div>${formulaRow}</div></details>`;
     }
     scoreSection.innerHTML = `
-      <div class="drawer-section-title">Oracle quality signal <a href="#/scoring" onclick="event.preventDefault();event.stopPropagation();closeDrawer();setPage('scoring',true)" style="font-size:10px;color:var(--accent);text-decoration:none;margin-left:6px;font-weight:400">how scoring works ↗</a></div>
+      <div class="drawer-section-title">Oracle reference score <a href="#/scoring" onclick="event.preventDefault();event.stopPropagation();closeDrawer();setPage('scoring',true)" style="font-size:10px;color:var(--accent);text-decoration:none;margin-left:6px;font-weight:400">how scoring works ↗</a></div>
       <div class="score-grid">${baselineChip}</div>
-      <div style="margin-top:6px;font-size:11px;color:var(--muted)">Denominator in <code>relative_score = your_quality / ${hasBaseline ? p.baseline_score.toFixed(2) : 'oracle'}</code>. Beat this with better implementation quality.</div>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted)">How rich the accepted solution is (0–30). Your <code>relative_score = your_quality / ${hasBaseline ? p.baseline_score.toFixed(2) : 'oracle'}</code>. Match or exceed this to score 1.0+.</div>
       ${dasInternals}
     `;
     body.appendChild(scoreSection);

@@ -1322,29 +1322,31 @@
     }
     .calc-row-readonly .crr-chip::before { content: '🔒'; margin-right: 4px; opacity: 0.7; font-size: 9px; }
     .calc-row-readonly .crr-hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
-    /* "Computed from" annotation row — links the read-only tile to the gl-tqf glossary card */
-    .calc-row-readonly .crr-from {
+    /* "Computed from" annotation row — links calc rows (sliders + read-only tile) to glossary cards */
+    #s-calc .crr-from {
       margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border);
       font-size: 10px; font-family: var(--mono); color: var(--muted);
       letter-spacing: 0.04em; text-transform: uppercase;
       display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
     }
-    .calc-row-readonly .crr-from-label { opacity: 0.75; }
-    .calc-row-readonly .crr-from-link {
+    #s-calc .crr-from-label { opacity: 0.75; }
+    #s-calc .crr-from-link {
       color: var(--muted); text-decoration: none;
       border-bottom: 1px dashed var(--border);
       padding: 1px 4px; border-radius: 3px;
       transition: color 0.15s, border-color 0.15s, background 0.15s;
     }
-    .calc-row-readonly .crr-from-link:hover,
-    .calc-row-readonly .crr-from-link:focus {
+    #s-calc .crr-from-link:hover,
+    #s-calc .crr-from-link:focus {
       color: var(--accent); border-bottom-color: var(--accent);
       background: rgba(88,166,255,0.06); outline: none;
     }
-    .calc-row-readonly .crr-from-link code {
+    #s-calc .crr-from-link code {
       font-family: var(--mono); font-size: 10px;
       color: inherit;
     }
+    /* Slider rows get slightly tighter top margin since hint text already sits above */
+    .calc-row .crr-from { margin-top: 6px; }
     .tier-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .tier-btn.active { background: rgba(88,166,255,0.12); border-color: var(--accent); color: var(--accent); font-weight: 600; }
     /* Win/miss verdict chip — surfaces the binary "are you winning?" state above the small print */
@@ -2488,11 +2490,19 @@
           <label class="calc-label">Structural Match <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">relative_score</span> <span class="calc-val" id="cv-rel">1.00</span></label>
           <input type="range" class="calc-slider" id="sl-rel" min="0" max="200" value="100" step="1">
           <div class="calc-hint">Your weighted AST node count ÷ oracle's (functions ×3, classes ×3, branches ×2). 1.0 = structurally on par with the accepted PR. Correctness gates first — this only matters once tests pass.</div>
+          <div class="crr-from">
+            <span class="crr-from-label">Computed from</span>
+            <a class="crr-from-link" href="#/scoring" data-gl-target="gl-structural-match" title="Jump to the Structural Match glossary card — relative_score is your weighted AST-node count ÷ oracle's, with functions ×3, classes ×3, branches ×2">weighted AST nodes vs oracle · see <code>Structural Match</code> glossary ↗</a>
+          </div>
         </div>
         <div class="calc-row">
           <label class="calc-label">Assertions Removed <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">anti_gaming</span> <span class="calc-val" id="cv-ag">0</span></label>
           <input type="range" class="calc-slider" id="sl-ag" min="0" max="15" value="0" step="1">
           <div class="calc-hint">Penalty for deleting test assertions. Kicks in above 3 removals. Floor at 0.5 for &gt;8.</div>
+          <div class="crr-from">
+            <span class="crr-from-label">Computed from</span>
+            <a class="crr-from-link" href="#/scoring" data-gl-target="gl-anti-gaming" title="Jump to the Anti-Gaming glossary card — graduated penalty for removing test assertions, no penalty ≤3, floor of 0.5 above 8 removals">deleted assertion count · see <code>Anti-Gaming</code> glossary ↗</a>
+          </div>
         </div>
         <div class="calc-row">
           <label class="calc-label">Output Tokens <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">efficiency</span> <span class="calc-val" id="cv-eff">0</span></label>

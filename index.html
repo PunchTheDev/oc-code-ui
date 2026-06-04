@@ -869,9 +869,12 @@
     .model-card .mc-cost { font-size: 11px; color: var(--green); }
     .mining-step-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: repeat(5, 1fr);
       gap: 16px;
       margin: 16px 0;
+    }
+    @media (max-width: 900px) {
+      .mining-step-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
     }
     .mining-step {
       background: var(--surface);
@@ -1175,6 +1178,24 @@
   </section>
 
   <div class="stats-row" id="stats-row"></div>
+
+  <section id="featured-problems-section">
+    <h2>Sample Problems <span class="section-count" id="fp-pool-size-label"></span></h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">A taste of what's in the pool — hard problems that reward sophisticated scaffolding. Click any to explore.</p>
+    <div id="featured-problems-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+  </section>
+
+  <section id="home-cta-section">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;text-align:center">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Gittensor · Subnet 74</div>
+      <h3 style="margin:0 0 10px;font-size:22px;font-weight:700">Ready to mine?</h3>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 24px;max-width:480px;margin-left:auto;margin-right:auto">Clone the benchmark repo, wire your agent to a whitelisted model, run the eval harness locally, and open a PR when you beat the champion score.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a class="btn-hero-primary" href="#/mining" onclick="event.preventDefault();setPage('mining',true)">Start Mining →</a>
+        <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">View Benchmark ↗</a>
+      </div>
+    </div>
+  </section>
 
 </div>
 </div><!-- /page-home -->
@@ -1832,6 +1853,48 @@ async function load() {
           <span style="width:44px;text-align:right;color:var(--muted);font-size:11px">${pct}%</span>
         `;
         langBars.appendChild(row);
+      });
+    }
+
+    // Featured problems on home page — 3 hard problems seeded by day for variety
+    const fpGrid = document.getElementById('featured-problems-grid');
+    const fpLabel = document.getElementById('fp-pool-size-label');
+    if (fpGrid && allProblems.length > 0) {
+      if (fpLabel) fpLabel.textContent = `— from ${allProblems.length} total`;
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const hardPool = allProblems.filter(p => p.difficulty === 'hard');
+      const srcPool = hardPool.length >= 6 ? hardPool : allProblems;
+      const seen = new Set();
+      const picks = [];
+      for (let i = 0; picks.length < 3 && i < srcPool.length; i++) {
+        const idx = (dayOfYear * 17 + i * 37) % srcPool.length;
+        if (!seen.has(idx)) { seen.add(idx); picks.push(srcPool[idx]); }
+      }
+      const tierColors = { hard: '#f85149', medium: '#d29922', easy: '#3fb950' };
+      const catColors2 = { python: '#79c0ff', typescript: '#e3b341', rust: '#ffa198', go: '#59e89c', jvm: '#d2a8ff', ruby: '#ff9492' };
+      picks.forEach(p => {
+        if (!p) return;
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s';
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px">
+            <span class="repo-tag" style="font-size:10px">${esc(p.repo||'')}</span>
+            <span style="font-size:10px;font-weight:700;color:${tierColors[p.difficulty]||'#8b949e'};text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap">${esc(p.difficulty||'?')}</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;line-height:1.45;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.title||`Problem ${p.id}`)}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px">
+            <span style="color:${catColors2[p.category]||'#8b949e'};font-weight:600;font-family:var(--mono)">${esc(p.category||'')}</span>
+            <span style="color:var(--muted)">oracle <strong style="color:var(--text)">${(p.baseline_score||0).toFixed(1)}</strong>/30</span>
+          </div>
+        `;
+        card.addEventListener('mouseenter', () => { card.style.borderColor = 'var(--accent)'; card.style.boxShadow = '0 0 0 1px var(--accent)'; });
+        card.addEventListener('mouseleave', () => { card.style.borderColor = 'var(--border)'; card.style.boxShadow = 'none'; });
+        card.addEventListener('click', () => {
+          setPage('problems', true);
+          const searchEl = document.getElementById('problem-search');
+          if (searchEl) { searchEl.value = (p.title || '').slice(0, 50); renderProblems(); }
+        });
+        fpGrid.appendChild(card);
       });
     }
 

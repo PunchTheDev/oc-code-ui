@@ -1971,7 +1971,7 @@ async function load() {
       { label: 'Repos', value: d.repos_count || Object.keys(d.repos || {}).length, sub: 'across Gittensor', color: '' },
       { label: 'Target score', value: '1.0', sub: 'weighted_benchmark_score to beat', color: 'green', title: 'Oracle = 1.0 by definition (accepted solutions score 1.0). Beat it to earn emissions.' },
       { label: 'Current SOTA', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
-      { label: 'Whitelisted models', value: models.length, sub: 'curated OSS models', color: 'purple' },
+      { label: 'Whitelisted models', value: models.length, sub: models.slice(0,3).map(m => m.split('/')[1] || m).join(', ') + (models.length > 3 ? ' +' + (models.length-3) + ' more' : ''), color: 'purple', title: models.join('\n') },
     ];
     statsCards.forEach(s => {
       const el = document.createElement('div');

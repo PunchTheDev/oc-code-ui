@@ -1180,7 +1180,7 @@
 <div class="hero">
   <div class="hero-eyebrow">Gittensor · Subnet 74 · Mining Benchmark</div>
   <h2 class="hero-headline">Ship code. Earn TAO. Improve the network.</h2>
-  <p class="hero-sub">Build an AI agent that solves real GitHub issues better than anyone else. Score it against <strong id="hero-pool-size">1123</strong> curated problems across 6 languages, beat the leaderboard, and earn mining emissions — all while making Gittensor's base miner smarter.</p>
+  <p class="hero-sub">Build an AI agent that solves real GitHub issues better than anyone else. Score it against <strong id="hero-pool-size">1123</strong> curated problems across 6 languages, beat the leaderboard, and earn TAO — Gittensor's network token — all while making the base miner smarter.</p>
   <div class="hero-ctas">
     <a class="btn-hero-primary" href="#/mining" onclick="event.preventDefault(); setPage('mining', true)">Start Mining →</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
@@ -1318,7 +1318,7 @@
           <tr>
             <th style="width:50px">Rank</th>
             <th>Agent</th>
-            <th class="sortable" data-lbcol="benchmark" title="PRIMARY RANKING METRIC. Normalized difficulty-weighted score: test_pass_rate × code_quality × anti_gaming × token_efficiency × difficulty_tier. Oracle = 1.0 — beat this to earn emissions. Scale 0–2.0.">Benchmark ⓘ</th>
+            <th class="sortable" data-lbcol="benchmark" title="PRIMARY RANKING METRIC. Normalized difficulty-weighted score: test_pass_rate × code_quality × anti_gaming × token_efficiency × difficulty_tier. Oracle = 1.0 — beat this to earn TAO rewards. Scale 0–2.0.">Benchmark ⓘ</th>
             <th class="sortable" data-lbcol="score" title="Raw Gittensor-style weighted score (sum across 30 shard problems, scale 0–30). Oracle's raw score is 12.64 — shown for context, not used for ranking. Ranking uses the normalized Benchmark column.">Score / 30 ⓘ</th>
             <th title="Benchmark score above previous champion">Gain</th>
             <th title="Average efficiency factor across problems (1.0 = ≤10k tokens; decays to 0.85 at 50k). Hover for total tokens used.">Efficiency</th>
@@ -1550,8 +1550,9 @@
 
   <section id="s-anticopy">
     <h2>Anti-Copy: Decaying Crown Threshold</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Goal: prevent an exact copy of the leading agent from stealing the top rank. You must beat the champion by a meaningful margin to claim TAO crown bonuses — not just match it.</p>
     <div class="info-box" style="margin-bottom:16px">
-      To earn any champion emission bonus (non-zero <code>marginal_gain</code>), a submission must beat the current SOTA by at
+      To earn any champion TAO bonus (non-zero <code>marginal_gain</code>), a submission must beat the current best score by at
       least the <strong>crown threshold</strong>. Forks or clones that score within the threshold earn only the base
       participation term — LLM output variance alone cannot steal the crown.
     </div>
@@ -1562,7 +1563,7 @@
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0">
       <table class="difficulty-table">
-        <thead><tr><th>SOTA level</th><th>Crown threshold</th><th>Required improvement</th></tr></thead>
+        <thead><tr><th>Current best score</th><th>Crown threshold</th><th>Required margin to claim crown</th></tr></thead>
         <tbody>
           <tr><td class="muted" style="font-family:var(--mono)">0.0 (no submissions)</td><td style="font-family:var(--mono);color:var(--accent)">0.0200</td><td class="muted">+0.02 above SOTA</td></tr>
           <tr><td class="muted" style="font-family:var(--mono)">1.0 (oracle level)</td><td style="font-family:var(--mono);color:var(--accent)">1.0100</td><td class="muted">+0.01 above SOTA</td></tr>
@@ -2675,7 +2676,7 @@ function initScoreCalc() {
     if (oracleBeat) {
       vsMsg = `<span style="color:var(--green);font-weight:600">+${diff}% above oracle</span><br><span>Score exceeds oracle — would beat the accepted solution quality.</span>`;
     } else if (oracleTie) {
-      vsMsg = `<span style="color:var(--yellow,#e3b341);font-weight:600">Matches oracle (1.0000)</span><br><span>Ties the accepted solution baseline. Increase <strong>relative_score</strong> above 1.0 to beat the oracle and earn emissions.</span>`;
+      vsMsg = `<span style="color:var(--yellow,#e3b341);font-weight:600">Matches oracle (1.0000)</span><br><span>Ties the accepted solution baseline. Increase <strong>Code Quality</strong> above 1.0 to beat the oracle and earn TAO rewards.</span>`;
     } else if (score === 0) {
       vsMsg = `<span style="color:var(--red,#f85149);font-weight:600">Score is 0</span><br><span>No tests passing — fix the test_pass_rate first.</span>`;
     } else {

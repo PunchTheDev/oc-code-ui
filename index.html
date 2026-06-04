@@ -2019,14 +2019,21 @@ async function load() {
     const gen = d.generated_at ? `Data updated ${d.generated_at}` : '';
     document.getElementById('footer-date').textContent = gen;
 
-    // Language chips in problems page — update counts
+    // Language chips in problems page — update counts (preserve chip-dot spans)
     const catCounts = d.categories || {};
     const catLabels = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', go: 'Go', jvm: 'JVM', ruby: 'Ruby' };
     document.querySelectorAll('.lang-chip').forEach(chip => {
       const cat = chip.dataset.cat;
       if (cat === undefined) return;
-      if (!cat) chip.textContent = `All (${allProblems.length})`;
-      else chip.textContent = `${catLabels[cat] || cat} (${catCounts[cat] || 0})`;
+      const dot = chip.querySelector('.chip-dot');
+      const label = !cat ? `All (${allProblems.length})` : `${catLabels[cat] || cat} (${catCounts[cat] || 0})`;
+      // Clear text nodes only — preserve dot span
+      [...chip.childNodes].forEach(n => { if (n.nodeType === Node.TEXT_NODE) n.remove(); });
+      if (dot) {
+        chip.appendChild(document.createTextNode(label));
+      } else {
+        chip.textContent = label;
+      }
     });
 
     // API base display on mining page

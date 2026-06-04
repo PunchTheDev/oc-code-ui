@@ -1282,6 +1282,15 @@
     .diff-chart-caption .dcc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
     .diff-chart-caption .dcc-lens { font-size: 11px; color: var(--accent); text-align: right; }
     .diff-chart-caption .dcc-lens strong { color: var(--text); font-family: var(--mono); }
+    /* ── Tier-band legend strip below diff-chart ── */
+    .diff-chart-legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+    .diff-chart-legend .dcl-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+    .diff-chart-legend .dcl-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 14px; border: 1px solid var(--dcl-c, var(--border)); background: transparent; color: var(--dcl-c, var(--text)); font-size: 11px; font-family: var(--mono); cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease; }
+    .diff-chart-legend .dcl-chip:hover, .diff-chart-legend .dcl-chip:focus-visible { transform: translateY(-1px); background: var(--dcl-bg, rgba(88,166,255,0.08)); box-shadow: 0 0 0 2px var(--dcl-bg, rgba(88,166,255,0.18)); outline: none; }
+    .diff-chart-legend .dcl-chip .dcl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dcl-c, var(--accent)); }
+    .diff-chart-legend .dcl-chip .dcl-bins { color: var(--muted); font-size: 10px; }
+    .diff-chart-legend .dcl-note { margin-left: auto; font-size: 10px; color: var(--muted); line-height: 1.5; }
+    .diff-chart-legend .dcl-note strong { color: var(--text); font-family: var(--mono); }
 
     /* ── Score calculator ─────────────────────────────────── */
     .calc-row { margin-bottom: 18px; }
@@ -2682,6 +2691,13 @@
     </div>
     <div class="chart-wrap" style="margin-top:6px">
       <canvas id="diff-chart" height="80"></canvas>
+    </div>
+    <div class="diff-chart-legend" role="group" aria-label="Difficulty tier band legend">
+      <span class="dcl-label">Tier bands</span>
+      <button type="button" class="dcl-chip" data-tier="hard" style="--dcl-c:#f85149;--dcl-bg:rgba(248,81,73,0.16)" title="Hard tier — oracle score 0–10 / 30 (lowest scores = hardest problems). Hover to spotlight matching bars and table row; click to filter Problems page."><span class="dcl-dot"></span>Hard<span class="dcl-bins">· bins 0–10</span></button>
+      <button type="button" class="dcl-chip" data-tier="medium" style="--dcl-c:#d29922;--dcl-bg:rgba(210,153,34,0.16)" title="Medium tier — oracle score 10–20 / 30. Hover to spotlight matching bars and table row; click to filter Problems page."><span class="dcl-dot"></span>Medium<span class="dcl-bins">· bins 10–20</span></button>
+      <button type="button" class="dcl-chip" data-tier="easy" style="--dcl-c:#3fb950;--dcl-bg:rgba(63,185,80,0.16)" title="Easy tier — oracle score 20–30 / 30 (highest scores = easiest problems). Hover to spotlight matching bars and table row; click to filter Problems page."><span class="dcl-dot"></span>Easy<span class="dcl-bins">· bins 20–30</span></button>
+      <span class="dcl-note">Chart bins by <strong>oracle_score</strong>; the table above bins by <strong>added_lines</strong>. Two difficulty proxies, same tier names.</span>
     </div>
   </section>
 
@@ -4598,6 +4614,25 @@ function initScoringPage() {
         scales: { x: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'Oracle score range — low score = harder problem', color: '#8b949e', font: { size: 11 } } }, y: { ticks: { color: '#8b949e', font: { size: 11 }, precision: 0 }, grid: { color: '#21262d' }, title: { display: true, text: 'Number of problems', color: '#8b949e', font: { size: 11 } } } }
       },
     });
+    // Tier-band legend chips: hover/focus → spotlight both directions (chart bars + tier-row); click → filter Problems page
+    if (!window._diffLegendWired) {
+      window._diffLegendWired = true;
+      document.querySelectorAll('.diff-chart-legend .dcl-chip').forEach(chip => {
+        const tier = chip.dataset.tier;
+        const enter = () => { if (window.highlightDiffChartTier) window.highlightDiffChartTier(tier); flashTierRow(tier); };
+        const leave = () => { if (window.highlightDiffChartTier) window.highlightDiffChartTier(null); flashTierRow(null); };
+        chip.addEventListener('mouseenter', enter);
+        chip.addEventListener('mouseleave', leave);
+        chip.addEventListener('focus', enter);
+        chip.addEventListener('blur', leave);
+        chip.addEventListener('click', () => {
+          setPage('problems', true);
+          document.querySelectorAll('.diff-chip').forEach(c => c.classList.toggle('active', (c.dataset.diff || '') === tier));
+          activeDiff = tier;
+          renderProblems();
+        });
+      });
+    }
   }
 
   // Repo breakdown — color bars by dominant language

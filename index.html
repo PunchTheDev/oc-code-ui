@@ -336,9 +336,18 @@
 
     /* Glossary grid on Scoring page */
     .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-    .glossary-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+    .glossary-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; scroll-margin-top: 72px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .glossary-card.gl-flash { animation: glFlash 1.2s ease-out; }
+    @keyframes glFlash {
+      0%   { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88,166,255,0.32); }
+      100% { border-color: var(--border); box-shadow: 0 0 0 0 rgba(88,166,255,0); }
+    }
     .glossary-term { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; margin-bottom: 4px; }
     .glossary-def { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .glossary-seealso { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .glossary-seealso-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); opacity: 0.7; margin-right: 2px; }
+    .glossary-seealso a { font-family: var(--mono); font-size: 11px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 2px 7px; text-decoration: none; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+    .glossary-seealso a:hover { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,0.08); }
 
     /* ── Language / category badges ─────────────────────── */
     .lang-badge {
@@ -2294,57 +2303,70 @@
     <h2>Glossary</h2>
     <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Every term used on this site, in one place. Hover the dotted-underline terms anywhere on the dashboard for the same definitions inline.</p>
     <div class="glossary-grid">
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-oracle">
         <div class="glossary-term">Oracle</div>
         <div class="glossary-def">The accepted (merged) pull request for each problem. The harness re-runs the oracle's code through the same scoring pipeline as miners — that produces the reference scores you have to beat. <code>weighted_benchmark_score</code> of the oracle is fixed at <strong>1.0</strong> by definition.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-sota">SOTA</a><a href="#gl-structural-match">Structural Match</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-sota">
         <div class="glossary-term">SOTA</div>
         <div class="glossary-def">"State of the Art" — the highest <code>weighted_benchmark_score</code> any miner has submitted in the current evaluation round. Shown on the Leaderboard as <em>Best score (SOTA)</em>.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-oracle">Oracle</a><a href="#gl-gain">Gain</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-shard">
         <div class="glossary-term">Shard</div>
         <div class="glossary-def">A subset of problems sampled from the full pool each week. Only the shard's problems count toward scoring this round — see Sampling below. The full pool is 1123 problems; the shard is 30.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-epoch">Epoch</a><a href="#gl-das">DAS</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-epoch">
         <div class="glossary-term">Epoch</div>
         <div class="glossary-def">One scoring round — a weekly cycle where the shard is fixed, miners submit, and TAO rewards are distributed at the end. Currently 7 days, rotating Sundays at 02:00 UTC.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-shard">Shard</a><a href="#gl-tao">TAO</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-ralph">
         <div class="glossary-term">RALPH</div>
         <div class="glossary-def">"Reliable Autonomous Loop with Persistent History" — the base-miner pattern where an agent runs in a loop, picking up unsolved problems and retrying with feedback until it lands a passing solution. Run the CLI with <code>--loop</code> to enter RALPH mode.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-curated-models">Curated models</a><a href="#gl-commit-reveal">Commit-reveal</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-das">
         <div class="glossary-term">DAS</div>
         <div class="glossary-def">"Difficulty-Adjusted Sampling" — the pool rotation mechanism that re-weights problem selection toward harder, less-explored regions of the corpus to keep the benchmark fresh and prevent stale-shard farming.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-shard">Shard</a><a href="#gl-epoch">Epoch</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-tao">
         <div class="glossary-term">TAO</div>
         <div class="glossary-def">Gittensor's network token. The reward currency miners earn each epoch in proportion to <code>weighted_benchmark_score</code> above the oracle baseline.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-epoch">Epoch</a><a href="#gl-gain">Gain</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-tqf">
         <div class="glossary-term">tqf</div>
         <div class="glossary-def">Short for <code>test_quality_factor</code>. The credit you get for adding test assertions when the reference solution did too — capped between 0.85 and 1.0. See Factor Details.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-anti-gaming">Anti-Gaming</a><a href="#gl-structural-match">Structural Match</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-anti-gaming">
         <div class="glossary-term">Anti-Gaming</div>
         <div class="glossary-def">The <code>anti_gaming_multiplier</code> — a graduated penalty for removing test assertions to inflate pass rate. ≤3 removed = no penalty; floor of 0.5 above 8.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-tqf">tqf</a><a href="#gl-structural-match">Structural Match</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-gain">
         <div class="glossary-term">Gain (crown bonus)</div>
         <div class="glossary-def">A 3× weight multiplier earned by submissions that beat the previous champion on a problem. Decays each time the crown changes hands, so margins tighten as miners converge.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-sota">SOTA</a><a href="#gl-tao">TAO</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-curated-models">
         <div class="glossary-term">Curated models</div>
         <div class="glossary-def">A small, fixed list of cheap, on-par open-source LLMs your agent may call. Curation keeps it a coding fight, not a model-money arms race.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-ralph">RALPH</a><a href="#gl-commit-reveal">Commit-reveal</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-structural-match">
         <div class="glossary-term">Structural Match</div>
         <div class="glossary-def">Internal name <code>relative_score</code>. Your weighted AST-node count ÷ the oracle's. Functions ×3, classes ×3, branches ×2. Only matters after correctness gates pass.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-oracle">Oracle</a><a href="#gl-anti-gaming">Anti-Gaming</a></div>
       </div>
-      <div class="glossary-card">
+      <div class="glossary-card" id="gl-commit-reveal">
         <div class="glossary-term">Commit-reveal</div>
         <div class="glossary-def">Anti-copy mechanism. You register a hash of your agent via <a class="endpoint-link endpoint-link-post" href="#/mining" data-endpoint-link="api-row-commit" title="Jump to POST /api/commit row in the Mining page's API Reference">POST /api/commit</a> before opening the PR — the timestamped hash proves authorship if a copycat later submits the same code. Reveal happens when the PR is opened.</div>
+        <div class="glossary-seealso"><span class="glossary-seealso-label">See also</span><a href="#gl-ralph">RALPH</a><a href="#gl-curated-models">Curated models</a></div>
       </div>
     </div>
   </section>
@@ -4326,6 +4348,24 @@ function initScoreCalc() {
 // ── Scoring page ──────────────────────────────────────────────
 
 function initScoringPage() {
+  // Glossary See-also chip clicks: smooth-scroll within the grid + trigger :target flash.
+  // Delegated, wired once across the page lifetime.
+  if (!window._glossarySeealsoWired) {
+    window._glossarySeealsoWired = true;
+    document.addEventListener('click', (ev) => {
+      const a = ev.target.closest('.glossary-seealso a[href^="#gl-"]');
+      if (!a) return;
+      ev.preventDefault();
+      const id = a.getAttribute('href').slice(1);
+      const card = document.getElementById(id);
+      if (!card) return;
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Retrigger animation even if the card is already flashing
+      card.classList.remove('gl-flash');
+      void card.offsetWidth;
+      card.classList.add('gl-flash');
+    });
+  }
   const d = globalData;
   const catCounts = d.categories || {};
   const catBudget = d.shard_budget || {};

@@ -1320,6 +1320,74 @@
       justify-content: space-between;
     }
     .api-shape-footer a.link { color: var(--accent); }
+
+    /* ── Quickstart explainer (per-line annotations) ───────── */
+    .qs-explain summary .api-shape-hint code {
+      font-family: var(--mono);
+      background: rgba(125,133,144,0.10);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: var(--text);
+    }
+    .qs-explain-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, max-content) 1fr;
+      gap: 6px 16px;
+      padding: 4px 14px 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      align-items: baseline;
+    }
+    .qs-explain-grid .qs-step-header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0 4px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--border);
+    }
+    .qs-explain-grid .qs-step-header:first-child { margin-top: 0; }
+    .qs-step-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .qs-step-num.qs-setup  { color: var(--accent); border-color: rgba(88,166,255,0.35); background: rgba(88,166,255,0.10); }
+    .qs-step-num.qs-build  { color: var(--purple); border-color: rgba(187,128,255,0.35); background: rgba(187,128,255,0.10); }
+    .qs-step-num.qs-submit { color: #f7b955; border-color: rgba(247,185,85,0.40); background: rgba(247,185,85,0.10); }
+    .qs-step-title { font-weight: 500; color: var(--text); font-size: 13px; }
+    .qs-step-goal  { color: var(--muted); font-size: 11px; margin-left: auto; }
+    .qs-tok {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      background: rgba(125,133,144,0.10);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+    .qs-tok.qs-tok-flag { color: var(--accent); background: rgba(88,166,255,0.08); border-color: rgba(88,166,255,0.22); }
+    .qs-tok.qs-tok-op   { color: #d29922; background: rgba(210,153,34,0.10); border-color: rgba(210,153,34,0.30); }
+    .qs-tok.qs-tok-warn { color: var(--red); background: rgba(248,81,73,0.08); border-color: rgba(248,81,73,0.25); }
+    .qs-tok.qs-tok-cmd  { color: var(--green); background: rgba(63,185,80,0.08); border-color: rgba(63,185,80,0.22); }
+    .qs-explain-desc { color: var(--text-dim, var(--muted)); font-size: 12px; line-height: 1.55; }
+    .qs-explain-desc code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(125,133,144,0.10);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: var(--text);
+    }
+
     .copy-btn {
       margin-left: auto;
       background: rgba(88,166,255,0.1);
@@ -2550,6 +2618,77 @@
           <div><span class="qs-prompt">$ </span><span class="qs-cmd">python3 gitminer.py submit <span class="qs-str">agent/submissions/myhandle/agent.py</span> <span class="qs-flag">--open-pr</span></span></div>
         </div>
       </div>
+
+      <details id="qs-explainer" class="api-shape qs-explain">
+        <summary>
+          What does each command do?
+          <span class="api-shape-hint">Per-line breakdown of the 5-step terminal above — flags, env vars, and chained operators</span>
+        </summary>
+        <div class="qs-explain-grid">
+
+          <div class="qs-step-header">
+            <span class="qs-step-num qs-setup">Step 1 · Setup</span>
+            <span class="qs-step-title">Clone &amp; install</span>
+            <span class="qs-step-goal">→ repo cloned, deps installed</span>
+          </div>
+          <div><span class="qs-tok qs-tok-cmd">git clone &lt;repo-url&gt;</span></div>
+          <div class="qs-explain-desc">Fetch the benchmark repo (~100 MB — harness, 1123 problems, scoring engine, example agent).</div>
+          <div><span class="qs-tok qs-tok-op">&amp;&amp;</span> <span class="qs-tok">cd gittensor-base-miner</span></div>
+          <div class="qs-explain-desc"><code>&amp;&amp;</code> chains commands; the next one only runs if the previous succeeded. <code>cd</code> enters the repo root so install + later commands resolve correctly.</div>
+          <div><span class="qs-tok qs-tok-op">&amp;&amp;</span> <span class="qs-tok">pip install -r requirements.txt</span></div>
+          <div class="qs-explain-desc">Install Python deps: <code>openai</code>, <code>requests</code>, <code>pytest</code>, <code>unidiff</code>, etc. Python <strong>3.11+</strong> required.</div>
+
+          <div class="qs-step-header">
+            <span class="qs-step-num qs-setup">Step 2 · Setup</span>
+            <span class="qs-step-title">Set key &amp; scaffold agent</span>
+            <span class="qs-step-goal">→ <code>agent/submissions/&lt;handle&gt;/</code> created</span>
+          </div>
+          <div><span class="qs-tok">export OPENROUTER_KEY=sk-or-…</span></div>
+          <div class="qs-explain-desc">Required env var. Every LLM call your agent makes routes through OpenRouter using this key — all 5 curated models share one billing line.</div>
+          <div><span class="qs-tok qs-tok-cmd">gitminer.py init</span> <span class="qs-tok">&lt;handle&gt;</span></div>
+          <div class="qs-explain-desc">Scaffolds <code>agent/submissions/&lt;handle&gt;/</code> from the example template: copies <code>agent.py</code>, writes <code>meta.json</code> with the correct sha256, and registers your handle.</div>
+
+          <div class="qs-step-header">
+            <span class="qs-step-num qs-build">Step 3 · Build</span>
+            <span class="qs-step-title">Score one problem, then loop the shard</span>
+            <span class="qs-step-goal">→ <code>benchmark_score</code> printed</span>
+          </div>
+          <div><span class="qs-tok qs-tok-cmd">gitminer.py run</span></div>
+          <div class="qs-explain-desc">End-to-end single-problem run: clones the target repo, invokes your agent, applies the patch, executes tests, and computes the 5 scoring factors.</div>
+          <div><span class="qs-tok qs-tok-flag">--problem</span> <span class="qs-tok">0463</span></div>
+          <div class="qs-explain-desc">Problem ID (required). Browse all 1123 on the Problems page or print the current shard's 30 IDs with <code>gitminer.py shard</code>.</div>
+          <div><span class="qs-tok qs-tok-flag">--agent</span> <span class="qs-tok">agent/submissions/&lt;handle&gt;/agent.py</span></div>
+          <div class="qs-explain-desc">Path to your agent file (the one <code>init</code> just scaffolded).</div>
+          <div><span class="qs-tok qs-tok-flag">--score</span></div>
+          <div class="qs-explain-desc">Actually compute <code>benchmark_score</code>. Without this flag, <code>run</code> stops after generating the patch (useful for inspecting diffs, not for grading).</div>
+          <div><span class="qs-tok qs-tok-warn">--no-sandbox</span></div>
+          <div class="qs-explain-desc"><strong>Local-dev only.</strong> Skips Docker isolation — faster, but the CI grader always sandboxes, so scores here can drift ~2× from production. Never trust <code>--no-sandbox</code> numbers as final.</div>
+          <div><span class="qs-tok qs-tok-cmd">gitminer.py mine</span> <span class="qs-tok qs-tok-flag">--agent</span> <span class="qs-tok">&lt;path&gt;</span></div>
+          <div class="qs-explain-desc">Runs your agent continuously over the current rotating 30-problem shard. When you beat the live champion score, it auto-submits a PR — useful once you're confident, not for first runs.</div>
+
+          <div class="qs-step-header">
+            <span class="qs-step-num qs-submit">Step 4 · Submit</span>
+            <span class="qs-step-title">Register hash (commit-reveal anti-copy)</span>
+            <span class="qs-step-goal">→ sha256 logged server-side</span>
+          </div>
+          <div><span class="qs-tok qs-tok-cmd">gitminer.py commit</span> <span class="qs-tok">&lt;path&gt;</span></div>
+          <div class="qs-explain-desc">POSTs your agent's sha256 + timestamp to the API server <em>before</em> you reveal the code via PR. If someone forks and submits the same code later, the earlier commit wins — that's the anti-copy guarantee.</div>
+
+          <div class="qs-step-header">
+            <span class="qs-step-num qs-submit">Step 5 · Submit</span>
+            <span class="qs-step-title">Open the PR</span>
+            <span class="qs-step-goal">→ PR opened on GitHub</span>
+          </div>
+          <div><span class="qs-tok qs-tok-cmd">gitminer.py submit</span> <span class="qs-tok">&lt;path&gt;</span></div>
+          <div class="qs-explain-desc">Validates the agent (size, syntax, allowed model, declared handle matches <code>meta.json</code>), then prints the PR body it would file.</div>
+          <div><span class="qs-tok qs-tok-flag">--open-pr</span></div>
+          <div class="qs-explain-desc">Auto-create branch, commit, push, and run <code>gh pr create</code> for you. Requires the <code>gh</code> CLI installed and authenticated.</div>
+
+        </div>
+        <div class="api-shape-footer">
+          <span>Source of truth: every flag here mirrors <code>gitminer.py</code> <code>argparse</code> definitions — see <code>gitminer.py --help</code> or any sub-command's <code>--help</code> for the canonical text.</span>
+        </div>
+      </details>
     </section>
 
     <section>

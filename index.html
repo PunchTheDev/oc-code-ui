@@ -1271,6 +1271,13 @@
     #crown-threshold-table tr#crown-live-row td:last-child { border-right: 2px solid var(--green); }
     #crown-threshold-table tr[data-ref="1"] td { background: var(--surface); }
     #crown-threshold-table .crown-here-chip { display: inline-block; margin-left: 8px; padding: 1px 6px; background: rgba(46,160,67,0.18); color: var(--green); border: 1px solid rgba(46,160,67,0.35); border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: middle; }
+    /* ── Margin decay sparkline (per-row in crown-threshold-table) ── */
+    #crown-threshold-table .crown-margin-cell { display: flex; flex-direction: column; gap: 4px; }
+    #crown-threshold-table .crown-margin-text { white-space: nowrap; }
+    #crown-threshold-table .crown-margin-bar-track { position: relative; height: 4px; width: 100%; max-width: 180px; background: rgba(110,118,129,0.18); border-radius: 2px; overflow: hidden; }
+    #crown-threshold-table .crown-margin-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--accent) 0%, rgba(88,166,255,0.55) 100%); border-radius: 2px; transition: width 0.4s ease; }
+    #crown-threshold-table tr#crown-live-row .crown-margin-bar-fill { background: linear-gradient(90deg, var(--green) 0%, rgba(46,160,67,0.55) 100%); }
+    #crown-threshold-table tr#crown-live-row .crown-margin-bar-track { background: rgba(46,160,67,0.14); }
     .diff-chart-caption { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 20px 0 6px; padding: 0 2px; }
     .diff-chart-caption .dcc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
     .diff-chart-caption .dcc-lens { font-size: 11px; color: var(--accent); text-align: right; }
@@ -2699,11 +2706,11 @@
       <table class="difficulty-table" id="crown-threshold-table">
         <thead><tr><th>Current best score</th><th>Crown threshold</th><th>Required margin to claim crown</th></tr></thead>
         <tbody>
-          <tr id="crown-live-row" data-live="1" data-sota="0"><td style="font-family:var(--mono);color:var(--text)"><span class="api-method-badge" style="background:rgba(46,160,67,0.18);color:var(--green);border-color:rgba(46,160,67,0.35);margin-right:6px">LIVE</span><span id="crown-live-sota">0.0</span> <span class="muted" id="crown-live-sub" style="font-size:11px">(no submissions)</span></td><td style="font-family:var(--mono);color:var(--accent)" id="crown-live-thresh">0.0200</td><td class="muted"><span id="crown-live-margin">+0.02 above SOTA</span><span class="crown-here-chip" title="The LIVE row's slot in the table is determined by current pool SOTA — as SOTA rises, this row slides down past each reference anchor.">you are here</span></td></tr>
-          <tr data-ref="1" data-sota="0"><td class="muted" style="font-family:var(--mono)">0.0 (baseline)</td><td style="font-family:var(--mono);color:var(--accent)">0.0200</td><td class="muted">+0.02 above SOTA</td></tr>
-          <tr data-ref="1" data-sota="1"><td class="muted" style="font-family:var(--mono)">1.0 (oracle level)</td><td style="font-family:var(--mono);color:var(--accent)">1.0100</td><td class="muted">+0.01 above SOTA</td></tr>
-          <tr data-ref="1" data-sota="1.5"><td class="muted" style="font-family:var(--mono)">1.5</td><td style="font-family:var(--mono);color:var(--accent)">1.5050</td><td class="muted">+0.005 above SOTA</td></tr>
-          <tr data-ref="1" data-sota="1.9"><td class="muted" style="font-family:var(--mono)">1.9</td><td style="font-family:var(--mono);color:var(--accent)">1.9010</td><td class="muted">+0.001 above SOTA</td></tr>
+          <tr id="crown-live-row" data-live="1" data-sota="0" data-margin="0.02"><td style="font-family:var(--mono);color:var(--text)"><span class="api-method-badge" style="background:rgba(46,160,67,0.18);color:var(--green);border-color:rgba(46,160,67,0.35);margin-right:6px">LIVE</span><span id="crown-live-sota">0.0</span> <span class="muted" id="crown-live-sub" style="font-size:11px">(no submissions)</span></td><td style="font-family:var(--mono);color:var(--accent)" id="crown-live-thresh">0.0200</td><td class="muted"><span id="crown-live-margin">+0.02 above SOTA</span><span class="crown-here-chip" title="The LIVE row's slot in the table is determined by current pool SOTA — as SOTA rises, this row slides down past each reference anchor.">you are here</span></td></tr>
+          <tr data-ref="1" data-sota="0" data-margin="0.02"><td class="muted" style="font-family:var(--mono)">0.0 (baseline)</td><td style="font-family:var(--mono);color:var(--accent)">0.0200</td><td class="muted">+0.02 above SOTA</td></tr>
+          <tr data-ref="1" data-sota="1" data-margin="0.01"><td class="muted" style="font-family:var(--mono)">1.0 (oracle level)</td><td style="font-family:var(--mono);color:var(--accent)">1.0100</td><td class="muted">+0.01 above SOTA</td></tr>
+          <tr data-ref="1" data-sota="1.5" data-margin="0.005"><td class="muted" style="font-family:var(--mono)">1.5</td><td style="font-family:var(--mono);color:var(--accent)">1.5050</td><td class="muted">+0.005 above SOTA</td></tr>
+          <tr data-ref="1" data-sota="1.9" data-margin="0.001"><td class="muted" style="font-family:var(--mono)">1.9</td><td style="font-family:var(--mono);color:var(--accent)">1.9010</td><td class="muted">+0.001 above SOTA</td></tr>
         </tbody>
       </table>
       <span id="crown-live-announce" role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"></span>
@@ -4810,6 +4817,46 @@ function initScoringPage() {
       return a.id === 'crown-live-row' ? 1 : -1;
     });
     rows.forEach(r => ctTbody.appendChild(r));
+
+    // Margin decay sparkline: per-row inline bar so the 0.02→0.001 curve
+    // reads as a curve, not a flat list. Scale fixed at 0.02 = 100% so the
+    // first row anchors the eye and later rows visibly shrink.
+    rows.forEach(r => {
+      // LIVE row: keep margin in sync with current SOTA
+      if (r.id === 'crown-live-row') {
+        const sota = parseFloat(r.dataset.sota || '0');
+        r.dataset.margin = String(Math.max(0.001, 0.02 * (2.0 - sota) / 2.0));
+      }
+      const lastTd = r.querySelector('td:last-child');
+      if (!lastTd) return;
+      const margin = parseFloat(r.dataset.margin || '0');
+      const pct = Math.max(2, Math.min(100, (margin / 0.02) * 100));
+      // Preserve existing inline span (text + chips); wrap with cell-flex
+      // container only on first pass, otherwise just refresh the bar fill.
+      let bar = lastTd.querySelector('.crown-margin-bar-track');
+      if (!bar) {
+        // Wrap existing content in a text row, then append the bar row
+        const existing = Array.from(lastTd.childNodes);
+        const textWrap = document.createElement('span');
+        textWrap.className = 'crown-margin-text';
+        existing.forEach(n => textWrap.appendChild(n));
+        lastTd.classList.add('crown-margin-cell');
+        lastTd.appendChild(textWrap);
+        const track = document.createElement('span');
+        track.className = 'crown-margin-bar-track';
+        track.setAttribute('role', 'img');
+        const fill = document.createElement('span');
+        fill.className = 'crown-margin-bar-fill';
+        fill.style.width = pct.toFixed(1) + '%';
+        track.appendChild(fill);
+        track.title = `Required margin ${margin.toFixed(4)} — bar scaled to 0.02 (max anti-copy margin at SOTA=0)`;
+        lastTd.appendChild(track);
+      } else {
+        const fill = bar.querySelector('.crown-margin-bar-fill');
+        if (fill) fill.style.width = pct.toFixed(1) + '%';
+        bar.title = `Required margin ${margin.toFixed(4)} — bar scaled to 0.02 (max anti-copy margin at SOTA=0)`;
+      }
+    });
 
     // a11y: announce the LIVE row's new bracketing when it shifts slots so
     // screen-reader users hear the position-in-curve change (silent sort otherwise).

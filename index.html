@@ -1694,7 +1694,7 @@ function probCat(p) { return p.category || 'other'; }
 
 function catBadgeHTML(cat) {
   const labels = { python: 'py', typescript: 'ts', rust: 'rs', go: 'go', jvm: 'jvm', ruby: 'rb', other: '?' };
-  return `<span class="lang-badge lang-${cat}">${labels[cat] || cat}</span>`;
+  return `<span class="lang-badge lang-${cat}" aria-hidden="true">${labels[cat] || cat}</span>`;
 }
 
 function difficultyBadge(p) {
@@ -2158,8 +2158,6 @@ function buildSotaChart() {
       data: { labels: bins.map(b => b.label), datasets: [{ label: 'Problems', data: binCounts, backgroundColor: binColors, borderWidth: 0, borderRadius: 4 }] },
       options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { title: i => `Score range ${i[0].label}/30`, label: i => ` ${i.raw} problem${i.raw !== 1 ? 's' : ''}` } } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'Oracle score range (0–30)', color: '#8b949e', font: { size: 11 } } }, y: { ticks: { color: '#8b949e', font: { size: 11 }, precision: 0 }, grid: { color: '#21262d' }, title: { display: true, text: 'Problems', color: '#8b949e', font: { size: 11 } } } } },
     });
-    const emptyEl = document.getElementById('sota-empty');
-    if (emptyEl) { emptyEl.style.display = 'block'; emptyEl.textContent = 'SOTA progress chart will appear after the first scored submission.'; }
   } else {
     if (titleEl) titleEl.textContent = 'SOTA Progress';
     sotaChart = new Chart(document.getElementById('sota-chart'), {

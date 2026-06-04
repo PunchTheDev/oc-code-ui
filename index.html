@@ -644,19 +644,33 @@
     .repo-rank.rank-3 { color: #c08c5d; background: rgba(192,140,93,0.15); border-color: rgba(192,140,93,0.40); }
     .repo-row[data-rank] .repo-name a { font-weight: 600; }
     .repo-row[data-rank] .repo-count { color: var(--text); font-weight: 600; }
-    /* Long-tail divider — visually separates ranked top-3 from the flat tail */
-    .repo-longtail-divider {
+    /* Long-tail collapsible — separates ranked top-3 from the flat tail, collapses by default */
+    .repo-longtail { margin: 4px 0 0 0; }
+    .repo-longtail > summary {
       display: flex; align-items: center; gap: 10px;
-      margin: 10px 0 4px 0; padding: 0 12px 0 10px;
+      margin: 10px 0 4px 0; padding: 6px 12px 6px 10px;
       font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase;
       color: var(--muted);
+      cursor: pointer; list-style: none; user-select: none;
+      border-radius: 4px; transition: background 0.15s;
     }
-    .repo-longtail-divider::before,
-    .repo-longtail-divider::after {
+    .repo-longtail > summary::-webkit-details-marker { display: none; }
+    .repo-longtail > summary:hover { background: rgba(88,166,255,0.05); color: var(--text); }
+    .repo-longtail > summary::before,
+    .repo-longtail > summary::after {
       content: ""; flex: 1; height: 1px; background: var(--border);
     }
-    .repo-longtail-divider .ld-label { font-family: var(--mono); white-space: nowrap; }
-    .repo-longtail-divider .ld-label strong { color: var(--text); }
+    .repo-longtail > summary .ld-label { font-family: var(--mono); white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; }
+    .repo-longtail > summary .ld-label strong { color: var(--text); }
+    .repo-longtail > summary .ld-chev {
+      display: inline-block; width: 14px; text-align: center;
+      color: var(--accent); font-family: var(--mono); font-size: 11px;
+      transition: transform 0.18s;
+    }
+    .repo-longtail[open] > summary .ld-chev { transform: rotate(90deg); }
+    .repo-longtail > summary .ld-action { color: var(--accent); }
+    .repo-longtail[open] > summary .ld-action::after { content: "Hide"; }
+    .repo-longtail:not([open]) > summary .ld-action::after { content: "Show"; }
     .repo-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .repo-bar-fill { height: 100%; background: linear-gradient(90deg, #1f6feb, #58a6ff); border-radius: 3px; transition: width 0.6s; }
     .repo-count { color: var(--muted); font-size: 12px; min-width: 30px; text-align: right; font-family: var(--mono); }
@@ -4471,13 +4485,17 @@ function initScoringPage() {
   const tailCount = Math.max(0, sortedRepos.length - 3);
   const tailProblems = sortedRepos.slice(3).reduce((s, [, c]) => s + c, 0);
   const tailPct = totalProblems > 0 ? Math.round((tailProblems / totalProblems) * 100) : 0;
+  let tailDetails = null;
   sortedRepos.forEach(([repo, count], idx) => {
     if (idx === 3 && tailCount > 0) {
-      const sep = document.createElement('div');
-      sep.className = 'repo-longtail-divider';
-      sep.setAttribute('role', 'separator');
-      sep.innerHTML = `<span class="ld-label">Long tail · <strong>${tailCount}</strong> repos · <strong>${tailProblems}</strong> problems (${tailPct}% of pool)</span>`;
-      rb.appendChild(sep);
+      tailDetails = document.createElement('details');
+      tailDetails.className = 'repo-longtail';
+      tailDetails.id = 'repo-longtail';
+      tailDetails.innerHTML = `<summary title="Click to expand the ${tailCount} long-tail repos">
+        <span class="ld-label"><span class="ld-chev">▶</span>Long tail · <strong>${tailCount}</strong> repos · <strong>${tailProblems}</strong> problems (${tailPct}% of pool)</span>
+        <span class="ld-action"></span>
+      </summary>`;
+      rb.appendChild(tailDetails);
     }
     const pct = (count / maxCount * 100).toFixed(0);
     const poolPct = totalProblems > 0 ? ((count / totalProblems) * 100).toFixed(0) : 0;
@@ -4514,19 +4532,31 @@ function initScoringPage() {
       if (pb) pb.dataset.init = '';
       renderProblems();
     });
-    rb.appendChild(div);
+    (idx >= 3 && tailDetails ? tailDetails : rb).appendChild(div);
   });
+
+  // If a long-tail repo becomes active via Problems search, auto-open the <details> so it's visible
+  if (tailDetails) {
+    tailDetails.addEventListener('toggle', () => {
+      if (tailDetails.open && typeof window.updatePoolActiveRow === 'function') window.updatePoolActiveRow();
+    });
+  }
 
   // Sync .is-active state on .repo-row whose dataset.repo equals the current Problems search filter.
   // Same-repo visual continuity between Problems search and Scoring Pool Composition.
   window.updatePoolActiveRow = function() {
     const searchEl = document.getElementById('problem-search');
     const q = ((searchEl && searchEl.value) || '').trim().toLowerCase();
+    let tailMatched = false;
     document.querySelectorAll('#repo-breakdown .repo-row').forEach(row => {
       const match = q && row.dataset.repo && row.dataset.repo.toLowerCase() === q;
       row.classList.toggle('is-active', !!match);
       if (match) row.setAttribute('aria-current', 'true'); else row.removeAttribute('aria-current');
+      if (match && row.closest('.repo-longtail')) tailMatched = true;
     });
+    // Auto-open the long-tail details if the active match is hidden inside it
+    const td = document.getElementById('repo-longtail');
+    if (td && tailMatched && !td.open) td.open = true;
   };
   window.updatePoolActiveRow();
 

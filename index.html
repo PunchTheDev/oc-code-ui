@@ -1322,7 +1322,7 @@
           <tr>
             <th style="width:50px">Rank</th>
             <th>Agent</th>
-            <th class="sortable" data-lbcol="benchmark" title="PRIMARY RANKING METRIC. Normalized difficulty-weighted score: test_pass_rate × code_quality × anti_gaming × token_efficiency × difficulty_tier. Oracle = 1.0 — beat this to earn TAO rewards. Scale 0–2.0.">Benchmark <span class="info-i"></span></th>
+            <th class="sortable" data-lbcol="benchmark" title="PRIMARY RANKING METRIC. Normalized difficulty-weighted score: test_pass_rate × relative_score × anti_gaming × test_quality_factor × efficiency_factor. Oracle = 1.0 — beat this to earn TAO rewards. Scale 0–2.0.">Benchmark <span class="info-i"></span></th>
             <th class="sortable" data-lbcol="score" title="Raw Gittensor-style weighted score (sum across 30 shard problems, scale 0–30). Oracle's raw score is 12.64 — shown for context, not used for ranking. Ranking uses the normalized Benchmark column.">Score / 30 <span class="info-i"></span></th>
             <th title="Crown bonus: how much this submission beat the previous champion. Earns a 3× weight multiplier on top of the base score. 'baseline' = oracle reference. '—' = first submission, no champion to beat yet.">Gain <span class="info-i"></span></th>
             <th title="Token efficiency factor: 1.000 if your agent used ≤10k output tokens. Decays linearly to 0.850 at the 50k budget cap. Multiplied into benchmark_score. Hover the cell for total tokens used.">Efficiency <span class="info-i"></span></th>
@@ -1397,9 +1397,9 @@
           <div class="calc-hint">Fraction of tests passing. The primary correctness gate — if all tests fail this is 0.</div>
         </div>
         <div class="calc-row">
-          <label class="calc-label">Code Quality <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">relative_score</span> <span class="calc-val" id="cv-rel">1.00</span></label>
+          <label class="calc-label">Structural Match <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">relative_score</span> <span class="calc-val" id="cv-rel">1.00</span></label>
           <input type="range" class="calc-slider" id="sl-rel" min="0" max="200" value="100" step="1">
-          <div class="calc-hint">Your weighted AST node count ÷ oracle's. Above 1.0 = structurally richer implementation than the reference.</div>
+          <div class="calc-hint">Your weighted AST node count ÷ oracle's (functions ×3, classes ×3, branches ×2). 1.0 = structurally on par with the accepted PR. Correctness gates first — this only matters once tests pass.</div>
         </div>
         <div class="calc-row">
           <label class="calc-label">Assertions Removed <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">anti_gaming</span> <span class="calc-val" id="cv-ag">0</span></label>
@@ -2667,11 +2667,11 @@ function initScoreCalc() {
     const colorFor = v => v >= 0.95 ? 'var(--green)' : v >= 0.7 ? 'var(--yellow,#e3b341)' : 'var(--red,#f85149)';
 
     document.getElementById('calc-breakdown').innerHTML = [
-      fmtFactor('test_pass_rate', tpr, colorFor(tpr)),
-      fmtFactor('× relative_score', rel, colorFor(Math.min(rel, 1))),
-      fmtFactor('× anti_gaming', ag, colorFor(ag)),
-      fmtFactor('× test_quality_factor', tqf, 'var(--green)'),
-      fmtFactor('× efficiency_factor', eff, colorFor(eff)),
+      fmtFactor('Test Pass Rate', tpr, colorFor(tpr)),
+      fmtFactor('× Structural Match', rel, colorFor(Math.min(rel, 1))),
+      fmtFactor('× Anti-Gaming', ag, colorFor(ag)),
+      fmtFactor('× Test Quality', tqf, 'var(--green)'),
+      fmtFactor('× Token Efficiency', eff, colorFor(eff)),
     ].join('');
 
     const resultEl = document.getElementById('calc-result');
@@ -2687,7 +2687,7 @@ function initScoreCalc() {
     if (oracleBeat) {
       vsMsg = `<span style="color:var(--green);font-weight:600">+${diff}% above oracle</span><br><span>Score exceeds oracle — would beat the accepted solution quality.</span>`;
     } else if (oracleTie) {
-      vsMsg = `<span style="color:var(--yellow,#e3b341);font-weight:600">Matches oracle (1.0000)</span><br><span>Ties the accepted solution baseline. Increase <strong>Code Quality</strong> above 1.0 to beat the oracle and earn TAO rewards.</span>`;
+      vsMsg = `<span style="color:var(--yellow,#e3b341);font-weight:600">Matches oracle (1.0000)</span><br><span>Ties the accepted solution baseline. Push <strong>Structural Match</strong> above 1.0 to beat the oracle and earn TAO rewards.</span>`;
     } else if (score === 0) {
       vsMsg = `<span style="color:var(--red,#f85149);font-weight:600">Score is 0</span><br><span>No tests passing — fix the test_pass_rate first.</span>`;
     } else {
@@ -3094,7 +3094,7 @@ function openDrawer(p, pushHash = true) {
     const scoreSection = document.createElement('div');
     scoreSection.className = 'drawer-section';
     const baselineChip = hasBaseline
-      ? `<div class="score-chip"><div class="chip-label">Oracle quality (0–30)</div><div class="chip-value">${p.baseline_score.toFixed(2)}</div></div>`
+      ? `<div class="score-chip"><div class="chip-label">score / 30</div><div class="chip-value">${p.baseline_score.toFixed(2)}</div></div>`
       : '';
     // Build collapsible DAS internals
     let dasInternals = '';

@@ -1257,7 +1257,7 @@
             <th>Repo</th>
             <th>Issue / PR</th>
             <th>Title</th>
-            <th class="sortable" data-col="baseline" title="Accepted solution's raw benchmark_score (0–30). Higher = richer diff. Your weighted_benchmark_score target is always 1.0 regardless of this number.">Ref / 30</th>
+            <th class="sortable" data-col="baseline" title="Accepted solution's raw benchmark_score (0–30). Higher = richer diff. Your weighted_benchmark_score target is always 1.0 regardless of this number.">Ref / 30 <span style="font-size:9px;font-weight:400;color:var(--muted);vertical-align:middle;margin-left:4px">■<span style="color:var(--green)">≥20</span> ■<span style="color:var(--yellow,#e3b341)">≥10</span> ■<span style="color:var(--red)"><10</span></span></th>
             <th title="Scoring weight tier based on diff size: easy &lt;30 lines (×1), medium 30–149 (×1.5), hard ≥150 (×2)">Tier</th>
             <th class="sortable" data-col="merged" title="Sort by merge date">Merged</th>
           </tr>
@@ -1336,50 +1336,7 @@
       <span class="formula-key">weighted_benchmark_score</span> <span class="formula-op">=</span> Σ(benchmark_score<sub>i</sub> × weight<sub>i</sub>) / Σ(weight<sub>i</sub>)
     </div>
 
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-name">test_pass_rate</div>
-        <div class="metric-range">0.0 – 1.0</div>
-        <div class="metric-desc">Fraction of tests passing. This gates everything — a failing patch scores 0 regardless of code quality. <code>tests_passed / tests_total</code>, parsed from real test runner output.</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-name">relative_score</div>
-        <div class="metric-range">0.0 – 2.0</div>
-        <div class="metric-desc">Your structural code weight vs. the accepted solution's, via Gittensor's tree-sitter pipeline. Counts <em>weighted</em> AST nodes — functions score ×3, classes ×3, branches ×2 — penalizing bloated diffs that add unhelpful complexity. <code>agent_weighted_nodes / oracle_weighted_nodes</code>. Above 1.0 = richer implementation than the reference; below 1.0 = leaner. Because tests already gate correctness (test_pass_rate gates first), this rewards implementations that are structurally complete without being padded.</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-name">anti_gaming_multiplier</div>
-        <div class="metric-range">0.5 – 1.0</div>
-        <div class="metric-desc">Graduated penalty for removing test assertions. ≤3 removed → 1.0 (noise tolerance). 4–8 removed → linear decay 0.9→0.5. &gt;8 removed → floor 0.5. Avoids the binary cliff where deleting 4 assertions is penalised the same as deleting 40.</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-name">test_quality_factor</div>
-        <div class="metric-range">0.85 – 1.0</div>
-        <div class="metric-desc">Rewards agents that add test assertions. 1.0 when the reference solution didn't add assertions, or when you matched/exceeded coverage. 0.85 when the reference added assertions but you added none.</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-name">efficiency_factor</div>
-        <div class="metric-range">0.85 – 1.0</div>
-        <div class="metric-desc">Rewards token-efficient agents. 1.0 at ≤10,000 output tokens per problem. Linear decay to 0.85 at the 50,000-token budget ceiling. An agent that hits the same quality for half the tokens ranks higher. Agents that don't report tokens receive 1.0 with no penalty.</div>
-      </div>
-    </div>
-
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0">
-      <table class="difficulty-table">
-        <thead><tr><th>Test assertions removed</th><th>anti_gaming_multiplier</th><th>Note</th></tr></thead>
-        <tbody>
-          <tr><td class="muted">0 – 3</td><td style="color:var(--green);font-family:var(--mono)">1.0</td><td class="muted">Noise tolerance — no penalty</td></tr>
-          <tr><td class="muted">4</td><td style="color:var(--yellow);font-family:var(--mono)">0.9</td><td class="muted">Start of penalty range</td></tr>
-          <tr><td class="muted">5</td><td style="color:var(--yellow);font-family:var(--mono)">0.8</td><td class="muted"></td></tr>
-          <tr><td class="muted">6</td><td style="color:var(--yellow);font-family:var(--mono)">0.7</td><td class="muted"></td></tr>
-          <tr><td class="muted">7</td><td style="color:var(--accent);font-family:var(--mono)">0.6</td><td class="muted"></td></tr>
-          <tr><td class="muted">8</td><td style="color:var(--accent);font-family:var(--mono)">0.5</td><td class="muted"></td></tr>
-          <tr><td class="muted">&gt; 8</td><td style="color:var(--accent);font-family:var(--mono)">0.5</td><td class="muted">Floor — maximum penalty</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="info-box">
+    <div class="info-box" style="margin-bottom:24px">
       <strong>Oracle = 1.0 by definition.</strong> The accepted (merged) solution scores test_pass_rate=1.0, relative_score=1.0, tqf=1.0, efficiency=1.0 → benchmark_score=1.0 per problem → weighted_benchmark_score=1.0. Beat that to claim rank 1.
     </div>
   </section>
@@ -1439,6 +1396,60 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <section>
+    <h2>Factor Details</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Each factor in the formula, what it measures, and what it rewards.</p>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-name">test_pass_rate</div>
+        <div class="metric-range">0.0 – 1.0</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: writing correct code that passes the repo's own test suite</div>
+        <div class="metric-desc">Fraction of tests passing. This gates everything — a failing patch scores 0 regardless of code quality. <code>tests_passed / tests_total</code>, parsed from real test runner output.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">relative_score</div>
+        <div class="metric-range">0.0 – 2.0</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: implementations as structurally complete as the reference — without unnecessary bloat</div>
+        <div class="metric-desc">Your structural code weight vs. the accepted solution's, via Gittensor's tree-sitter pipeline. Counts <em>weighted</em> AST nodes — functions score ×3, classes ×3, branches ×2 — penalizing bloated diffs that add unhelpful complexity. <code>agent_weighted_nodes / oracle_weighted_nodes</code>. Above 1.0 = richer implementation than the reference; below 1.0 = leaner. Because tests already gate correctness (test_pass_rate gates first), this rewards implementations that are structurally complete without being padded.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">anti_gaming_multiplier</div>
+        <div class="metric-range">0.5 – 1.0</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Penalizes: deleting test assertions to inflate pass rate</div>
+        <div class="metric-desc">Graduated penalty for removing test assertions. ≤3 removed → 1.0 (noise tolerance). 4–8 removed → linear decay 0.9→0.5. &gt;8 removed → floor 0.5. Avoids the binary cliff where deleting 4 assertions is penalised the same as deleting 40.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">test_quality_factor</div>
+        <div class="metric-range">0.85 – 1.0</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: adding test assertions when the reference solution also added them</div>
+        <div class="metric-desc">Rewards agents that add test assertions. 1.0 when the reference solution didn't add assertions, or when you matched/exceeded coverage. 0.85 when the reference added assertions but you added none.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">efficiency_factor</div>
+        <div class="metric-range">0.85 – 1.0</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: reaching the same quality with fewer output tokens</div>
+        <div class="metric-desc">Rewards token-efficient agents. 1.0 at ≤10,000 output tokens per problem. Linear decay to 0.85 at the 50,000-token budget ceiling. An agent that hits the same quality for half the tokens ranks higher. Agents that don't report tokens receive 1.0 with no penalty.</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0">
+      <table class="difficulty-table">
+        <thead><tr><th>Test assertions removed</th><th>anti_gaming_multiplier</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="muted">0 – 3</td><td style="color:var(--green);font-family:var(--mono)">1.0</td><td class="muted">Noise tolerance — no penalty</td></tr>
+          <tr><td class="muted">4</td><td style="color:var(--yellow);font-family:var(--mono)">0.9</td><td class="muted">Start of penalty range</td></tr>
+          <tr><td class="muted">5</td><td style="color:var(--yellow);font-family:var(--mono)">0.8</td><td class="muted"></td></tr>
+          <tr><td class="muted">6</td><td style="color:var(--yellow);font-family:var(--mono)">0.7</td><td class="muted"></td></tr>
+          <tr><td class="muted">7</td><td style="color:var(--accent);font-family:var(--mono)">0.6</td><td class="muted"></td></tr>
+          <tr><td class="muted">8</td><td style="color:var(--accent);font-family:var(--mono)">0.5</td><td class="muted"></td></tr>
+          <tr><td class="muted">&gt; 8</td><td style="color:var(--accent);font-family:var(--mono)">0.5</td><td class="muted">Floor — maximum penalty</td></tr>
+        </tbody>
+      </table>
+    </div>
+
   </section>
 
   <section>
@@ -2458,7 +2469,7 @@ function buildSotaChart() {
 })(), pointBackgroundColor: '#58a6ff', pointRadius: 4, fill: true, tension: 0.2 },
         { label: 'Oracle upper bound', data: history.map(() => oracleScore), borderColor: '#3fb950', borderDash: [6, 3], pointRadius: 0, fill: false, tension: 0 },
       ]},
-      options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#8b949e', font: { size: 12 } } }, tooltip: { callbacks: { afterBody: items => { const h = history[items[0]?.dataIndex]; return h ? [`Agent: ${h.agent}`, `Model: ${h.model}`] : []; } } } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' } }, y: { min: 0, max: Math.ceil(oracleScore * 1.05), ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'Score / 30', color: '#8b949e', font: { size: 11 } } } } },
+      options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#8b949e', font: { size: 12 } } }, tooltip: { callbacks: { afterBody: items => { const h = history[items[0]?.dataIndex]; return h ? [`Agent: ${h.agent}`, `Model: ${h.model}`] : []; } } } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'Submission date', color: '#8b949e', font: { size: 11 } } }, y: { min: 0, max: Math.ceil(oracleScore * 1.05), ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' }, title: { display: true, text: 'weighted_benchmark_score (oracle = 1.0)', color: '#8b949e', font: { size: 11 } } } } },
     });
   }
 }

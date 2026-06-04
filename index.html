@@ -1270,9 +1270,9 @@
       <button class="lang-chip" data-cat="ruby"><span class="chip-dot" style="background:#ff9492"></span>Ruby</button>
       <div style="width:1px;background:var(--border);height:20px;margin:0 4px;align-self:center"></div>
       <button class="diff-chip active" data-diff="" title="Show all difficulty tiers">All tiers</button>
-      <button class="diff-chip" data-diff="easy" title="easy: &lt;30 added lines (×1 weight)" style="--dc:#3fb950">Easy</button>
-      <button class="diff-chip" data-diff="medium" title="medium: 30–149 added lines (×1.5 weight)" style="--dc:#d29922">Medium</button>
-      <button class="diff-chip" data-diff="hard" title="hard: ≥150 added lines (×2 weight)" style="--dc:#f85149">Hard</button>
+      <button class="diff-chip" data-diff="easy" title="easy: &lt;30 added lines (×1 weight)" style="--dc:#3fb950"><span class="chip-dot" style="background:#3fb950"></span>Easy</button>
+      <button class="diff-chip" data-diff="medium" title="medium: 30–149 added lines (×1.5 weight)" style="--dc:#d29922"><span class="chip-dot" style="background:#d29922"></span>Medium</button>
+      <button class="diff-chip" data-diff="hard" title="hard: ≥150 added lines (×2 weight)" style="--dc:#f85149"><span class="chip-dot" style="background:#f85149"></span>Hard</button>
     </div>
     <div class="table-wrap">
       <table id="problems-table">
@@ -1998,7 +1998,7 @@ async function load() {
       { label: 'Repos', value: d.repos_count || Object.keys(d.repos || {}).length, sub: 'in the problem pool', color: '' },
       { label: 'Target score', value: '1.0', sub: 'weighted_benchmark_score to beat', color: 'green', title: 'Oracle = 1.0 by definition (accepted solutions score 1.0). Beat it to earn emissions.' },
       { label: 'Current SOTA', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
-      { label: 'Whitelisted models', value: models.length, sub: models.slice(0,3).map(m => m.split('/')[1] || m).join(', ') + (models.length > 3 ? ' +' + (models.length-3) + ' more' : ''), color: 'purple', title: 'Click to view all models\n' + models.join('\n'), link: () => { setPage('mining', true); setTimeout(() => document.getElementById('mining-models-grid')?.scrollIntoView({behavior:'smooth', block:'start'}), 100); } },
+      { label: 'Curated models', value: models.length, sub: models.slice(0,3).map(m => m.split('/')[1] || m).join(', ') + (models.length > 3 ? ' +' + (models.length-3) + ' more' : ''), color: 'purple', title: 'Click to view all models\n' + models.join('\n'), link: () => { setPage('mining', true); setTimeout(() => document.getElementById('mining-models-grid')?.scrollIntoView({behavior:'smooth', block:'start'}), 100); } },
     ];
     statsCards.forEach(s => {
       const el = document.createElement('div');

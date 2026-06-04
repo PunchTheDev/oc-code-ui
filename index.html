@@ -297,6 +297,26 @@
 
     #problems-table { cursor: default; }
     #problems-table tbody tr { cursor: pointer; }
+    .shard-idx-mark {
+      display: inline-block;
+      color: var(--accent);
+      font-size: 10px;
+      margin-right: 4px;
+      vertical-align: 1px;
+      opacity: 0.85;
+      cursor: help;
+    }
+    .shard-idx-spacer {
+      display: inline-block;
+      width: 14px;
+    }
+    #problems-table tbody tr.prob-shard-row td:first-child {
+      border-left: 2px solid var(--accent);
+      padding-left: 6px;
+    }
+    #problems-table tbody tr.prob-shard-row:hover .shard-idx-mark {
+      opacity: 1;
+    }
     #problems-table tbody tr.active { background: rgba(88,166,255,0.06); outline: 1px solid rgba(88,166,255,0.4); }
 
     /* ── Sortable headers ────────────────────────────────── */
@@ -2950,16 +2970,18 @@ function renderProblems() {
     const mergedDate = p.merged_at ? p.merged_at.slice(0, 10) : '—';
     const baselineScore = p.baseline_score != null ? p.baseline_score.toFixed(1) : '—';
     const cat = probCat(p);
+    const isShard = shardProblemIds.has(p.id);
     const tr = document.createElement('tr');
-    tr.title = 'Click to view problem details';
+    if (isShard) tr.classList.add('prob-shard-row');
+    tr.title = isShard ? 'In current shard — will be evaluated this week · click to view problem details' : 'Click to view problem details';
     tr.innerHTML = `
-      <td class="muted" style="font-family:var(--mono);font-size:11px">${startIdx + i + 1}</td>
+      <td class="muted" style="font-family:var(--mono);font-size:11px;white-space:nowrap">${isShard ? `<span class="shard-idx-mark" title="In current shard — will be evaluated this week">⚡</span>` : '<span class="shard-idx-spacer"></span>'}${startIdx + i + 1}</td>
       <td><span class="repo-tag">${esc(p.repo)}</span></td>
       <td style="white-space:nowrap;font-size:12px">
         ${p.issue_url ? `<a class="link" href="${esc(p.issue_url)}" target="_blank">#${p.issue}</a>` : '—'}
         / <a class="link" href="${esc(p.pr_url)}" target="_blank">PR#${p.pr}</a>
       </td>
-      <td class="problem-title" title="${esc(p.title || '')}">${esc(p.title || '—')}${catBadgeHTML(cat)}${shardProblemIds.has(p.id) ? '<span style="font-size:9px;color:var(--accent);margin-left:5px;opacity:0.8" title="In current shard — will be evaluated this week">⚡</span>' : ''}</td>
+      <td class="problem-title" title="${esc(p.title || '')}">${esc(p.title || '—')}${catBadgeHTML(cat)}</td>
       <td class="problem-score" style="white-space:nowrap">${baselineScore !== '—' ? (() => {
           const sc = parseFloat(baselineScore);
           const pct = (sc / 30 * 100).toFixed(0);

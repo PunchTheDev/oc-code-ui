@@ -1585,8 +1585,9 @@
         <div class="qs-bar">
           <div class="qs-dot qs-red"></div><div class="qs-dot qs-yellow"></div><div class="qs-dot qs-green"></div>
           <span class="qs-title">bash — copy &amp; run</span>
+          <button class="copy-btn" id="copy-mine-loop-btn">Copy</button>
         </div>
-        <div class="qs-body">
+        <div class="qs-body" id="mine-loop-block">
           <div><span class="qs-comment"># Prerequisites: Python 3.11+, git, Docker (optional — --no-sandbox skips it)</span></div>
           <div>&nbsp;</div>
           <div><span class="qs-comment"># 1. Clone &amp; install</span></div>
@@ -1645,8 +1646,9 @@
         <div class="qs-bar">
           <div class="qs-dot qs-red"></div><div class="qs-dot qs-yellow"></div><div class="qs-dot qs-green"></div>
           <span class="qs-title">terminal</span>
+          <button class="copy-btn" id="copy-quickstart-btn">Copy</button>
         </div>
-        <div class="qs-body">
+        <div class="qs-body" id="quickstart-block">
           <div><span class="qs-comment"># 1. Clone and install</span></div>
           <div><span class="qs-prompt">$ </span><span class="qs-cmd">git clone https://github.com/PunchTheDev/gittensor-base-miner &amp;&amp; cd gittensor-base-miner &amp;&amp; pip install -r requirements.txt</span></div>
           <div>&nbsp;</div>
@@ -2056,7 +2058,7 @@ async function load() {
     const oracleWeighted = d.oracle_score || 0;
     const lbStatsCards = [
       { label: 'Target score', value: '1.0', sub: 'weighted_benchmark_score · accepted solutions score 1.0', color: 'green' },
-      { label: 'Current SOTA', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'be the first', color: 'yellow' },
+      { label: 'Current SOTA', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
       { label: 'Submissions', value: realEntries.length, sub: 'scored agents', color: '' },
     ];
     lbStatsCards.forEach(s => {
@@ -2103,7 +2105,7 @@ async function load() {
     const discovUrl = document.getElementById('discovery-url-text');
     if (discovUrl) discovUrl.textContent = `${API}/api/agents`;
 
-    // Copy button
+    // Copy buttons
     const copyBtn = document.getElementById('copy-discovery-btn');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
@@ -2113,6 +2115,20 @@ async function load() {
         });
       });
     }
+    function wireBlockCopy(btnId, blockId) {
+      const btn = document.getElementById(btnId);
+      const block = document.getElementById(blockId);
+      if (!btn || !block) return;
+      btn.addEventListener('click', () => {
+        const text = block.innerText.replace(/^\$ /gm, '').trim();
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+      });
+    }
+    wireBlockCopy('copy-mine-loop-btn', 'mine-loop-block');
+    wireBlockCopy('copy-quickstart-btn', 'quickstart-block');
 
     // Wire nav tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -2532,11 +2548,20 @@ function initScoreCalc() {
 
     document.getElementById('calc-weighted').textContent = `${weighted.toFixed(4)} (×${tierWeight})`;
 
-    const oracleBeat = score >= 1.0;
+    const oracleBeat = score > 1.0;
+    const oracleTie = score === 1.0;
     const diff = ((score - 1.0) * 100).toFixed(1);
-    document.getElementById('calc-vs-oracle').innerHTML = oracleBeat
-      ? `<span style="color:var(--green);font-weight:600">+${diff}% above oracle</span><br><span>This submission would beat rank 1.</span>`
-      : `<span style="color:var(--muted)">${Math.abs(diff)}% below oracle (1.0000)</span><br><span>Need <strong style="color:var(--text)">${(1.0 / Math.max(score, 0.0001)).toFixed(2)}×</strong> improvement across all factors to reach oracle level.</span>`;
+    let vsMsg;
+    if (oracleBeat) {
+      vsMsg = `<span style="color:var(--green);font-weight:600">+${diff}% above oracle</span><br><span>Score exceeds oracle — would beat the accepted solution quality.</span>`;
+    } else if (oracleTie) {
+      vsMsg = `<span style="color:var(--green);font-weight:600">Matches oracle (1.0000)</span><br><span>Score equals oracle — ties the accepted solution baseline.</span>`;
+    } else if (score === 0) {
+      vsMsg = `<span style="color:var(--red,#f85149);font-weight:600">Score is 0</span><br><span>No tests passing — fix the test_pass_rate first.</span>`;
+    } else {
+      vsMsg = `<span style="color:var(--muted)">${Math.abs(diff)}% below oracle</span><br><span>Need <strong style="color:var(--text)">${(1.0 / score).toFixed(2)}×</strong> improvement across all factors to reach oracle level.</span>`;
+    }
+    document.getElementById('calc-vs-oracle').innerHTML = vsMsg;
   }
 
   ['sl-tpr', 'sl-rel', 'sl-ag', 'sl-eff'].forEach(id => {

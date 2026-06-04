@@ -2970,6 +2970,14 @@ function inlineMd(s) {
   let out = '';
   let j = 0;
   while (j < s.length) {
+    // auto-link bare https:// URLs
+    if (s.slice(j, j+8) === 'https://' || s.slice(j, j+7) === 'http://') {
+      const urlEnd = s.slice(j).search(/[\s)"<>]/);
+      const url = urlEnd === -1 ? s.slice(j) : s.slice(j, j + urlEnd);
+      const display = url.length > 60 ? url.slice(0, 57) + '…' : url;
+      out += `<a href="${esc(url)}" target="_blank" style="color:var(--accent);word-break:break-all">${esc(display)}</a>`;
+      j += url.length; continue;
+    }
     if (s[j] === '`') {
       const end = s.indexOf('`', j + 1);
       if (end !== -1) { out += `<code>${esc(s.slice(j + 1, end))}</code>`; j = end + 1; continue; }
@@ -3087,7 +3095,7 @@ function openDrawer(p, pushHash = true) {
     const testSection = document.createElement('div');
     testSection.className = 'drawer-section';
     testSection.innerHTML = `
-      <div class="drawer-section-title">Eval Test Command</div>
+      <div class="drawer-section-title" style="display:flex;align-items:center;justify-content:space-between">Eval Test Command <button class="copy-btn" style="font-size:10px;padding:2px 8px" onclick="navigator.clipboard.writeText(${JSON.stringify(p.test_cmd.join(' '))}).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1200)})">Copy</button></div>
       <div class="test-cmd">${esc(p.test_cmd.join(' '))}</div>
     `;
     body.appendChild(testSection);

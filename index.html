@@ -653,6 +653,35 @@
     .repo-rank.rank-3 { color: #c08c5d; background: rgba(192,140,93,0.15); border-color: rgba(192,140,93,0.40); }
     .repo-row[data-rank] .repo-name a { font-weight: 600; }
     .repo-row[data-rank] .repo-count { color: var(--text); font-weight: 600; }
+    /* Rank-why subtitle — explains *why* a top-3 repo earned its medal */
+    .repo-rank-why {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+      margin: 1px 0 6px 36px; padding: 2px 0 0 0;
+      font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.2px;
+      color: var(--muted);
+    }
+    .repo-rank-why .rrw-label {
+      text-transform: uppercase; letter-spacing: 0.6px; font-size: 9.5px;
+      color: var(--muted); opacity: 0.8;
+    }
+    .repo-rank-why .rrw-weight strong { color: var(--text); }
+    .repo-rank-why .rrw-sep { color: var(--border); padding: 0 2px; }
+    .repo-rank-why .rrw-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 0 6px; height: 16px; border-radius: 8px;
+      font-size: 10px; letter-spacing: 0.2px;
+      border: 1px solid var(--border); background: var(--surface);
+    }
+    .repo-rank-why .rrw-chip::before {
+      content: ""; width: 5px; height: 5px; border-radius: 50%; display: inline-block;
+    }
+    .repo-rank-why .rrw-chip.hard   { color: #ff7b72; border-color: rgba(255,123,114,0.35); background: rgba(255,123,114,0.08); }
+    .repo-rank-why .rrw-chip.hard::before   { background: #ff7b72; }
+    .repo-rank-why .rrw-chip.medium { color: #d29922; border-color: rgba(210,153,34,0.35); background: rgba(210,153,34,0.08); }
+    .repo-rank-why .rrw-chip.medium::before { background: #d29922; }
+    .repo-rank-why .rrw-chip.easy   { color: #3fb950; border-color: rgba(63,185,80,0.35); background: rgba(63,185,80,0.08); }
+    .repo-rank-why .rrw-chip.easy::before   { background: #3fb950; }
+    .repo-rank-why .rrw-chip.zero { opacity: 0.35; }
     /* Long-tail collapsible — separates ranked top-3 from the flat tail, collapses by default */
     .repo-longtail { margin: 4px 0 0 0; }
     .repo-longtail > summary {
@@ -4490,13 +4519,17 @@ function initScoringPage() {
   const reposCountEl = document.getElementById('repos-count');
   if (reposCountEl) reposCountEl.textContent = `${Object.keys(repos).length} repos`;
 
-  // Compute dominant language per repo from allProblems
+  // Compute dominant language + difficulty mix per repo from allProblems
   const repoLangCounts = {};
+  const repoDiffs = {};
   (allProblems || []).forEach(p => {
     if (!p.repo) return;
     if (!repoLangCounts[p.repo]) repoLangCounts[p.repo] = {};
     const cat = p.category || 'other';
     repoLangCounts[p.repo][cat] = (repoLangCounts[p.repo][cat] || 0) + 1;
+    if (!repoDiffs[p.repo]) repoDiffs[p.repo] = { easy: 0, medium: 0, hard: 0 };
+    const d = (p.difficulty || '').toLowerCase();
+    if (d === 'easy' || d === 'medium' || d === 'hard') repoDiffs[p.repo][d]++;
   });
   // Scoring jump-nav active state via IntersectionObserver
   const scoringNavLinks = document.querySelectorAll('#page-scoring .jump-nav a');
@@ -4561,11 +4594,18 @@ function initScoringPage() {
       rb.appendChild(tailDetails);
     }
     const pct = (count / maxCount * 100).toFixed(0);
-    const poolPct = totalProblems > 0 ? ((count / totalProblems) * 100).toFixed(0) : 0;
+    const poolPctNum = totalProblems > 0 ? (count / totalProblems) * 100 : 0;
+    const poolPct = poolPctNum.toFixed(0);
     const lang = repoLang[repo] || 'other';
     const gradient = langGradients[lang] || langGradients.other;
     const rank = idx < 3 ? (idx + 1) : null;
-    const rankChip = rank ? `<span class="repo-rank rank-${rank}" title="Rank #${rank} by problem count — heaviest contributor to the pool">#${rank}</span>` : '';
+    // Per-repo weighted contribution (Easy×1 + Medium×1.5 + Hard×2) — same weights as weighted_benchmark_score
+    const diffs = repoDiffs[repo] || { easy: 0, medium: 0, hard: 0 };
+    const weighted = diffs.easy * 1 + diffs.medium * 1.5 + diffs.hard * 2;
+    const rankTitle = rank
+      ? `Rank #${rank} by problem count — ${count} problems (${poolPctNum.toFixed(1)}% of pool) · weighted contribution ${weighted.toFixed(1)} (Hard ${diffs.hard} · Med ${diffs.medium} · Easy ${diffs.easy})`
+      : '';
+    const rankChip = rank ? `<span class="repo-rank rank-${rank}" title="${rankTitle}">#${rank}</span>` : '';
     const div = document.createElement('div');
     div.className = 'repo-row';
     div.dataset.repo = repo;
@@ -4596,6 +4636,26 @@ function initScoringPage() {
       renderProblems();
     });
     (idx >= 3 && tailDetails ? tailDetails : rb).appendChild(div);
+    // Rank-why subtitle — only for medals (rank 1/2/3). Explains how the rank was earned:
+    // pool share + weighted contribution + per-tier breakdown chips (Hard/Med/Easy).
+    if (rank) {
+      const why = document.createElement('div');
+      why.className = 'repo-rank-why';
+      why.setAttribute('aria-label', `Why rank ${rank}: ${count} problems = ${poolPctNum.toFixed(1)}% of pool, weighted contribution ${weighted.toFixed(1)} (Hard ${diffs.hard} medium ${diffs.medium} easy ${diffs.easy})`);
+      const chipClass = (n) => `rrw-chip ${n.toLowerCase()}${(diffs[n.toLowerCase()] || 0) === 0 ? ' zero' : ''}`;
+      const chipTitle = (tier, w) => `${diffs[tier]} ${tier} problem${diffs[tier] !== 1 ? 's' : ''} × ${w} weight = ${(diffs[tier] * w).toFixed(1)}`;
+      why.innerHTML = `
+        <span class="rrw-label">Why rank #${rank}:</span>
+        <span><strong>${poolPctNum.toFixed(1)}%</strong> of pool</span>
+        <span class="rrw-sep">·</span>
+        <span class="rrw-weight" title="Sum of problems weighted by difficulty (Easy×1 + Med×1.5 + Hard×2) — same weights as weighted_benchmark_score">weighted <strong>${weighted.toFixed(1)}</strong></span>
+        <span class="rrw-sep">·</span>
+        <span class="${chipClass('Hard')}"   title="${chipTitle('hard', 2)}">Hard ${diffs.hard}</span>
+        <span class="${chipClass('Medium')}" title="${chipTitle('medium', 1.5)}">Med ${diffs.medium}</span>
+        <span class="${chipClass('Easy')}"   title="${chipTitle('easy', 1)}">Easy ${diffs.easy}</span>
+      `;
+      rb.appendChild(why);
+    }
   });
 
   // If a long-tail repo becomes active via Problems search, auto-open the <details> so it's visible

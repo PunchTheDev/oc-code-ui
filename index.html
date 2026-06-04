@@ -360,6 +360,11 @@
     .gl-breadcrumb { position: absolute; top: 6px; right: 8px; font-family: var(--mono); font-size: 9.5px; color: var(--accent); background: rgba(88,166,255,0.10); border: 1px solid rgba(88,166,255,0.40); border-radius: 999px; padding: 1px 9px; text-decoration: none; letter-spacing: 0.04em; opacity: 0; transform: translateY(-3px); pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease, background 0.15s ease, border-color 0.15s ease; z-index: 2; }
     .gl-breadcrumb.show { opacity: 1; transform: none; pointer-events: auto; }
     .gl-breadcrumb:hover, .gl-breadcrumb:focus-visible { background: rgba(88,166,255,0.22); border-color: var(--accent); outline: none; }
+    /* Copy-link chip — same timing/positioning rhythm as .gl-breadcrumb (transient, fades with it for ~6s post-arrival), green palette to signal "share this canonical URL" vs the blue "go back" return-link. Sits 4px to the left of the breadcrumb. */
+    .gl-copy-chip { position: absolute; top: 6px; right: 92px; font-family: var(--mono); font-size: 9.5px; color: var(--green); background: rgba(63,185,80,0.10); border: 1px solid rgba(63,185,80,0.40); border-radius: 999px; padding: 1px 9px; cursor: pointer; letter-spacing: 0.04em; opacity: 0; transform: translateY(-3px); pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease; z-index: 2; user-select: none; }
+    .gl-copy-chip.show { opacity: 1; transform: none; pointer-events: auto; }
+    .gl-copy-chip:hover, .gl-copy-chip:focus-visible { background: rgba(63,185,80,0.22); border-color: var(--green); outline: none; }
+    .gl-copy-chip.copied { background: rgba(63,185,80,0.32); border-color: var(--green); color: #b7f5c1; }
 
     /* ── Language / category badges ─────────────────────── */
     .lang-badge {
@@ -3368,6 +3373,12 @@ function handleGlDeepLink(id) {
       bc.classList.add('show');
       bc._hideT = setTimeout(() => { bc.classList.remove('show'); bc._hideT = null; }, 6000);
     }
+    const cp = card.querySelector('.gl-copy-chip');
+    if (cp) {
+      if (cp._hideT) { clearTimeout(cp._hideT); cp._hideT = null; }
+      cp.classList.add('show');
+      cp._hideT = setTimeout(() => { cp.classList.remove('show'); cp._hideT = null; }, 6000);
+    }
   };
   setTimeout(() => attempt(8), 80);
   return true;
@@ -4720,6 +4731,17 @@ function initScoringPage() {
       bc.textContent = '← Formula';
       bc.title = 'Back to the formula block — you arrived here from a Factor Details card; this skips the intermediate hop.';
       card.appendChild(bc);
+      // Copy-link chip — surfaces the canonical #gl-<id> URL on the user's clipboard so they can share/refresh
+      // to the exact same destination state (handleGlDeepLink replays the scroll/flash/breadcrumb on reload).
+      const cp = document.createElement('span');
+      cp.className = 'gl-copy-chip';
+      cp.setAttribute('role', 'button');
+      cp.setAttribute('tabindex', '0');
+      cp.dataset.glId = card.id;
+      cp.dataset.label = '🔗 Copy link';
+      cp.textContent = cp.dataset.label;
+      cp.title = 'Copy canonical deep-link to this glossary card (shareable, refresh-proof — replays the same scroll/flash on load).';
+      card.appendChild(cp);
     });
   }
   if (!window._mcGlBridgeWired) {
@@ -4745,15 +4767,66 @@ function initScoringPage() {
         if (toGl) history.replaceState(null, '', '#' + id);
         else if (toMc) history.replaceState(null, '', '#/scoring');
       } catch (_) {}
-      // Transient breadcrumb on the destination glossary card (only on mc-* → gl-* arrival)
+      // Transient breadcrumb + copy-chip on the destination glossary card (only on mc-* → gl-* arrival)
       if (toGl) {
         const bc = card.querySelector('.gl-breadcrumb');
+        const cp = card.querySelector('.gl-copy-chip');
         if (bc) {
           if (bc._hideT) { clearTimeout(bc._hideT); bc._hideT = null; }
           bc.classList.add('show');
           bc._hideT = setTimeout(() => { bc.classList.remove('show'); bc._hideT = null; }, 6000);
         }
+        if (cp) {
+          if (cp._hideT) { clearTimeout(cp._hideT); cp._hideT = null; }
+          cp.classList.add('show');
+          cp._hideT = setTimeout(() => { cp.classList.remove('show'); cp._hideT = null; }, 6000);
+        }
       }
+    });
+  }
+  // Copy-chip click → write canonical #gl-<id> URL to clipboard, swap label to "Copied!" for 1.4s.
+  if (!window._glCopyChipWired) {
+    window._glCopyChipWired = true;
+    const doCopy = (cp) => {
+      const id = cp.dataset.glId;
+      if (!id) return;
+      const url = location.origin + location.pathname + '#' + id;
+      const restore = () => {
+        cp.classList.remove('copied');
+        cp.textContent = cp.dataset.label || '🔗 Copy link';
+      };
+      const flash = (ok) => {
+        if (cp._restoreT) { clearTimeout(cp._restoreT); cp._restoreT = null; }
+        cp.classList.add('copied');
+        cp.textContent = ok ? '✓ Copied!' : '⚠ Copy failed';
+        cp._restoreT = setTimeout(restore, 1400);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(() => flash(true), () => flash(false));
+        } else {
+          // Fallback for non-secure contexts (no navigator.clipboard)
+          const ta = document.createElement('textarea');
+          ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          flash(ok);
+        }
+      } catch (_) { flash(false); }
+    };
+    document.addEventListener('click', (ev) => {
+      const cp = ev.target.closest('.gl-copy-chip');
+      if (!cp) return;
+      ev.preventDefault();
+      doCopy(cp);
+    });
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      const cp = ev.target.closest && ev.target.closest('.gl-copy-chip');
+      if (!cp) return;
+      ev.preventDefault();
+      doCopy(cp);
     });
   }
   const d = globalData;

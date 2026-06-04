@@ -1832,8 +1832,8 @@
         <a class="fs-row" href="#mc-efficiency" onclick="event.preventDefault(); document.getElementById('mc-efficiency')?.scrollIntoView({behavior:'smooth',block:'start'}); history.replaceState(null,'','#mc-efficiency');"><span class="fs-op">×</span><span class="fs-var"><span class="term" title="Efficiency: output-token budget decay (free ≤10k, 0.85 at 50k cap).">efficiency_factor</span></span><span class="fs-note">cost efficiency · 0.85–1.0 · output-token budget decay</span><span class="fs-jump">Details ↓</span><span class="fs-live-pill" data-pill="eff"></span></a>
         <div class="fs-divider"></div>
         <div class="fs-head"><span class="formula-key">weighted_benchmark_score</span><span class="fs-eq">=</span><span style="color:var(--muted);font-family:var(--font);font-size:11px">pool-level weighted average of benchmark_score</span></div>
-        <div class="fs-row"><span class="fs-op">Σ</span><span class="fs-var">benchmark_score<sub>i</sub> × <span class="term" title="Difficulty weight — Easy ×1, Medium ×1.5, Hard ×2. Hard problems contribute more to your pool average.">weight<sub>i</sub></span></span><span class="fs-note">numerator · sum across all evaluated problems</span></div>
-        <div class="fs-row"><span class="fs-op">÷</span><span class="fs-var">Σ <span class="term" title="Difficulty weight — Easy ×1, Medium ×1.5, Hard ×2. Hard problems contribute more to your pool average.">weight<sub>i</sub></span></span><span class="fs-note">denominator · normalizes by total weight so the result is on the same 1.0 scale</span></div>
+        <div class="fs-row fs-weight-row"><span class="fs-op">Σ</span><span class="fs-var">benchmark_score<sub>i</sub> × <span class="term" title="Difficulty weight — Easy ×1, Medium ×1.5, Hard ×2. Hard problems contribute more to your pool average.">weight<sub>i</sub></span></span><span class="fs-note">numerator · sum across all evaluated problems</span><span class="fs-live-pill" data-pill="weight"></span></div>
+        <div class="fs-row fs-weight-row"><span class="fs-op">÷</span><span class="fs-var">Σ <span class="term" title="Difficulty weight — Easy ×1, Medium ×1.5, Hard ×2. Hard problems contribute more to your pool average.">weight<sub>i</sub></span></span><span class="fs-note">denominator · normalizes by total weight so the result is on the same 1.0 scale</span><span class="fs-live-pill" data-pill="weight"></span></div>
       </div>
     </div>
 
@@ -3411,10 +3411,17 @@ function initScoreCalc() {
 
   function refreshAllPills() {
     const v = currentFactorValues();
+    v.weight = tierWeight;
     document.querySelectorAll('.fs-live-pill[data-pill]').forEach(p => {
       const k = p.dataset.pill;
       if (v[k] === undefined) return;
-      p.textContent = v[k].toFixed(4);
+      if (k === 'weight') {
+        // Show tier weight as the multiplier label users see on the buttons.
+        const w = v.weight;
+        p.textContent = '×' + (Number.isInteger(w) ? w.toFixed(0) : w.toString());
+      } else {
+        p.textContent = v[k].toFixed(4);
+      }
     });
   }
 
@@ -3424,6 +3431,15 @@ function initScoreCalc() {
     document.querySelectorAll('.formula-stack .fs-row.fs-calc-active').forEach(r => r.classList.remove('fs-calc-active'));
     const row = document.querySelector(`.formula-stack a.fs-row[href="#${map.anchor}"]`);
     if (row) row.classList.add('fs-calc-active');
+    if (calcFlashTimer) clearTimeout(calcFlashTimer);
+    calcFlashTimer = setTimeout(() => {
+      document.querySelectorAll('.formula-stack .fs-row.fs-calc-active').forEach(r => r.classList.remove('fs-calc-active'));
+    }, 1800);
+  }
+
+  function flashWeightRows() {
+    document.querySelectorAll('.formula-stack .fs-row.fs-calc-active').forEach(r => r.classList.remove('fs-calc-active'));
+    document.querySelectorAll('.formula-stack .fs-weight-row').forEach(r => r.classList.add('fs-calc-active'));
     if (calcFlashTimer) clearTimeout(calcFlashTimer);
     calcFlashTimer = setTimeout(() => {
       document.querySelectorAll('.formula-stack .fs-row.fs-calc-active').forEach(r => r.classList.remove('fs-calc-active'));
@@ -3441,13 +3457,16 @@ function initScoreCalc() {
   });
 
   document.querySelectorAll('.tier-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    const handleTier = () => {
       document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       tierWeight = parseFloat(btn.dataset.w);
       update();
       refreshAllPills();
-    });
+      flashWeightRows();
+    };
+    btn.addEventListener('click', handleTier);
+    btn.addEventListener('focus', () => flashWeightRows());
   });
 
   update();

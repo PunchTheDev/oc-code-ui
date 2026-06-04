@@ -397,6 +397,26 @@
     .lang-chip[data-cat="ruby"].active    { background:#ff9492;border-color:#ff9492;color:#0d1117 }
     .lang-chip[data-cat="ruby"]:hover     { border-color:#ff9492;color:#ff9492 }
 
+    /* ── Difficulty filter chips ────────────────────────── */
+    .diff-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .diff-chip:hover { border-color: var(--dc, var(--accent)); color: var(--dc, var(--accent)); }
+    .diff-chip.active { background: var(--dc, var(--accent)); border-color: var(--dc, var(--accent)); color: #0d1117; font-weight: 600; }
+    .diff-chip[data-diff=""].active { background: var(--accent); border-color: var(--accent); }
+
     /* ── Chart ───────────────────────────────────────────── */
     .chart-wrap {
       background: var(--surface);
@@ -1248,6 +1268,11 @@
       <button class="lang-chip" data-cat="go"><span class="chip-dot" style="background:#59e89c"></span>Go</button>
       <button class="lang-chip" data-cat="jvm"><span class="chip-dot" style="background:#d2a8ff"></span>JVM</button>
       <button class="lang-chip" data-cat="ruby"><span class="chip-dot" style="background:#ff9492"></span>Ruby</button>
+      <div style="width:1px;background:var(--border);height:20px;margin:0 4px;align-self:center"></div>
+      <button class="diff-chip active" data-diff="" title="Show all difficulty tiers">All tiers</button>
+      <button class="diff-chip" data-diff="easy" title="easy: &lt;30 added lines (×1 weight)" style="--dc:#3fb950">Easy</button>
+      <button class="diff-chip" data-diff="medium" title="medium: 30–149 added lines (×1.5 weight)" style="--dc:#d29922">Medium</button>
+      <button class="diff-chip" data-diff="hard" title="hard: ≥150 added lines (×2 weight)" style="--dc:#f85149">Hard</button>
     </div>
     <div class="table-wrap">
       <table id="problems-table">
@@ -1258,7 +1283,7 @@
             <th title="GitHub issue number + the merged PR number that introduced the fix">Issue / PR</th>
             <th>Title</th>
             <th class="sortable" data-col="baseline" title="Accepted solution's raw benchmark_score (0–30). Higher = richer diff. Your weighted_benchmark_score target is always 1.0 regardless of this number.">Ref / 30 <span style="font-size:9px;font-weight:400;color:var(--muted);vertical-align:middle;margin-left:4px">■<span style="color:var(--green)">≥20</span> ■<span style="color:var(--yellow,#e3b341)">≥10</span> ■<span style="color:var(--red)"><10</span></span></th>
-            <th title="Scoring weight tier based on diff size: easy &lt;30 lines (×1), medium 30–149 (×1.5), hard ≥150 (×2)">Tier</th>
+            <th class="sortable" data-col="tier" title="Scoring weight tier based on diff size: easy &lt;30 lines (×1), medium 30–149 (×1.5), hard ≥150 (×2)">Tier</th>
             <th class="sortable" data-col="merged" title="Sort by merge date">Merged</th>
           </tr>
         </thead>
@@ -1784,6 +1809,7 @@ let globalData = {};
 // Problems page state
 let activeRow = null;
 let activeCat = '';
+let activeDiff = '';
 let probSortCol = null;
 let probSortDir = 'asc';
 let probPage = 1;
@@ -2182,6 +2208,16 @@ async function load() {
       });
     });
 
+    document.querySelectorAll('.diff-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.diff-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeDiff = chip.dataset.diff || '';
+        probPage = 1;
+        renderProblems();
+      });
+    });
+
     // Wire LB search (debounced)
     document.getElementById('lb-search').addEventListener('input', debounce(e => {
       lbSearchQ = e.target.value.toLowerCase();
@@ -2233,10 +2269,17 @@ function renderProblems() {
   let visible = allProblems.filter(p => {
     if (q && !((p.title || '').toLowerCase().includes(q)) && !(p.repo.toLowerCase().includes(q))) return false;
     if (activeCat && probCat(p) !== activeCat) return false;
+    if (activeDiff && p.difficulty !== activeDiff) return false;
     return true;
   });
 
-  if (probSortCol === 'baseline') {
+  if (probSortCol === 'tier') {
+    const tierOrder = { easy: 0, medium: 1, hard: 2 };
+    visible.sort((a, b) => {
+      const av = tierOrder[a.difficulty] ?? 1, bv = tierOrder[b.difficulty] ?? 1;
+      return probSortDir === 'asc' ? av - bv : bv - av;
+    });
+  } else if (probSortCol === 'baseline') {
     visible.sort((a, b) => {
       const av = a.baseline_score ?? -1, bv = b.baseline_score ?? -1;
       return probSortDir === 'asc' ? av - bv : bv - av;

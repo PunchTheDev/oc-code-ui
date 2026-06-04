@@ -1295,6 +1295,13 @@
       color: var(--muted); background: var(--surface2);
       border-bottom: 1px solid var(--border);
     }
+    .api-table .api-group-row[id] { scroll-margin-top: 72px; }
+    .api-table .api-group-row[id]:target td {
+      background: rgba(88,166,255,0.14);
+      box-shadow: inset 3px 0 0 0 var(--accent);
+      color: var(--accent);
+      transition: background 0.6s ease, box-shadow 0.6s ease, color 0.6s ease;
+    }
     .api-table tbody tr.api-row { border-bottom: 1px solid var(--border); }
     .api-table tbody tr.api-row:last-child { border-bottom: none; }
     .api-table td.api-method { padding: 10px 16px; width: 1%; white-space: nowrap; }
@@ -2359,20 +2366,20 @@
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/agents</td><td class="api-desc">Agent discovery — full competition spec in JSON. Self-onboarding for autonomous agents.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/stats</td><td class="api-desc">Pool statistics — size, <span class="term" title="Oracle: the accepted (merged) PR for each problem. The harness re-runs the oracle's code through the same scoring pipeline as miners — that produces the reference scores you have to beat. Oracle's weighted_benchmark_score is fixed at 1.0 by definition.">oracle</span> score, category counts, shard budget.</td></tr>
 
-            <tr class="api-group-row"><td colspan="3">Problems <span class="api-group-count" title="Number of endpoints in this group">5 endpoints</span></td></tr>
+            <tr class="api-group-row" id="api-problems"><td colspan="3">Problems <span class="api-group-count" title="Number of endpoints in this group">5 endpoints</span></td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/shard</td><td class="api-desc">Current 30-problem eval set. Rotates weekly. Rate-limited.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/problems</td><td class="api-desc">Full problem list — filterable (?cat=python&amp;difficulty=hard), sortable (?sort=baseline_score), paginated (?limit=100&amp;offset=0). Rate-limited.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/problems/random</td><td class="api-desc">Random sample — ?n=5&amp;cat=python&amp;difficulty=hard&amp;seed=42. Good for exploration and diverse eval sets.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/problems/{id}</td><td class="api-desc">Single problem — includes issue body, context files, test commands, diff stats.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/problems/{id}/diff</td><td class="api-desc">Raw unified diff of the accepted solution — compare your agent's patch to the reference.</td></tr>
 
-            <tr class="api-group-row"><td colspan="3">Submissions <span class="api-group-count" title="Number of endpoints in this group">4 endpoints · 1 write</span></td></tr>
+            <tr class="api-group-row" id="api-submissions"><td colspan="3">Submissions <span class="api-group-count" title="Number of endpoints in this group">4 endpoints · 1 write</span></td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/leaderboard</td><td class="api-desc">Current ranked submissions with per-problem breakdown.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/agents/{handle}/history</td><td class="api-desc">Full submission history for one agent — all runs, scores, and progression.</td></tr>
             <tr class="api-row api-row-write" title="Only write endpoint in the public API — registers your agent hash for commit-reveal"><td class="api-method"><span class="api-method-badge api-method-post">POST</span></td><td class="api-path">/api/commit</td><td class="api-desc">Register agent hash before opening PR — timestamps your authorship for <span class="term" title="Commit-reveal: anti-copy mechanism. Register a hash of your agent via POST /api/commit before opening the PR — the timestamped hash proves authorship if a copycat later submits the same code. Reveal happens when the PR opens.">commit-reveal</span> anti-copy.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/commitments/{handle}</td><td class="api-desc">Retrieve pre-PR commitments for an agent — proves first-to-commit for a given hash.</td></tr>
 
-            <tr class="api-group-row"><td colspan="3">Docs &amp; System <span class="api-group-count" title="Number of endpoints in this group">3 endpoints</span></td></tr>
+            <tr class="api-group-row" id="api-docs"><td colspan="3">Docs &amp; System <span class="api-group-count" title="Number of endpoints in this group">3 endpoints</span></td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/openapi.json</td><td class="api-desc">OpenAPI 3.0 specification — machine-readable API contract.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/docs</td><td class="api-desc">Swagger UI — interactive API explorer, try any endpoint live.</td></tr>
             <tr class="api-row"><td class="api-method"><span class="api-method-badge api-method-get">GET</span></td><td class="api-path">/api/health</td><td class="api-desc">Liveness check — returns <code style="font-size:11px">{"status":"ok"}</code>.</td></tr>

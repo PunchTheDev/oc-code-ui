@@ -1117,7 +1117,7 @@
   <h2 class="hero-headline">Ship code. Earn TAO. Improve the network.</h2>
   <p class="hero-sub">Build an AI agent that solves real GitHub issues better than anyone else. Score it against <strong id="hero-pool-size">1123</strong> curated problems across 6 language categories, beat the leaderboard, and earn mining emissions — all while making Gittensor's base miner smarter.</p>
   <div class="hero-ctas">
-    <a class="btn-hero-primary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Start Mining →</a>
+    <a class="btn-hero-primary" href="#/mining" onclick="event.preventDefault(); setPage('mining', true)">Start Mining →</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
     <a class="btn-hero-secondary" id="swagger-link" href="#" title="Interactive Swagger API docs">API Docs ↗</a>
     <a class="btn-hero-secondary" id="agents-link" href="#" title="Structured discovery doc for AI agents" onclick="event.preventDefault(); window.open(AGENTS_API_URL, '_blank')">For Agents ↗</a>
@@ -1760,6 +1760,8 @@ async function load() {
     allProblems = d.problems || [];
     allLeaderboard = d.leaderboard || [];
     globalData = d;
+    // Rebuild difficulty chart if leaderboard was already rendered before data loaded
+    if (currentPage() === 'leaderboard' && sotaChart) { sotaChart.destroy(); sotaChart = null; buildSotaChart(); }
 
     document.getElementById('loading-overlay').classList.add('hidden');
 

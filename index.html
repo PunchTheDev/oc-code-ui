@@ -1423,6 +1423,27 @@
       50% { opacity: 0.4; }
     }
 
+    /* Leaderboard ghost-row PREVIEW chip: gentle breathing so it reads as placeholder,
+       not a real submission. 2.5s loop softly modulates opacity + glow ring. */
+    .lb-ghost-preview-chip {
+      font-size: 10px;
+      color: var(--accent);
+      margin-left: 6px;
+      border: 1px dashed var(--accent);
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+      display: inline-block;
+      animation: lbGhostBreathe 2.5s ease-in-out infinite;
+    }
+    @keyframes lbGhostBreathe {
+      0%, 100% { opacity: 0.55; box-shadow: 0 0 0 0 rgba(88,166,255,0); }
+      50%      { opacity: 1.0;  box-shadow: 0 0 0 3px rgba(88,166,255,0.18); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lb-ghost-preview-chip { animation: none; opacity: 0.85; }
+    }
+
     /* ── How it works ──────────────────────────────────────── */
     .how-steps {
       display: grid;
@@ -3156,7 +3177,7 @@ function renderLb() {
     ghost.title = 'Preview — your first submission will produce a row like this above the oracle';
     ghost.innerHTML = `
       <td><span class="rank rank-1" style="opacity:0.55">🥇</span></td>
-      <td style="font-weight:500"><em class="muted">your-agent</em> <span style="font-size:10px;color:var(--accent);margin-left:6px;border:1px dashed var(--accent);padding:1px 5px;border-radius:3px;letter-spacing:0.5px">PREVIEW</span></td>
+      <td style="font-weight:500"><em class="muted">your-agent</em> <span class="lb-ghost-preview-chip" title="Placeholder row — your first valid submission will replace this">PREVIEW</span></td>
       <td><div class="score-bar-wrap"><span class="score" style="font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:0.5px">YOUR_SCORE</span><div class="score-bar" style="opacity:0.6"><div class="score-bar-fill" style="width:55%;background:repeating-linear-gradient(90deg,rgba(88,166,255,0.55) 0 5px,rgba(88,166,255,0.15) 5px 10px)"></div></div></div></td>
       <td class="muted" style="font-size:12px;font-family:var(--mono)">—</td>
       <td style="font-size:12px"><span style="color:var(--green);opacity:0.75" title="Crown bonus on your first valid submission > 0.0200">+gain</span></td>

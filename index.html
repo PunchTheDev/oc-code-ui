@@ -1295,6 +1295,8 @@
     #crown-threshold-table tr[data-phase="endgame"]  { --cp-c: var(--red);    --cp-bg: rgba(248,81,73,0.14); }
     #crown-threshold-table tr[data-ref="1"][data-phase] td:nth-child(2) { border-left: 2px solid var(--cp-c); color: var(--cp-c); }
     #crown-threshold-table tr[data-ref="1"][data-phase] td:first-child { color: var(--text); }
+    /* LIVE row picks up phase-tinted threshold cell text + accent shadow on the green border (keeps "you are here" green identity, layers current phase on top) */
+    #crown-threshold-table tr#crown-live-row[data-phase] td:nth-child(2) { color: var(--cp-c) !important; box-shadow: inset 3px 0 0 var(--cp-c); }
     /* ── Margin decay sparkline (per-row in crown-threshold-table) ── */
     #crown-threshold-table .crown-margin-cell { display: flex; flex-direction: column; gap: 4px; }
     #crown-threshold-table .crown-margin-text { white-space: nowrap; }
@@ -4994,7 +4996,34 @@ function initScoringPage() {
   const ctTbody = document.querySelector('#crown-threshold-table tbody');
   if (ctTbody) {
     const liveRow = document.getElementById('crown-live-row');
-    if (liveRow) liveRow.dataset.sota = String(liveSota);
+    if (liveRow) {
+      liveRow.dataset.sota = String(liveSota);
+      // Derive current SOTA phase using the same band boundaries as the 4 reference rows.
+      // early <1.0 · parity [1.0, 1.5) · late [1.5, 1.9) · endgame ≥1.9
+      const phase = liveSota < 1.0 ? 'early' : liveSota < 1.5 ? 'parity' : liveSota < 1.9 ? 'late' : 'endgame';
+      liveRow.dataset.phase = phase;
+      const phaseMeta = {
+        early:   { label: 'Early',    tip: `Early phase — pool SOTA below oracle baseline (current ${liveSota.toFixed(4)}). Full +0.02 margin available. Click → jump to crown_threshold formula above.` },
+        parity:  { label: 'Parity',   tip: `Parity phase — pool SOTA has reached oracle baseline (current ${liveSota.toFixed(4)}). Margin halved to ~+0.01; competition tightens. Click → jump to crown_threshold formula above.` },
+        late:    { label: 'Late',     tip: `Late phase — SOTA well above oracle (current ${liveSota.toFixed(4)}). Margin halved again to ~+0.005; gains incremental. Click → jump to crown_threshold formula above.` },
+        endgame: { label: 'End-game', tip: `End-game — SOTA approaches the 2.0 anti-copy cap (current ${liveSota.toFixed(4)}). Margin floored at +0.001. Click → jump to crown_threshold formula above.` },
+      };
+      const meta = phaseMeta[phase];
+      const firstTd = liveRow.querySelector('td:first-child');
+      if (firstTd && meta) {
+        let chip = firstTd.querySelector('a.crown-phase-chip');
+        if (!chip) {
+          chip = document.createElement('a');
+          chip.className = 'crown-phase-chip';
+          chip.href = '#anticopy-formula';
+          chip.setAttribute('data-anchor', 'anticopy-formula');
+          firstTd.appendChild(document.createTextNode(' '));
+          firstTd.appendChild(chip);
+        }
+        chip.textContent = meta.label;
+        chip.title = meta.tip;
+      }
+    }
     const rows = Array.from(ctTbody.querySelectorAll('tr'));
     rows.sort((a, b) => {
       const sa = parseFloat(a.dataset.sota || '0');

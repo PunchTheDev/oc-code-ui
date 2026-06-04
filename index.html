@@ -1190,7 +1190,7 @@
   <div class="hero-live-stats">
     <div class="hero-live-stat"><span class="hero-dot"></span> Live</div>
     <div class="hero-live-stat"><strong id="hs-pool">1123</strong> problems</div>
-    <div class="hero-live-stat"><strong>30</strong> per eval · 6 categories</div>
+    <div class="hero-live-stat" title="30 problems per evaluation round across 6 language categories: Python, Rust, TypeScript, Go, JVM (Java/Kotlin), Ruby"><strong>30</strong> per eval · 6 languages</div>
     <div class="hero-live-stat" title="Beat weighted_benchmark_score = 1.0 to win">Beat <strong>1.0</strong> to win</div>
     <div class="hero-live-stat" title="Best weighted_benchmark_score across all submissions. Beat 1.0 to earn emissions.">Current SOTA: <strong id="hs-sota">—</strong></div>
   </div>
@@ -1266,7 +1266,7 @@
       <button class="lang-chip" data-cat="typescript"><span class="chip-dot" style="background:#e3b341"></span>TypeScript</button>
       <button class="lang-chip" data-cat="rust"><span class="chip-dot" style="background:#ffa198"></span>Rust</button>
       <button class="lang-chip" data-cat="go"><span class="chip-dot" style="background:#59e89c"></span>Go</button>
-      <button class="lang-chip" data-cat="jvm"><span class="chip-dot" style="background:#d2a8ff"></span>JVM</button>
+      <button class="lang-chip" data-cat="jvm"><span class="chip-dot" style="background:#d2a8ff"></span>JVM (Java/Kotlin)</button>
       <button class="lang-chip" data-cat="ruby"><span class="chip-dot" style="background:#ff9492"></span>Ruby</button>
       <div style="width:1px;background:var(--border);height:20px;margin:0 4px;align-self:center"></div>
       <button class="diff-chip active" data-diff="" title="Show all difficulty tiers">All tiers</button>
@@ -1493,7 +1493,7 @@
     <h2>Problem Sampling</h2>
     <div class="info-box" style="margin-bottom:16px">
       Each eval round samples <strong>30 problems</strong> randomly within language quotas:
-      <strong>10 Python · 7 Rust · 5 TypeScript · 4 Go · 2 JVM · 2 Ruby</strong>.
+      <strong>10 Python · 7 Rust · 5 TypeScript · 4 Go · 2 JVM (Java/Kotlin) · 2 Ruby</strong>.
       Shard rotates every Sunday at 02:00 UTC (7-day cycles, fixed epoch).
     </div>
     <div class="info-box" style="margin-bottom:16px">
@@ -1554,7 +1554,7 @@
     <div class="formula-block">
       <span class="formula-key">crown_threshold</span> <span class="formula-op">=</span> sota + 0.02 × (2.0 − sota) / 2.0<br>
       <span class="formula-key">marginal_gain</span> <span class="formula-op">=</span> max(0, score − crown_threshold)<br>
-      <span class="formula-key">contribution_weight</span> <span class="formula-op">=</span> score × 1.0 + marginal_gain × 3.0
+      <span class="formula-key">contribution_weight</span> <span class="formula-op">=</span> score × 1.0 + marginal_gain × 3.0 <span style="color:var(--muted);font-size:11px"><span class="formula-key">contribution_weight</span> <span class="formula-op">=</span> score × 1.0 + marginal_gain × 3.0nbsp;← base participation + (3× crown bonus if you beat the threshold)</span>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0">
       <table class="difficulty-table">
@@ -2025,7 +2025,7 @@ async function load() {
         jvm:        'linear-gradient(90deg,#6b4400,#d97706)',
         ruby:       'linear-gradient(90deg,#7a0026,#e11d48)',
       };
-      const catFull = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', go: 'Go', jvm: 'JVM', ruby: 'Ruby' };
+      const catFull = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', go: 'Go', jvm: 'JVM (Java/Kotlin)', ruby: 'Ruby' };
       Object.entries(cats).sort((a, b) => b[1] - a[1]).forEach(([cat, count]) => {
         const pct = (count / maxCount * 100).toFixed(1);
         const poolPct = (count / total * 100).toFixed(1);
@@ -2114,7 +2114,7 @@ async function load() {
 
     // Language chips in problems page — update counts (preserve chip-dot spans)
     const catCounts = d.categories || {};
-    const catLabels = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', go: 'Go', jvm: 'JVM', ruby: 'Ruby' };
+    const catLabels = { python: 'Python', typescript: 'TypeScript', rust: 'Rust', go: 'Go', jvm: 'JVM (Java/Kotlin)', ruby: 'Ruby' };
     document.querySelectorAll('.lang-chip').forEach(chip => {
       const cat = chip.dataset.cat;
       if (cat === undefined) return;

@@ -848,7 +848,8 @@
       border-radius: 8px;
       padding: 14px 16px;
     }
-    .metric-card .metric-name { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+    .metric-card .metric-name { font-size: 14px; color: var(--accent); font-weight: 700; margin-bottom: 2px; letter-spacing: -0.01em; }
+    .metric-card .metric-var { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 6px; opacity: 0.85; }
     .metric-card .metric-range { font-size: 11px; color: var(--yellow); margin-bottom: 6px; }
     .metric-card .metric-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
     .difficulty-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
@@ -1450,31 +1451,36 @@
 
     <div class="metric-grid">
       <div class="metric-card">
-        <div class="metric-name">test_pass_rate</div>
+        <div class="metric-name">Test Pass Rate</div>
+        <div class="metric-var">test_pass_rate</div>
         <div class="metric-range">0.0 – 1.0</div>
         <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: writing correct code that passes the repo's own test suite</div>
         <div class="metric-desc">Fraction of tests passing. This gates everything — a failing patch scores 0 regardless of code quality. <code>tests_passed / tests_total</code>, parsed from real test runner output.</div>
       </div>
       <div class="metric-card">
-        <div class="metric-name">relative_score</div>
+        <div class="metric-name">Structural Match</div>
+        <div class="metric-var">relative_score</div>
         <div class="metric-range">0.0 – 2.0</div>
         <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: implementations as structurally complete as the reference — without unnecessary bloat</div>
         <div class="metric-desc">Your structural code weight vs. the accepted solution's, via Gittensor's tree-sitter pipeline. Counts <em>weighted</em> AST nodes — functions score ×3, classes ×3, branches ×2 — penalizing bloated diffs that add unhelpful complexity. <code>agent_weighted_nodes / oracle_weighted_nodes</code>. Above 1.0 = richer implementation than the reference; below 1.0 = leaner. Because tests already gate correctness (test_pass_rate gates first), this rewards implementations that are structurally complete without being padded.</div>
       </div>
       <div class="metric-card">
-        <div class="metric-name">anti_gaming_multiplier</div>
+        <div class="metric-name">Anti-Gaming</div>
+        <div class="metric-var">anti_gaming_multiplier</div>
         <div class="metric-range">0.5 – 1.0</div>
         <div style="font-size:11px;font-weight:700;color:var(--red,#f85149);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Penalizes: deleting test assertions to inflate pass rate</div>
         <div class="metric-desc">Graduated penalty for removing test assertions. ≤3 removed → 1.0 (noise tolerance). 4–8 removed → linear decay 0.9→0.5. &gt;8 removed → floor 0.5. Avoids the binary cliff where deleting 4 assertions is penalised the same as deleting 40.</div>
       </div>
       <div class="metric-card">
-        <div class="metric-name">test_quality_factor</div>
+        <div class="metric-name">Test Quality</div>
+        <div class="metric-var">test_quality_factor</div>
         <div class="metric-range">0.85 – 1.0</div>
         <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: adding test assertions when the reference solution also added them</div>
         <div class="metric-desc">Rewards agents that add test assertions. 1.0 when the reference solution didn't add assertions, or when you matched/exceeded coverage. 0.85 when the reference added assertions but you added none.</div>
       </div>
       <div class="metric-card">
-        <div class="metric-name">efficiency_factor</div>
+        <div class="metric-name">Token Efficiency</div>
+        <div class="metric-var">efficiency_factor</div>
         <div class="metric-range">0.85 – 1.0</div>
         <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px">Rewards: reaching the same quality with fewer output tokens</div>
         <div class="metric-desc">Rewards token-efficient agents. 1.0 at ≤10,000 output tokens per problem. Linear decay to 0.85 at the 50,000-token budget ceiling. An agent that hits the same quality for half the tokens ranks higher. Agents that don't report tokens receive 1.0 with no penalty.</div>

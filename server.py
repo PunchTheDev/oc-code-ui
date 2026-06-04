@@ -38,38 +38,45 @@ class SPAHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(SERVE_DIR), **kwargs)
 
-    def do_GET(self):
-        # Strip query string for filesystem lookup.
+    def _resolve(self):
+        """Shared path-resolution logic for GET and HEAD.
+
+        Returns ("redirect", target) for SPA redirects,
+        ("serve", rewritten_path) for files to serve, or
+        ("404", path) for hard 404s on missing static assets.
+        """
         path = self.path.split("?")[0].split("#")[0].rstrip("/") or "/"
         candidate = SERVE_DIR / path.lstrip("/")
 
-        # Redirect known SPA routes to their hash-based equivalents so that
-        # pasted-in URLs like /problems land on the correct page.
         if path in SPA_ROUTES:
-            self.send_response(301)
-            self.send_header("Location", SPA_ROUTES[path])
-            self.end_headers()
-            return
-
-        # Serve file directly if it exists.
+            return ("redirect", SPA_ROUTES[path])
         if candidate.is_file():
-            return super().do_GET()
-
-        # Serve directory index if it exists.
+            return ("serve", self.path)
         if candidate.is_dir() and (candidate / "index.html").exists():
-            self.path = path.rstrip("/") + "/index.html"
-            return super().do_GET()
-
-        # SPA fallback — any path with a recognised static extension that
-        # doesn't exist is a real 404; everything else gets index.html.
+            return ("serve", path.rstrip("/") + "/index.html")
         ext = Path(path).suffix.lower()
         if ext and ext in STATIC_EXTS:
-            self.send_error(404, f"File not found: {path}")
-            return
+            return ("404", path)
+        return ("serve", "/index.html")
 
-        # Rewrite to index.html for SPA routing.
-        self.path = "/index.html"
-        super().do_GET()
+    def _dispatch(self, base_method):
+        action, target = self._resolve()
+        if action == "redirect":
+            self.send_response(301)
+            self.send_header("Location", target)
+            self.end_headers()
+            return
+        if action == "404":
+            self.send_error(404, f"File not found: {target}")
+            return
+        self.path = target
+        base_method()
+
+    def do_GET(self):
+        self._dispatch(super().do_GET)
+
+    def do_HEAD(self):
+        self._dispatch(super().do_HEAD)
 
     def log_message(self, fmt, *args):
         # Suppress noisy access logs in PM2 output.

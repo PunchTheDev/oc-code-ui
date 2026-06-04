@@ -1180,7 +1180,7 @@
 <div class="hero">
   <div class="hero-eyebrow">Gittensor · Subnet 74 · Mining Benchmark</div>
   <h2 class="hero-headline">Ship code. Earn TAO. Improve the network.</h2>
-  <p class="hero-sub">Build an AI agent that solves real GitHub issues better than anyone else. Score it against <strong id="hero-pool-size">1123</strong> curated problems across 6 language categories, beat the leaderboard, and earn mining emissions — all while making Gittensor's base miner smarter.</p>
+  <p class="hero-sub">Build an AI agent that solves real GitHub issues better than anyone else. Score it against <strong id="hero-pool-size">1123</strong> curated problems across 6 languages, beat the leaderboard, and earn mining emissions — all while making Gittensor's base miner smarter.</p>
   <div class="hero-ctas">
     <a class="btn-hero-primary" href="#/mining" onclick="event.preventDefault(); setPage('mining', true)">Start Mining →</a>
     <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
@@ -1191,8 +1191,8 @@
     <div class="hero-live-stat"><span class="hero-dot"></span> Live</div>
     <div class="hero-live-stat"><strong id="hs-pool">1123</strong> problems</div>
     <div class="hero-live-stat" title="30 problems per evaluation round across 6 language categories: Python, Rust, TypeScript, Go, JVM (Java/Kotlin), Ruby"><strong>30</strong> per eval · 6 languages</div>
-    <div class="hero-live-stat" title="Beat weighted_benchmark_score = 1.0 to win">Beat <strong>1.0</strong> to win</div>
-    <div class="hero-live-stat" title="Best weighted_benchmark_score across all submissions. Beat 1.0 to earn emissions.">Current SOTA: <strong id="hs-sota">—</strong></div>
+    <div class="hero-live-stat" title="Your weighted_benchmark_score must exceed 1.0 to rank above the oracle baseline and earn TAO rewards">Beat <strong>1.0</strong> to win</div>
+    <div class="hero-live-stat" title="State of the Art — the highest weighted_benchmark_score achieved by any submitted agent. Beat this to claim rank 1 and earn TAO rewards (Gittensor's network token).">Best score (SOTA): <strong id="hs-sota">—</strong></div>
   </div>
 </div>
 
@@ -1220,7 +1220,7 @@
       <div class="how-step">
         <div class="step-num">Step 4</div>
         <div class="step-title">Earn TAO</div>
-        <div class="step-desc">Beat the champion → your agent becomes the new base miner. You earn contributor emissions every epoch. Better agent = more of the network improving = flywheel.</div>
+        <div class="step-desc">Beat the champion → your agent becomes the new base miner. You earn TAO rewards each weekly epoch. Better agent = more of the network improving = flywheel.</div>
       </div>
     </div>
   </section>
@@ -1387,24 +1387,24 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
       <div>
         <div class="calc-row">
-          <label class="calc-label">test_pass_rate <span class="calc-val" id="cv-tpr">1.00</span></label>
+          <label class="calc-label">Test Pass Rate <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">test_pass_rate</span> <span class="calc-val" id="cv-tpr">1.00</span></label>
           <input type="range" class="calc-slider" id="sl-tpr" min="0" max="100" value="100" step="1">
-          <div class="calc-hint">Fraction of tests passing. Correctness gate — zeroed if all tests fail.</div>
+          <div class="calc-hint">Fraction of tests passing. The primary correctness gate — if all tests fail this is 0.</div>
         </div>
         <div class="calc-row">
-          <label class="calc-label">relative_score <span class="calc-val" id="cv-rel">1.00</span></label>
+          <label class="calc-label">Code Quality <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">relative_score</span> <span class="calc-val" id="cv-rel">1.00</span></label>
           <input type="range" class="calc-slider" id="sl-rel" min="0" max="200" value="100" step="1">
-          <div class="calc-hint">Your AST quality / oracle AST quality. Above 1.0 means you wrote better code than the reference.</div>
+          <div class="calc-hint">Your weighted AST node count ÷ oracle's. Above 1.0 = structurally richer implementation than the reference.</div>
         </div>
         <div class="calc-row">
-          <label class="calc-label">assertions_removed <span class="calc-val" id="cv-ag">0</span></label>
+          <label class="calc-label">Assertions Removed <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">anti_gaming</span> <span class="calc-val" id="cv-ag">0</span></label>
           <input type="range" class="calc-slider" id="sl-ag" min="0" max="15" value="0" step="1">
-          <div class="calc-hint">anti_gaming penalty kicks in above 3. Floor at 0.5 for &gt;8 removals.</div>
+          <div class="calc-hint">Penalty for deleting test assertions. Kicks in above 3 removals. Floor at 0.5 for &gt;8.</div>
         </div>
         <div class="calc-row">
-          <label class="calc-label">output_tokens <span class="calc-val" id="cv-eff">0</span></label>
+          <label class="calc-label">Output Tokens <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">efficiency</span> <span class="calc-val" id="cv-eff">0</span></label>
           <input type="range" class="calc-slider" id="sl-eff" min="0" max="50000" value="0" step="500">
-          <div class="calc-hint">Tokens used. Free up to 10k. Linear decay 1.0→0.85 from 10k to 50k budget.</div>
+          <div class="calc-hint">Tokens your agent generated. Free up to 10k. Efficiency decays 1.0→0.85 as tokens approach the 50k budget.</div>
         </div>
         <div class="calc-row">
           <label class="calc-label">difficulty tier</label>
@@ -1592,7 +1592,7 @@
     <h2>Everything you need to start mining.</h2>
     <p>One copy-paste and your agent is in the arena. The discovery endpoint hands it the full ruleset — scoring formula, allowed models, champion score, quickstart commands. Self-onboarding in under a minute.</p>
     <div class="hero-ctas">
-      <a class="btn-hero-primary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Full Guide ↗</a>
+      <a class="btn-hero-primary" href="#one-copy-paste" onclick="event.preventDefault(); document.getElementById('one-copy-paste')?.scrollIntoView({behavior:'smooth', block:'start'})">Jump to copy-paste ↓</a>
       <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">GitHub ↗</a>
     </div>
   </div>
@@ -1615,7 +1615,7 @@
       </div>
     </section>
 
-    <section>
+    <section id="one-copy-paste">
       <h2>One-Copy-Paste Start</h2>
       <p style="color:var(--muted);font-size:13px;margin-bottom:12px">
         Copy this block, replace <code>myhandle</code> and <code>sk-or-...</code>, run it. Your agent mines continuously — eval → score → commit hash → open PR when you beat the champion → repeat.
@@ -1647,7 +1647,7 @@
         </div>
       </div>
       <p style="color:var(--muted);font-size:12px;margin-top:10px">
-        The mine loop follows the <strong>RALPH cycle</strong>: <strong>R</strong>un the shard → <strong>A</strong>ssess results → <strong>L</strong>oop improvements → <strong>P</strong>ost commit hash (anti-copy) → <strong>H</strong>it submit when you beat the champion. Each iteration your agent gets better; the one holding the top score earns contributor emissions.
+        The mine loop follows the <strong>RALPH cycle</strong>: <strong>R</strong>un the shard → <strong>A</strong>ssess results → <strong>L</strong>oop improvements → <strong>P</strong>ost commit hash (anti-copy) → <strong>H</strong>it submit when you beat the champion. Each iteration your agent gets better; the one holding the top score earns TAO rewards (Gittensor's network token, distributed weekly).
       </p>
     </section>
 
@@ -1677,7 +1677,7 @@
         <div class="mining-step">
           <div class="ms-num">Step 5</div>
           <div class="ms-title">Submit a PR</div>
-          <div class="ms-desc">When your agent beats the champion score, open a PR. CI scores it automatically and labels it for emissions eligibility.</div>
+          <div class="ms-desc">When your agent beats the champion score, open a PR. CI scores it automatically and flags it for TAO reward eligibility.</div>
         </div>
       </div>
 
@@ -1758,6 +1758,16 @@
             <tr><td style="padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--accent)">GET /docs</td><td style="padding:10px 16px;font-size:12px;color:var(--muted)">Swagger UI — interactive API explorer, try any endpoint live.</td></tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- Submit CTA -->
+    <section style="margin-top:40px;padding:32px;background:linear-gradient(135deg,rgba(31,111,235,0.08),rgba(88,166,255,0.04));border:1px solid rgba(31,111,235,0.25);border-radius:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Ready to submit?</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Beat the oracle (score &gt; 1.0) and open a PR. CI scores it automatically and posts a full breakdown in minutes.</div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a class="btn-hero-primary" href="https://github.com/PunchTheDev/gittensor-base-miner/blob/main/CONTRIBUTING.md" target="_blank">Read CONTRIBUTING.md →</a>
+        <a class="btn-hero-secondary" href="https://github.com/PunchTheDev/gittensor-base-miner" target="_blank">Open a PR on GitHub →</a>
       </div>
     </section>
 
@@ -1995,7 +2005,7 @@ async function load() {
 
     // Header badge
     document.getElementById('header-badge').textContent =
-      `${d.pool_size} problems · ${d.shard_size}-problem shard · beat 1.0 to win`;
+      `${d.pool_size} problems · ${d.shard_size} per weekly eval · beat 1.0 to win`;
 
     // Hero stats
     const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -2014,8 +2024,8 @@ async function load() {
       { label: 'Pool size', value: d.pool_size, sub: 'curated problems', color: '' },
       { label: 'Shard size', value: d.shard_size, sub: 'problems per eval', color: '' },
       { label: 'Repos', value: d.repos_count || Object.keys(d.repos || {}).length, sub: 'in the problem pool', color: '' },
-      { label: 'Target score', value: '1.0', sub: 'weighted_benchmark_score to beat', color: 'green', title: 'Oracle = 1.0 by definition (accepted solutions score 1.0). Beat it to earn emissions.' },
-      { label: 'Current SOTA', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
+      { label: 'Target score', value: '1.0', sub: 'score this to earn TAO rewards', color: 'green', title: 'The oracle (accepted) solution scores exactly 1.0. Beat it with a higher weighted_benchmark_score to earn TAO — Gittensor\'s network token distributed to top miners.' },
+      { label: 'Best score (SOTA)', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow', title: 'State of the Art — highest weighted_benchmark_score submitted so far. Beat this to claim rank 1.' },
       { label: 'Curated models', value: models.length, sub: models.slice(0,3).map(m => m.split('/')[1] || m).join(', ') + (models.length > 3 ? ' +' + (models.length-3) + ' more' : ''), color: 'purple', title: 'Click to view all models\n' + models.join('\n'), link: () => { setPage('mining', true); setTimeout(() => document.getElementById('mining-models-grid')?.scrollIntoView({behavior:'smooth', block:'start'}), 100); } },
     ];
     statsCards.forEach(s => {
@@ -2113,8 +2123,8 @@ async function load() {
     const lbStatsRow = document.getElementById('lb-stats-row');
     const oracleWeighted = d.oracle_score || 0;
     const lbStatsCards = [
-      { label: 'Target score', value: '1.0', sub: 'weighted_benchmark_score to beat', color: 'green' },
-      { label: 'Current SOTA', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow' },
+      { label: 'Target score', value: '1.0', sub: 'score this to earn TAO rewards', color: 'green', title: 'Beat the oracle\'s 1.0 weighted_benchmark_score to rank above the baseline and earn TAO.' },
+      { label: 'Best score (SOTA)', value: sotaBenchmark, sub: realEntries.length > 0 ? `by ${realEntries[0].agent}` : 'no submissions yet', color: 'yellow', title: 'State of the Art — highest score submitted. Beat this to claim rank 1.' },
       { label: 'Submissions', value: realEntries.length, sub: realEntries.length === 0 ? 'be the first to submit' : 'scored agents', color: '' },
     ];
     lbStatsCards.forEach(s => {
@@ -2530,8 +2540,10 @@ function renderLb() {
       <td class="muted" style="font-size:12px">${weightedVal}</td>
       <td style="font-size:12px">${gainVal}</td>
       <td style="font-size:12px">${effCell}</td>
-      <td><span class="badge-model">${esc(row.model)}</span></td>
-      <td class="muted" style="font-size:12px;white-space:nowrap">${esc(row.date)}</td>
+      <td>${isOracle
+        ? `<span class="muted" style="font-size:11px" title="Oracle uses the accepted PR's merged code — no LLM involved">n/a (reference)</span>`
+        : `<span class="badge-model">${esc(row.model || '—')}</span>`}</td>
+      <td class="muted" style="font-size:12px;white-space:nowrap">${isOracle ? '<span title="Oracle is a static baseline — no submission date">—</span>' : esc(row.date || '—')}</td>
       <td class="muted" style="font-size:12px">${esc(row.note || '')}</td>
     `;
     if (hasBreakdown) tr.addEventListener('click', () => openSubmissionDrawer(row, allProblems));
@@ -2756,6 +2768,26 @@ function initScoringPage() {
     const cat = p.category || 'other';
     repoLangCounts[p.repo][cat] = (repoLangCounts[p.repo][cat] || 0) + 1;
   });
+  // Scoring jump-nav active state via IntersectionObserver
+  const scoringNavLinks = document.querySelectorAll('#page-scoring .jump-nav a');
+  if (scoringNavLinks.length && 'IntersectionObserver' in window) {
+    const sectionIds = ['s-formula','s-calc','s-factors','s-sampling','s-difficulty','s-anticopy','s-pool'];
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          scoringNavLinks.forEach(a => {
+            const target = a.getAttribute('onclick')?.match(/getElementById\('([^']+)'\)/)?.[1];
+            a.style.color = (target === id) ? 'var(--accent)' : '';
+            a.style.borderColor = (target === id) ? 'var(--accent)' : 'var(--border)';
+            a.style.background = (target === id) ? 'rgba(31,111,235,0.1)' : '';
+          });
+        }
+      });
+    }, { threshold: 0.25, rootMargin: '-60px 0px -60% 0px' });
+    sectionIds.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
+  }
+
   const repoLang = {};
   Object.entries(repoLangCounts).forEach(([repo, counts]) => {
     repoLang[repo] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'other';
@@ -2813,7 +2845,7 @@ function initMiningPage() {
     card.innerHTML = `
       <div class="mc-name">${meta.label || modelSlug}</div>
       <div class="mc-provider">${esc(provider)} · <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${esc(modelSlug)}</span></div>
-      <div class="mc-cost">${esc(meta.cost || '')}</div>
+      <div class="mc-cost" title="Cost per million tokens — input / output">${esc(meta.cost || '')}</div>
       ${meta.note ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(meta.note)}</div>` : ''}
       ${i === 0 ? '<div style="font-size:10px;color:var(--accent);margin-top:4px">✓ recommended default</div>' : ''}
     `;

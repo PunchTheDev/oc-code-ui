@@ -1168,10 +1168,11 @@
     .difficulty-table tr.tier-row-link.bar-flash td:first-child { border-left-color: var(--accent); }
     .difficulty-table tr.tier-row-link.bar-flash .tier-row-filter { opacity: 1; transform: translateX(0); background: rgba(88,166,255,0.22); border-color: rgba(88,166,255,0.45); }
     /* ── Anti-Copy crown threshold table: live row vs. reference rows ─ */
-    #crown-threshold-table tr#crown-live-row td { background: rgba(46,160,67,0.05); border-left-width: 2px; border-left-style: solid; border-left-color: transparent; }
-    #crown-threshold-table tr#crown-live-row td:first-child { border-left-color: var(--green); font-weight: 600; }
-    #crown-threshold-table tr#crown-live-row + tr[data-ref="1"] td { padding-top: 14px; }
+    #crown-threshold-table tr#crown-live-row td { background: rgba(46,160,67,0.06); border-top: 1px solid rgba(46,160,67,0.35); border-bottom: 1px solid rgba(46,160,67,0.35); padding-top: 14px; padding-bottom: 14px; }
+    #crown-threshold-table tr#crown-live-row td:first-child { border-left: 2px solid var(--green); font-weight: 600; }
+    #crown-threshold-table tr#crown-live-row td:last-child { border-right: 2px solid var(--green); }
     #crown-threshold-table tr[data-ref="1"] td { background: var(--surface); }
+    #crown-threshold-table .crown-here-chip { display: inline-block; margin-left: 8px; padding: 1px 6px; background: rgba(46,160,67,0.18); color: var(--green); border: 1px solid rgba(46,160,67,0.35); border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: middle; }
     .diff-chart-caption { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 20px 0 6px; padding: 0 2px; }
     .diff-chart-caption .dcc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
     .diff-chart-caption .dcc-lens { font-size: 11px; color: var(--accent); text-align: right; }
@@ -2539,11 +2540,11 @@
       <table class="difficulty-table" id="crown-threshold-table">
         <thead><tr><th>Current best score</th><th>Crown threshold</th><th>Required margin to claim crown</th></tr></thead>
         <tbody>
-          <tr id="crown-live-row" data-live="1"><td style="font-family:var(--mono);color:var(--text)"><span class="api-method-badge" style="background:rgba(46,160,67,0.18);color:var(--green);border-color:rgba(46,160,67,0.35);margin-right:6px">LIVE</span><span id="crown-live-sota">0.0</span> <span class="muted" id="crown-live-sub" style="font-size:11px">(no submissions)</span></td><td style="font-family:var(--mono);color:var(--accent)" id="crown-live-thresh">0.0200</td><td class="muted" id="crown-live-margin">+0.02 above SOTA</td></tr>
-          <tr data-ref="1"><td class="muted" style="font-family:var(--mono)">0.0 (no submissions)</td><td style="font-family:var(--mono);color:var(--accent)">0.0200</td><td class="muted">+0.02 above SOTA</td></tr>
-          <tr data-ref="1"><td class="muted" style="font-family:var(--mono)">1.0 (oracle level)</td><td style="font-family:var(--mono);color:var(--accent)">1.0100</td><td class="muted">+0.01 above SOTA</td></tr>
-          <tr data-ref="1"><td class="muted" style="font-family:var(--mono)">1.5</td><td style="font-family:var(--mono);color:var(--accent)">1.5050</td><td class="muted">+0.005 above SOTA</td></tr>
-          <tr data-ref="1"><td class="muted" style="font-family:var(--mono)">1.9</td><td style="font-family:var(--mono);color:var(--accent)">1.9010</td><td class="muted">+0.001 above SOTA</td></tr>
+          <tr id="crown-live-row" data-live="1" data-sota="0"><td style="font-family:var(--mono);color:var(--text)"><span class="api-method-badge" style="background:rgba(46,160,67,0.18);color:var(--green);border-color:rgba(46,160,67,0.35);margin-right:6px">LIVE</span><span id="crown-live-sota">0.0</span> <span class="muted" id="crown-live-sub" style="font-size:11px">(no submissions)</span></td><td style="font-family:var(--mono);color:var(--accent)" id="crown-live-thresh">0.0200</td><td class="muted"><span id="crown-live-margin">+0.02 above SOTA</span><span class="crown-here-chip" title="The LIVE row's slot in the table is determined by current pool SOTA — as SOTA rises, this row slides down past each reference anchor.">you are here</span></td></tr>
+          <tr data-ref="1" data-sota="0"><td class="muted" style="font-family:var(--mono)">0.0 (baseline)</td><td style="font-family:var(--mono);color:var(--accent)">0.0200</td><td class="muted">+0.02 above SOTA</td></tr>
+          <tr data-ref="1" data-sota="1"><td class="muted" style="font-family:var(--mono)">1.0 (oracle level)</td><td style="font-family:var(--mono);color:var(--accent)">1.0100</td><td class="muted">+0.01 above SOTA</td></tr>
+          <tr data-ref="1" data-sota="1.5"><td class="muted" style="font-family:var(--mono)">1.5</td><td style="font-family:var(--mono);color:var(--accent)">1.5050</td><td class="muted">+0.005 above SOTA</td></tr>
+          <tr data-ref="1" data-sota="1.9"><td class="muted" style="font-family:var(--mono)">1.9</td><td style="font-family:var(--mono);color:var(--accent)">1.9010</td><td class="muted">+0.001 above SOTA</td></tr>
         </tbody>
       </table>
     </div>
@@ -4426,6 +4427,24 @@ function initScoringPage() {
     } else {
       capEl.innerHTML = `SOTA = <strong>0.0000</strong> · crown_threshold = <strong>${liveThresh.toFixed(4)}</strong> · <span style="color:var(--muted)">awaiting first submission — first valid score &gt; 0.02 claims the crown</span>`;
     }
+  }
+
+  // Sort the crown-threshold-table tbody so the LIVE row slots into the curve
+  // by current SOTA — making position-in-curve visible (bracketed between two refs).
+  const ctTbody = document.querySelector('#crown-threshold-table tbody');
+  if (ctTbody) {
+    const liveRow = document.getElementById('crown-live-row');
+    if (liveRow) liveRow.dataset.sota = String(liveSota);
+    const rows = Array.from(ctTbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      const sa = parseFloat(a.dataset.sota || '0');
+      const sb = parseFloat(b.dataset.sota || '0');
+      if (sa !== sb) return sa - sb;
+      // tie-break: LIVE sits AFTER a matching-SOTA ref so the ref reads as the
+      // anchor and LIVE reads as "we are at this anchor"
+      return a.id === 'crown-live-row' ? 1 : -1;
+    });
+    rows.forEach(r => ctTbody.appendChild(r));
   }
 }
 
